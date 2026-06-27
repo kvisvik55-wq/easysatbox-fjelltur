@@ -102,6 +102,34 @@
   .folder .pen,.folder .del{background:transparent;border:0;color:var(--txt-3);font-size:15px;cursor:pointer;padding:4px}
   .addfolder{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:transparent;border:1px dashed var(--line2);border-radius:var(--radius);padding:12px;color:var(--accent);font:inherit;font-size:14px;cursor:pointer}
 
+  /* klikkbare mapper + topp-/turvisning */
+  .folder{cursor:pointer}
+  .folder .fname2{font-size:15px;color:var(--txt)}
+  .folder .chev{color:var(--txt-3);font-size:18px;margin-left:2px}
+  .fcount{font-size:12px;color:var(--txt-3);white-space:nowrap}
+  .vtitle{display:flex;align-items:center;gap:10px;margin:4px 0 14px}
+  .vtitle .e{font-size:30px}
+  .vtitle h3{font-size:21px;margin:0;font-weight:600;flex:1}
+  .vtitle .sub{font-size:12px;color:var(--txt-2);margin:2px 0 0}
+  .addbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:transparent;border:1px dashed var(--line2);border-radius:var(--radius);padding:13px;color:var(--accent);font:inherit;font-size:14px;cursor:pointer;margin-top:4px}
+  .peakcard{display:flex;align-items:center;gap:13px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:14px;margin-bottom:9px;cursor:pointer}
+  .peakcard .pemoji{font-size:26px}
+  .peakcard .pn{font-size:16px;font-weight:600}
+  .peakcard .pe{font-size:12px;color:var(--txt-3);margin-top:1px}
+  .peakcard .cnt{margin-left:auto;font-size:13px;color:var(--accent);font-weight:600;white-space:nowrap}
+  .turcard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:13px;margin-bottom:11px}
+  .turcard .th{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .turcard .tlabel{font-size:14px;font-weight:600;color:var(--accent)}
+  .fld{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--txt);font:inherit;font-size:14px;padding:10px;outline:none;margin-bottom:8px}
+  .fld:focus{border-color:var(--accent)}
+  textarea.fld{min-height:58px;resize:vertical}
+  .mediagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin:4px 0 8px}
+  .thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000}
+  .thumb img,.thumb video{width:100%;height:100%;object-fit:cover;display:block}
+  .thumb .x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0;font-size:14px;line-height:1;cursor:pointer}
+  .addmedia{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--card2);border:1px dashed var(--line2);color:var(--txt-2);border-radius:10px;padding:10px;font:inherit;font-size:13px;cursor:pointer;width:100%}
+  .tinybtn{background:transparent;border:0;color:var(--txt-3);font-size:15px;cursor:pointer;padding:2px 4px}
+
   /* AI-boks (AI overalt) */
   .ai{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
   .ai .row{display:flex;gap:8px}
@@ -198,6 +226,9 @@
     </div>
   </div>
 
+  <!-- ===== MAPPE-INNHOLD (åpnet mappe: topper / media) ===== -->
+  <div class="detail" id="folderview"></div>
+
   <div class="authbar">
     <span id="authStatus" data-i18n="auth_demo">Lokal demo — ikke innlogget</span>
     <button id="authBtn" onclick="toggleAuth()" data-i18n="sign_in">Logg inn</button>
@@ -208,6 +239,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-storage-compat.js"></script>
 
 <script>
 /* ════════════════════════════════════════════════════════════
@@ -221,11 +253,16 @@ const APP_CONFIG = {
   emoji: "⛰️",
   accent: "#1de9a6",        // bytt farge per app om ønskelig
 
-  // Firebase: lim inn fra Firebase-konsollen (prosjekt mylife-2-f8ae2).
-  // La stå tomt for å kjøre lokal demo uten innlogging.
+  // Firebase: lim inn HELE web-configen fra Firebase-konsollen
+  // (Prosjektinnstillinger → Generelt → Dine apper → Web → SDK-konfigurasjon).
+  // La apiKey stå tom for å kjøre lokal demo uten innlogging.
   firebase: {
-    apiKey:"", authDomain:"mylife-2-f8ae2.firebaseapp.com",
-    projectId:"mylife-2-f8ae2", appId:""
+    apiKey:"AIzaSyCyDJKZP02IjmjlGabTy0pvKTaNeKu91Lw",
+    authDomain:"mylife-2-f8ae2.firebaseapp.com",
+    projectId:"mylife-2-f8ae2",
+    storageBucket:"mylife-2-f8ae2.firebasestorage.app",
+    messagingSenderId:"403026039068",
+    appId:"1:403026039068:web:555b70c045c3c3c9a82ad9"
   },
 
   // AI går ALLTID via backend-proxy. Aldri API-nøkkel i frontend.
@@ -278,7 +315,13 @@ const APP_CONFIG = {
       folders:[
         {emoji:"📷",name:{no:"Bilder",en:"Photos"}},
         {emoji:"🎬",name:{no:"Video",en:"Video"}},
-        {emoji:"🏔️",name:{no:"Topper og private pins",en:"Peaks & private pins"}},
+        {emoji:"🏔️",type:"peaks",name:{no:"Mine topper",en:"My peaks"},
+          sub:{no:"Hver topp samler alle turene dine",en:"Each peak gathers all your trips"},
+          peaks:[
+            {name:"Innerdalstårnet",elev:"",turer:[{date:"",note:"",media:[]},{date:"",note:"",media:[]},{date:"",note:"",media:[]}]},
+            {name:"Dronningkrona",elev:"",turer:[{date:"",note:"",media:[]},{date:"",note:"",media:[]},{date:"",note:"",media:[]}]},
+            {name:"Snøhetta",elev:"",turer:[{date:"",note:"",media:[]},{date:"",note:"",media:[]}]}
+          ]},
         {emoji:"📊",name:{no:"Statistikk",en:"Statistics"},sub:{no:"km · høydemeter · tid",en:"km · ascent · time"}},
       ]},
     { id:"basen", emoji:"🏕️",
@@ -338,7 +381,7 @@ const L = ()=>(APP_CONFIG.name[LANG]||APP_CONFIG.name.no);
 /* state: mappene per mynt (her bor brukerens omdøping/+).
    TODO: persister til Firestore pr. bruker+tur når innlogget. */
 const folderState = {};
-APP_CONFIG.coins.forEach(c=> folderState[c.id] = c.folders.map(f=>({...f, name:{...f.name}})));
+APP_CONFIG.coins.forEach(c=> folderState[c.id] = c.folders.map(f=>JSON.parse(JSON.stringify(f))));
 
 /* ── oppstart ── */
 function init(){
@@ -434,6 +477,8 @@ function openCoin(){
   document.getElementById('dEmoji').textContent=c.emoji;
   document.getElementById('dTitle').textContent=c.name[LANG];
   document.getElementById('dSub').textContent=c.sub[LANG];
+  openFolderIdx=null; openPeakIdx=null;
+  document.getElementById('folderview').classList.remove('show');
   renderFolders();
   document.getElementById('aiAnswer').classList.remove('show');
   ['stage','carousel','coinLabel','dots','openBtn','pretest'].forEach(id=>
@@ -443,6 +488,7 @@ function openCoin(){
 }
 function closeCoin(){
   document.getElementById('detail').classList.remove('show');
+  document.getElementById('folderview').classList.remove('show');
   ['stage','carousel','coinLabel','dots','openBtn','pretest'].forEach(id=>
     document.getElementById(id).classList.remove('hide'));
 }
@@ -453,22 +499,192 @@ function renderFolders(){
     const row=document.createElement('div');
     row.className='folder'+(f.flag?' flag':'');
     const sub=f.sub?('<span class="fsub">'+f.sub[LANG]+'</span>'):'';
+    let count='';
+    if(f.type==='peaks') count=(f.peaks?f.peaks.length:0)+' '+(LANG==='no'?'topper':'peaks');
+    else if(f.media&&f.media.length) count=f.media.length+' 📎';
     row.innerHTML=
       '<span class="femoji">'+(f.emoji||'📁')+'</span>'+
-      '<div style="flex:1"><input class="fname" value="'+escapeHtml(f.name[LANG])+'" '+
-        'onchange="renameFolder(\''+c.id+'\','+idx+',this.value)" aria-label="Mappenavn">'+sub+'</div>'+
+      '<div style="flex:1;min-width:0"><span class="fname2">'+escapeHtml(f.name[LANG])+'</span>'+sub+'</div>'+
       (f.flag?'<span class="badge">langtur</span>':'')+
-      '<button class="pen" aria-label="Endre navn" onclick="this.previousElementSibling;this.parentNode.querySelector(\'.fname\').focus()">✏️</button>'+
-      '<button class="del" aria-label="Slett mappe" onclick="delFolder(\''+c.id+'\','+idx+')">🗑️</button>';
+      (count?'<span class="fcount">'+count+'</span>':'')+
+      '<button class="pen" aria-label="Endre navn" onclick="event.stopPropagation();renamePrompt(\''+c.id+'\','+idx+')">✏️</button>'+
+      '<button class="del" aria-label="Slett mappe" onclick="event.stopPropagation();delFolder(\''+c.id+'\','+idx+')">🗑️</button>'+
+      '<span class="chev">›</span>';
+    row.onclick=()=>openFolder(idx);
     box.appendChild(row);
   });
+  saveState();
 }
-function renameFolder(cid,idx,val){ folderState[cid][idx].name[LANG]=val.trim()||I18N[LANG].new_folder; }
-function delFolder(cid,idx){ folderState[cid].splice(idx,1); renderFolders(); }
+function renamePrompt(cid,idx){
+  const f=folderState[cid][idx];
+  const v=prompt(LANG==='no'?'Nytt mappenavn:':'New folder name:', f.name[LANG]);
+  if(v===null)return; f.name[LANG]=v.trim()||f.name[LANG]; renderFolders();
+}
+function delFolder(cid,idx){
+  if(!confirm(LANG==='no'?'Slette mappen?':'Delete folder?'))return;
+  folderState[cid].splice(idx,1); renderFolders();
+}
 function addFolder(){
   const c=APP_CONFIG.coins[current];
   folderState[c.id].push({emoji:'📁', name:{no:I18N.no.new_folder, en:I18N.en.new_folder}});
   renderFolders();
+}
+
+/* ════ MAPPE-INNHOLD: topper, turer, media ════ */
+let openFolderIdx=null, openPeakIdx=null;
+function curFolder(){ return folderState[APP_CONFIG.coins[current].id][openFolderIdx]; }
+
+function openFolder(idx){
+  openFolderIdx=idx; openPeakIdx=null;
+  document.getElementById('detail').classList.remove('show');
+  document.getElementById('folderview').classList.add('show');
+  renderFolderView();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function backToFolders(){
+  document.getElementById('folderview').classList.remove('show');
+  document.getElementById('detail').classList.add('show');
+  openFolderIdx=null; openPeakIdx=null;
+  renderFolders();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function renderFolderView(){
+  const f=curFolder(), fv=document.getElementById('folderview');
+  if(f.type==='peaks'){
+    fv.innerHTML = (openPeakIdx===null) ? peaksListHtml(f) : peakDetailHtml(f, openPeakIdx);
+  }else{
+    fv.innerHTML = mediaFolderHtml(f);
+  }
+  saveState();
+}
+
+/* ---- TOPP-LISTE ---- */
+function peaksListHtml(f){
+  const T=(no,en)=>LANG==='no'?no:en;
+  let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake til Skattkammeret','Back')+'</button>';
+  h+='<div class="vtitle"><span class="e">🏔️</span><div><h3>'+escapeHtml(f.name[LANG])+'</h3>'+
+      '<div class="sub">'+T('Trykk en topp for å se alle turene','Tap a peak to see all trips')+'</div></div></div>';
+  if(!f.peaks.length) h+='<p style="color:var(--txt-3);font-size:14px">'+T('Ingen topper ennå.','No peaks yet.')+'</p>';
+  f.peaks.forEach((p,i)=>{
+    const n=p.turer.length;
+    h+='<div class="peakcard" onclick="openPeak('+i+')">'+
+       '<span class="pemoji">🏔️</span>'+
+       '<div style="flex:1;min-width:0"><div class="pn">'+escapeHtml(p.name)+'</div>'+
+       (p.elev?'<div class="pe">'+escapeHtml(p.elev)+' moh</div>':'')+'</div>'+
+       '<span class="cnt">'+n+' '+(n===1?T('tur','trip'):T('turer','trips'))+'</span>'+
+       '<span class="chev">›</span></div>';
+  });
+  h+='<button class="addbtn" onclick="addPeak()">＋ '+T('Legg til topp','Add peak')+'</button>';
+  return h;
+}
+function openPeak(i){ openPeakIdx=i; renderFolderView(); window.scrollTo({top:0,behavior:'smooth'}); }
+function addPeak(){
+  const T=(no,en)=>LANG==='no'?no:en;
+  const name=prompt(T('Navn på topp:','Peak name:')); if(!name||!name.trim())return;
+  const elev=prompt(T('Høyde i moh (valgfritt):','Elevation in m (optional):'),'')||'';
+  curFolder().peaks.push({name:name.trim(),elev:elev.trim(),turer:[]});
+  renderFolderView();
+}
+
+/* ---- TOPP-DETALJ (turene) ---- */
+function peakDetailHtml(f,pi){
+  const T=(no,en)=>LANG==='no'?no:en, p=f.peaks[pi];
+  let h='<button class="back" onclick="backToPeaks()">‹ '+T('Tilbake til topper','Back to peaks')+'</button>';
+  h+='<div class="vtitle"><span class="e">🏔️</span><div style="flex:1"><h3>'+escapeHtml(p.name)+'</h3>'+
+      (p.elev?'<div class="sub">'+escapeHtml(p.elev)+' moh · ':'<div class="sub">')+
+      p.turer.length+' '+(p.turer.length===1?T('tur','trip'):T('turer','trips'))+'</div></div>'+
+      '<button class="tinybtn" aria-label="Endre topp" onclick="renamePeak('+pi+')">✏️</button>'+
+      '<button class="tinybtn" aria-label="Slett topp" onclick="delPeak('+pi+')">🗑️</button></div>';
+  p.turer.forEach((t,ti)=>{
+    h+='<div class="turcard">'+
+       '<div class="th"><span class="tlabel">'+T('Tur ','Trip ')+(ti+1)+'</span>'+
+       '<button class="tinybtn" aria-label="Slett tur" onclick="delTur('+pi+','+ti+')">🗑️</button></div>'+
+       '<input class="fld" type="date" value="'+(t.date||'')+'" onchange="setTurField('+pi+','+ti+',\'date\',this.value)" aria-label="Dato">'+
+       '<textarea class="fld" placeholder="'+T('Minne, vær, hvem du var med …','Memory, weather, who you were with …')+'" '+
+         'onchange="setTurField('+pi+','+ti+',\'note\',this.value)">'+escapeHtml(t.note||'')+'</textarea>'+
+       mediaGridHtml(t.media, pi, ti)+
+       '<button class="addmedia" onclick="addTurMedia('+pi+','+ti+')">📷 '+T('Legg til bilde eller video','Add photo or video')+'</button>'+
+       '</div>';
+  });
+  h+='<button class="addbtn" onclick="addTur('+pi+')">＋ '+T('Legg til tur','Add trip')+'</button>';
+  return h;
+}
+function backToPeaks(){ openPeakIdx=null; renderFolderView(); window.scrollTo({top:0,behavior:'smooth'}); }
+function renamePeak(pi){
+  const T=(no,en)=>LANG==='no'?no:en, p=curFolder().peaks[pi];
+  const name=prompt(T('Navn på topp:','Peak name:'),p.name); if(name===null)return;
+  p.name=name.trim()||p.name;
+  const elev=prompt(T('Høyde i moh (valgfritt):','Elevation (optional):'),p.elev||''); if(elev!==null)p.elev=elev.trim();
+  renderFolderView();
+}
+function delPeak(pi){
+  if(!confirm(LANG==='no'?'Slette denne toppen og alle turene?':'Delete this peak and all trips?'))return;
+  curFolder().peaks.splice(pi,1); openPeakIdx=null; renderFolderView();
+}
+function addTur(pi){ curFolder().peaks[pi].turer.push({date:"",note:"",media:[]}); renderFolderView(); }
+function delTur(pi,ti){
+  if(!confirm(LANG==='no'?'Slette denne turen?':'Delete this trip?'))return;
+  curFolder().peaks[pi].turer.splice(ti,1); renderFolderView();
+}
+function setTurField(pi,ti,key,val){ curFolder().peaks[pi].turer[ti][key]=val; saveState(); }
+function addTurMedia(pi,ti){ pickFiles(arr=>{ curFolder().peaks[pi].turer[ti].media.push(...arr); renderFolderView(); }); }
+function delTurMedia(pi,ti,mi){ curFolder().peaks[pi].turer[ti].media.splice(mi,1); renderFolderView(); }
+
+/* ---- GENERISK MEDIAMAPPE (Bilder, Pakkeliste, …) ---- */
+function mediaFolderHtml(f){
+  const T=(no,en)=>LANG==='no'?no:en;
+  if(f.note===undefined)f.note=""; if(!f.media)f.media=[];
+  let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake','Back')+'</button>';
+  h+='<div class="vtitle"><span class="e">'+(f.emoji||'📁')+'</span><div><h3>'+escapeHtml(f.name[LANG])+'</h3>'+
+     (f.sub?'<div class="sub">'+f.sub[LANG]+'</div>':'')+'</div></div>';
+  h+='<textarea class="fld" placeholder="'+T('Skriv notater her …','Write notes here …')+'" '+
+     'onchange="setFolderNote(this.value)">'+escapeHtml(f.note)+'</textarea>';
+  h+=mediaGridHtml(f.media,null,null);
+  h+='<button class="addmedia" onclick="addFolderMedia()">📷 '+T('Legg til bilde eller video','Add photo or video')+'</button>';
+  return h;
+}
+function setFolderNote(v){ curFolder().note=v; saveState(); }
+function addFolderMedia(){ pickFiles(arr=>{ curFolder().media.push(...arr); renderFolderView(); }); }
+function delFolderMedia(mi){ curFolder().media.splice(mi,1); renderFolderView(); }
+
+/* ---- FELLES: media-grid + filvelger ---- */
+function mediaGridHtml(media,pi,ti){
+  if(!media||!media.length) return '';
+  let g='<div class="mediagrid">';
+  media.forEach((m,mi)=>{
+    const del = (pi===null) ? 'delFolderMedia('+mi+')' : 'delTurMedia('+pi+','+ti+','+mi+')';
+    const el = m.type==='video'
+      ? '<video src="'+m.url+'" muted playsinline></video>'
+      : '<img src="'+m.url+'" alt="">';
+    g+='<div class="thumb">'+el+'<button class="x" aria-label="Fjern" onclick="'+del+'">×</button></div>';
+  });
+  return g+'</div>';
+}
+function pickFiles(cb){
+  const inp=document.createElement('input');
+  inp.type='file'; inp.accept='image/*,video/*'; inp.multiple=true;
+  inp.onchange=async ()=>{
+    const files=[...inp.files]; if(!files.length)return;
+    const arr=[];
+    for(const file of files){
+      const type=file.type.startsWith('video')?'video':'image';
+      if(storage && auth && auth.currentUser){
+        try{
+          const path=APP_CONFIG.id+'/'+auth.currentUser.uid+'/'+Date.now()+'_'+file.name.replace(/[^\w.\-]/g,'_');
+          const ref=storage.ref().child(path);
+          await ref.put(file);
+          arr.push({url:await ref.getDownloadURL(), type, name:file.name, path});
+        }catch(e){
+          console.warn('Opplasting feilet, lokal visning.',e);
+          arr.push({url:URL.createObjectURL(file), type, name:file.name});
+        }
+      }else{
+        arr.push({url:URL.createObjectURL(file), type, name:file.name}); // demo: kun denne økten
+      }
+    }
+    cb(arr);
+  };
+  inp.click();
 }
 function escapeHtml(s){return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
 
@@ -505,6 +721,10 @@ document.getElementById('aiInput').addEventListener('keydown',e=>{if(e.key==='En
 let mediaStream=null, audioCtx=null, rafMic=null;
 async function testMedia(){
   const prev=document.getElementById('camPreview');
+  // Allerede i gang? Da slår knappen av (av/på-oppførsel).
+  if(mediaStream){ stopMedia(); return; }
+  // Rydd alltid opp før ny start (mobil låser kameraet ellers).
+  stopMedia();
   document.getElementById('camCloseBtn').textContent = LANG==='no'?'Lukk forhåndsvisning':'Close preview';
   document.getElementById('micLabel').textContent = LANG==='no'?'Snakk — søylen skal bevege seg':'Speak — the bar should move';
   if(!window.isSecureContext){
@@ -565,27 +785,67 @@ function editTrip(){
 }
 function toggleMute(){ muted=!muted; document.getElementById('muteBtn').textContent=muted?'🔇':'🔊'; }
 
-/* ── Firebase (valgfritt) ── */
-let fb=null, auth=null;
+/* ── Firebase: Auth + Firestore + Storage ──
+   Lim inn web-config i APP_CONFIG.firebase. Uten nøkler: lokal demo.
+   Datamodell (klar for deling/abonnement senere):
+     users/{uid}/apps/{appId}  = { folderState, trip, updatedAt }
+   Neste lag: trips/{tripId} med { ownerUid, members:{uid:rolle} } for invitasjoner. */
+let fb=null, auth=null, db=null, storage=null, fbUser=null, suppressSave=false, saveTimer=null;
 function initFirebase(){
   if(!APP_CONFIG.firebase.apiKey || typeof firebase==='undefined') return; // lokal demo
   try{
     fb=firebase.initializeApp(APP_CONFIG.firebase);
     auth=firebase.auth();
-    auth.onAuthStateChanged(u=>{
+    db=firebase.firestore();
+    try{ storage=firebase.storage(); }catch(e){ console.warn('Storage utilgjengelig',e); }
+    auth.onAuthStateChanged(async u=>{
+      fbUser=u;
       document.getElementById('authStatus').textContent =
         u ? (I18N[LANG].auth_in+': '+(u.displayName||u.email||'')) : I18N[LANG].auth_demo;
       document.getElementById('authBtn').textContent =
         u ? I18N[LANG].sign_out : I18N[LANG].sign_in;
+      if(u) await loadState();
     });
   }catch(e){ console.warn('Firebase init feilet — lokal demo.', e); }
 }
+function userDoc(){ return db.collection('users').doc(fbUser.uid).collection('apps').doc(APP_CONFIG.id); }
+async function loadState(){
+  try{
+    const snap=await userDoc().get();
+    if(snap.exists && snap.data().folderState){
+      suppressSave=true;
+      const saved=snap.data().folderState;
+      Object.keys(saved).forEach(k=>{ folderState[k]=saved[k]; });
+      suppressSave=false;
+      if(document.getElementById('folderview').classList.contains('show')) renderFolderView();
+      else if(document.getElementById('detail').classList.contains('show')) renderFolders();
+    }else{
+      saveState(); // første innlogging: lagre seed-data
+    }
+  }catch(e){ console.warn('Kunne ikke laste lagret tilstand.',e); }
+}
+function saveState(){
+  if(!db || !fbUser || suppressSave) return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>{
+    userDoc().set({
+      folderState: folderState,
+      trip:{ name:document.getElementById('tripName').textContent, start:document.getElementById('tripStart').textContent },
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true}).catch(e=>console.warn('Lagring feilet',e));
+  },900);
+}
 function toggleAuth(){
   if(!auth){ alert(LANG==='no'
-      ? 'Firebase ikke konfigurert. Lim inn nøkler i APP_CONFIG.firebase, og legg appens URL under Authentication → Authorized Domains.'
-      : 'Firebase not configured.'); return; }
-  if(auth.currentUser){ auth.signOut(); }
-  else{ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>alert(e.message)); }
+      ? 'Firebase ikke konfigurert ennå. Lim inn web-config i APP_CONFIG.firebase, og legg appens URL under Authentication → Authorized Domains.'
+      : 'Firebase not configured yet.'); return; }
+  if(auth.currentUser){ auth.signOut(); return; }
+  const p=new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(p).catch(e=>{
+    if(['auth/popup-blocked','auth/cancelled-popup-request','auth/operation-not-supported-in-this-environment'].includes(e.code))
+      auth.signInWithRedirect(p);
+    else alert(e.message);
+  });
 }
 
 /* ── stjernebakgrunn (Rom) ── */
