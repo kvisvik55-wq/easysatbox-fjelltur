@@ -124,11 +124,21 @@
   .fld:focus{border-color:var(--accent)}
   textarea.fld{min-height:58px;resize:vertical}
   .mediagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin:4px 0 8px}
-  .thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000}
+  .thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000;cursor:pointer}
   .thumb img,.thumb video{width:100%;height:100%;object-fit:cover;display:block}
   .thumb .x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0;font-size:14px;line-height:1;cursor:pointer}
   .addmedia{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--card2);border:1px dashed var(--line2);color:var(--txt-2);border-radius:10px;padding:10px;font:inherit;font-size:13px;cursor:pointer;width:100%}
   .tinybtn{background:transparent;border:0;color:var(--txt-3);font-size:15px;cursor:pointer;padding:2px 4px}
+
+  /* fullskjerm-fremviser */
+  .viewer{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;touch-action:pan-y}
+  .viewer.show{display:flex}
+  .vstage{max-width:96vw;max-height:86vh;display:flex;align-items:center;justify-content:center}
+  .vstage img,.vstage video{max-width:96vw;max-height:86vh;border-radius:8px;display:block}
+  .vclose{position:absolute;top:14px;right:16px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:20px;cursor:pointer;z-index:2}
+  .vnav{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:28px;line-height:1;cursor:pointer;z-index:2}
+  .vprev{left:12px} .vnext{right:12px}
+  .vcount{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(0,0,0,.45);padding:5px 13px;border-radius:999px}
 
   /* AI-boks (AI overalt) */
   .ai{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
@@ -233,6 +243,15 @@
     <span id="authStatus" data-i18n="auth_demo">Lokal demo — ikke innlogget</span>
     <button id="authBtn" onclick="toggleAuth()" data-i18n="sign_in">Logg inn</button>
   </div>
+</div>
+
+<!-- ===== FULLSKJERM-FREMVISER (foredrag/mimring) ===== -->
+<div id="viewer" class="viewer" role="dialog" aria-modal="true" aria-label="Bildevisning" onclick="if(event.target===this)closeViewer()">
+  <button class="vclose" aria-label="Lukk" onclick="closeViewer()">✕</button>
+  <button class="vnav vprev" aria-label="Forrige" onclick="viewerNav(-1)">‹</button>
+  <div id="viewerStage" class="vstage"></div>
+  <button class="vnav vnext" aria-label="Neste" onclick="viewerNav(1)">›</button>
+  <div id="viewerCount" class="vcount"></div>
 </div>
 
 <!-- Firebase (compat) — valgfritt. Appen funker uten, da kjører lokal demo. -->
@@ -459,6 +478,8 @@ function move(dir){
 }
 document.addEventListener('keydown',e=>{
   if(document.getElementById('detail').classList.contains('show'))return;
+  if(document.getElementById('folderview').classList.contains('show'))return;
+  if(document.getElementById('viewer').classList.contains('show'))return;
   if(e.key==='ArrowLeft')move(-1); if(e.key==='ArrowRight')move(1);
   if(e.key==='Enter')openCoin();
 });
@@ -652,14 +673,62 @@ function mediaGridHtml(media,pi,ti){
   if(!media||!media.length) return '';
   let g='<div class="mediagrid">';
   media.forEach((m,mi)=>{
-    const del = (pi===null) ? 'delFolderMedia('+mi+')' : 'delTurMedia('+pi+','+ti+','+mi+')';
+    const open = (pi===null) ? 'openFolderViewer('+mi+')' : 'openTurViewer('+pi+','+ti+','+mi+')';
+    const del  = (pi===null) ? 'delFolderMedia('+mi+')' : 'delTurMedia('+pi+','+ti+','+mi+')';
     const el = m.type==='video'
       ? '<video src="'+m.url+'" muted playsinline></video>'
       : '<img src="'+m.url+'" alt="">';
-    g+='<div class="thumb">'+el+'<button class="x" aria-label="Fjern" onclick="'+del+'">×</button></div>';
+    g+='<div class="thumb" onclick="'+open+'">'+el+
+       '<button class="x" aria-label="Fjern" onclick="event.stopPropagation();'+del+'">×</button></div>';
   });
   return g+'</div>';
 }
+
+/* ---- FULLSKJERM-FREMVISER ---- */
+let viewerMedia=[], viewerIdx=0;
+function openTurViewer(pi,ti,mi){ viewerMedia=curFolder().peaks[pi].turer[ti].media; viewerIdx=mi; showViewer(); }
+function openFolderViewer(mi){ viewerMedia=curFolder().media; viewerIdx=mi; showViewer(); }
+function showViewer(){
+  if(!viewerMedia||!viewerMedia.length)return;
+  renderViewer();
+  document.getElementById('viewer').classList.add('show');
+  document.body.style.overflow='hidden';
+}
+function renderViewer(){
+  const m=viewerMedia[viewerIdx], stage=document.getElementById('viewerStage');
+  stage.innerHTML = m.type==='video'
+    ? '<video src="'+m.url+'" controls autoplay playsinline></video>'
+    : '<img src="'+m.url+'" alt="">';
+  document.getElementById('viewerCount').textContent=(viewerIdx+1)+' / '+viewerMedia.length;
+  const multi=viewerMedia.length>1;
+  document.querySelector('.vprev').style.display=multi?'':'none';
+  document.querySelector('.vnext').style.display=multi?'':'none';
+}
+function viewerNav(d){
+  if(!viewerMedia.length)return;
+  viewerIdx=(viewerIdx+d+viewerMedia.length)%viewerMedia.length;
+  renderViewer();
+}
+function closeViewer(){
+  document.getElementById('viewer').classList.remove('show');
+  document.getElementById('viewerStage').innerHTML='';
+  document.body.style.overflow='';
+}
+document.addEventListener('keydown',e=>{
+  if(!document.getElementById('viewer').classList.contains('show'))return;
+  if(e.key==='ArrowLeft')viewerNav(-1);
+  else if(e.key==='ArrowRight')viewerNav(1);
+  else if(e.key==='Escape')closeViewer();
+});
+(function(){
+  let vx=0;
+  const v=document.getElementById('viewer');
+  v.addEventListener('touchstart',e=>vx=e.touches[0].clientX,{passive:true});
+  v.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-vx;
+    if(Math.abs(dx)>45) viewerNav(dx<0?1:-1);
+  });
+})();
 function pickFiles(cb){
   const inp=document.createElement('input');
   inp.type='file'; inp.accept='image/*,video/*'; inp.multiple=true;
