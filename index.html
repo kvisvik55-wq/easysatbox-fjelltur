@@ -4,39 +4,66 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
 <title>EasySatBox Tours — mal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
 <style>
   /* ============================================================
      FELLES GRUNNMUR — STIL
-     Tre temaer: Rom (default), Svart, Kontrast (UU).
-     Bytt aldri på dette per app — det arves likt av alle.
+     6 temaer (Deep space, Midnight, Dusk, Slate, Sepia, Daylight)
+     + dysleksifont (data-font="dys") + kontrast (data-contrast="on").
+     Arves likt av alle apper.
   ============================================================ */
   :root{
+    --appfont:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
     --accent:#1de9a6; --accent-ink:#06321f;
     --bg:#070d1c; --bg2:#0c1428; --card:#101a30; --card2:#15233f;
     --line:#213152; --line2:#2c3d63;
     --txt:#eaf2ff; --txt-2:#9fb2d8; --txt-3:#6b7da3;
     --radius:14px; --maxw:760px;
   }
-  html[data-theme="svart"]{
-    --bg:#000000; --bg2:#070707; --card:#0e0e0e; --card2:#161616;
-    --line:#262626; --line2:#383838; --txt:#f2f2f2; --txt-2:#9a9a9a; --txt-3:#6a6a6a;
+  html[data-theme="midnight"]{
+    --accent:#9d8cff; --accent-ink:#1a1340;
+    --bg:#06060f; --bg2:#0c0c1a; --card:#13132a; --card2:#1b1b3a;
+    --line:#262648; --line2:#34345e; --txt:#ece9ff; --txt-2:#a9a4cf; --txt-3:#726d9a;
   }
-  html[data-theme="kontrast"]{
+  html[data-theme="dusk"]{
+    --accent:#ff8a7a; --accent-ink:#3d1410;
+    --bg:#140a14; --bg2:#1d0f1d; --card:#271528; --card2:#341c35;
+    --line:#3d2440; --line2:#522f55; --txt:#f6e9f3; --txt-2:#c9a9c4; --txt-3:#8f6f8c;
+  }
+  html[data-theme="slate"]{
+    --accent:#5aa0f0; --accent-ink:#0a2440;
+    --bg:#0f141a; --bg2:#161d26; --card:#1c2530; --card2:#26313e;
+    --line:#313d4a; --line2:#42505f; --txt:#e8edf3; --txt-2:#a6b3c2; --txt-3:#6f7d8c;
+  }
+  html[data-theme="sepia"]{
+    --accent:#b5743a; --accent-ink:#fff7ec;
+    --bg:#f3e9d8; --bg2:#ece0cb; --card:#fbf4e7; --card2:#f5ebd8;
+    --line:#d8c7a8; --line2:#c8b48f; --txt:#3a2f1f; --txt-2:#6f5e44; --txt-3:#9a876a;
+  }
+  html[data-theme="daylight"]{
+    --accent:#2f7fe0; --accent-ink:#ffffff;
+    --bg:#f6f8fb; --bg2:#eef1f6; --card:#ffffff; --card2:#f3f6fa;
+    --line:#dde3ec; --line2:#c7d0dd; --txt:#1a2230; --txt-2:#566175; --txt-3:#8a94a5;
+  }
+  html[data-contrast="on"]{
     --accent:#ffd400; --accent-ink:#000000;
-    --bg:#000000; --bg2:#000000; --card:#000000; --card2:#0a0a0a;
-    --line:#ffffff; --line2:#ffffff; --txt:#ffffff; --txt-2:#ffffff; --txt-3:#e6e6e6;
-    --radius:8px;
+    --bg:#000; --bg2:#000; --card:#000; --card2:#0a0a0a;
+    --line:#fff; --line2:#fff; --txt:#fff; --txt-2:#fff; --txt-3:#e6e6e6; --radius:8px;
   }
+  html[data-font="dys"]{ --appfont:'Atkinson Hyperlegible',-apple-system,system-ui,sans-serif; }
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
   body{
     margin:0; background:var(--bg); color:var(--txt);
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    font-family:var(--appfont);
     min-height:100vh; overflow-x:hidden;
   }
-  /* romstjerner (kun Rom-tema) */
+  /* romstjerner (kun mørke romtemaer) */
   #stars{position:fixed;inset:0;pointer-events:none;opacity:.55;z-index:0}
-  html[data-theme="svart"] #stars,html[data-theme="kontrast"] #stars{display:none}
+  html[data-theme="sepia"] #stars,html[data-theme="daylight"] #stars,html[data-contrast="on"] #stars{display:none}
   .wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:14px 16px 40px}
+
 
   /* topplinje */
   header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;flex-wrap:wrap}
@@ -161,6 +188,16 @@
   .authbar{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt-3);justify-content:center;margin-top:26px}
   .authbar button{background:transparent;border:1px solid var(--line);color:var(--txt-2);border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;cursor:pointer}
   .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  .hsel{background:var(--card);border:1px solid var(--line);color:var(--txt);font:inherit;font-size:13px;padding:8px 10px;border-radius:999px;cursor:pointer;max-width:150px}
+  .iconbtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+  .coin{position:relative}
+  .cdot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line2);background:transparent;cursor:pointer;padding:0;flex:0 0 auto}
+  .coindot{position:absolute;bottom:6px;right:6px;width:15px;height:15px;border-radius:50%;border:2px solid var(--bg)}
+  .colorpop{display:none;position:absolute;z-index:1100;gap:8px;flex-wrap:wrap;width:206px;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:11px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .colorpop button{width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;padding:0}
+  .colorpop button.clr{background:var(--card2);border:1px solid var(--line2);color:var(--txt-2);font-size:16px}
+  .dz-over{outline:2px dashed var(--accent);outline-offset:3px;border-radius:var(--radius)}
+  .draghint{font-size:11px;color:var(--txt-3);margin:4px 2px 0;text-align:center}
   @media(prefers-reduced-motion:reduce){.coin{transition:none}}
 </style>
 </head>
@@ -177,15 +214,17 @@
       </div>
     </div>
     <div class="controls">
-      <div class="seg" role="group" aria-label="Språk">
-        <button id="lang-no" aria-pressed="true" onclick="setLang('no')">NO</button>
-        <button id="lang-en" aria-pressed="false" onclick="setLang('en')">EN</button>
-      </div>
-      <div class="seg" role="group" aria-label="Tema">
-        <button id="th-rom" aria-pressed="true" onclick="setTheme('rom')" data-i18n="th_rom">Rom</button>
-        <button id="th-svart" aria-pressed="false" onclick="setTheme('svart')" data-i18n="th_svart">Svart</button>
-        <button id="th-kontrast" aria-pressed="false" onclick="setTheme('kontrast')" data-i18n="th_kontrast">Kontrast</button>
-      </div>
+      <select id="langSel" class="hsel" aria-label="Språk / Language" onchange="setLang(this.value)"></select>
+      <select id="themeSel" class="hsel" aria-label="Tema / Theme" onchange="setTheme(this.value)">
+        <option value="deepspace">🌌 Deep space</option>
+        <option value="midnight">🔮 Midnight</option>
+        <option value="dusk">🌆 Dusk</option>
+        <option value="slate">🪨 Slate</option>
+        <option value="sepia">📜 Sepia</option>
+        <option value="daylight">☀️ Daylight</option>
+      </select>
+      <button class="iconbtn" id="dysBtn" aria-label="Dysleksivennlig skrift" aria-pressed="false" onclick="toggleDys()" title="Dysleksiskrift">Aa</button>
+      <button class="iconbtn" id="contrastBtn" aria-label="Høy kontrast" aria-pressed="false" onclick="toggleContrast()" title="Høy kontrast">◐</button>
       <button class="iconbtn" id="muteBtn" aria-label="Lyd" onclick="toggleMute()">🔊</button>
     </div>
   </header>
@@ -229,6 +268,7 @@
       <div class="emoji" id="dEmoji"></div>
       <h3 id="dTitle"></h3>
       <p id="dSub"></p>
+      <button class="cdot" id="dColor" aria-label="Mynt-farge" style="margin:8px auto 0"></button>
     </div>
     <div id="folders"></div>
     <button class="addfolder" onclick="addFolder()">＋ <span data-i18n="add_folder">Legg til egen mappe</span></button>
@@ -260,6 +300,8 @@
   <button class="vnav vnext" aria-label="Neste" onclick="viewerNav(1)">›</button>
   <div id="viewerCount" class="vcount"></div>
 </div>
+
+<div id="colorpop" class="colorpop"></div>
 
 <!-- Firebase (compat) — valgfritt. Appen funker uten, da kjører lokal demo. -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -301,8 +343,8 @@ const APP_CONFIG = {
   // flag:true  = uthevet (langtur-tillegg). sub = liten undertekst.
   coins: [
     { id:"ekspeditor", emoji:"🧭",
-      name:{no:"Ekspeditøren",en:"The Planner"},
-      sub:{no:"Plan, lokasjon og reise",en:"Plan, location and travel"},
+      name:{no:"Ekspeditøren",en:"The Planner",de:"Der Planer",fr:"Le Planificateur",es:"El Planificador",it:"Il Pianificatore",ru:"Планировщик",ja:"プランナー",zh:"策划者",pl:"Planista"},
+      sub:{no:"Plan, lokasjon og reise",en:"Plan, location and travel",de:"Plan, Ort und Anreise",fr:"Plan, lieu et trajet",es:"Plan, lugar y viaje",it:"Piano, luogo e viaggio",ru:"План, место и дорога",ja:"計画・場所・移動",zh:"计划、地点与出行",pl:"Plan, miejsce i dojazd"},
       folders:[
         {emoji:"📍",name:{no:"Turinfo",en:"Trip info"}},
         {emoji:"🚗",name:{no:"Transport",en:"Transport"},sub:{no:"Bil · buss · tog · fly",en:"Car · bus · train · flight"}},
@@ -310,8 +352,8 @@ const APP_CONFIG = {
         {emoji:"📢",name:{no:"Si fra hvor du går",en:"Tell someone"}},
       ]},
     { id:"orakel", emoji:"🗺️",
-      name:{no:"Orakelet og kartet",en:"Oracle & Map"},
-      sub:{no:"Digitale verktøy",en:"Digital tools"},
+      name:{no:"Orakelet og kartet",en:"Oracle & Map",de:"Orakel & Karte",fr:"Oracle et Carte",es:"Oráculo y Mapa",it:"Oracolo e Mappa",ru:"Оракул и карта",ja:"オラクルと地図",zh:"神谕与地图",pl:"Wyrocznia i mapa"},
+      sub:{no:"Digitale verktøy",en:"Digital tools",de:"Digitale Werkzeuge",fr:"Outils numériques",es:"Herramientas digitales",it:"Strumenti digitali",ru:"Цифровые инструменты",ja:"デジタルツール",zh:"数字工具",pl:"Narzędzia cyfrowe"},
       folders:[
         {emoji:"🧭",name:{no:"Offline-kart",en:"Offline map"}},
         {emoji:"🥾",name:{no:"Spor og etapper",en:"Track & legs"}},
@@ -326,8 +368,8 @@ const APP_CONFIG = {
           ]},
       ]},
     { id:"vokter", emoji:"🛡️",
-      name:{no:"Vokteren",en:"The Guardian"},
-      sub:{no:"Sikkerhet og helse",en:"Safety & health"},
+      name:{no:"Vokteren",en:"The Guardian",de:"Der Wächter",fr:"Le Gardien",es:"El Guardián",it:"Il Guardiano",ru:"Хранитель",ja:"守護者",zh:"守护者",pl:"Strażnik"},
+      sub:{no:"Sikkerhet og helse",en:"Safety & health",de:"Sicherheit & Gesundheit",fr:"Sécurité et santé",es:"Seguridad y salud",it:"Sicurezza e salute",ru:"Безопасность и здоровье",ja:"安全と健康",zh:"安全与健康",pl:"Bezpieczeństwo i zdrowie"},
       folders:[
         {emoji:"⚠️",name:{no:"Fjellvett og skred",en:"Mountain safety"}},
         {emoji:"🩹",name:{no:"Førstehjelp og medisin",en:"First aid"}},
@@ -335,8 +377,8 @@ const APP_CONFIG = {
         {emoji:"🆘",name:{no:"Nød — 112 / satellitt",en:"Emergency"}},
       ]},
     { id:"rustning", emoji:"🎒",
-      name:{no:"Rustningen",en:"The Armor"},
-      sub:{no:"Utstyr, klær, strøm og lagring",en:"Gear, clothes, power, storage"},
+      name:{no:"Rustningen",en:"The Armor",de:"Die Rüstung",fr:"L'Armure",es:"La Armadura",it:"L'Armatura",ru:"Снаряжение",ja:"装備",zh:"装备",pl:"Ekwipunek"},
+      sub:{no:"Utstyr, klær, strøm og lagring",en:"Gear, clothes, power, storage",de:"Ausrüstung, Kleidung, Strom, Speicher",fr:"Équipement, vêtements, énergie, stockage",es:"Equipo, ropa, energía, almacenamiento",it:"Attrezzatura, abbigliamento, energia, archivio",ru:"Снаряжение, одежда, энергия, хранение",ja:"装備・衣類・電源・保存",zh:"装备、衣物、电源、存储",pl:"Sprzęt, odzież, zasilanie, pamięć"},
       folders:[
         {emoji:"✅",name:{no:"Pakkeliste",en:"Packing list"}},
         {emoji:"👕",name:{no:"Klær og renhold",en:"Clothes & hygiene"}},
@@ -344,8 +386,8 @@ const APP_CONFIG = {
         {emoji:"☁️",name:{no:"Lagring og mobil",en:"Storage & phone"},sub:{no:"Auto-opplasting til Firebase",en:"Auto-upload to Firebase"},flag:true},
       ]},
     { id:"skattkammer", emoji:"💎",
-      name:{no:"Skattkammeret",en:"The Treasury"},
-      sub:{no:"Logg, media og statistikk",en:"Log, media, stats"},
+      name:{no:"Skattkammeret",en:"The Treasury",de:"Die Schatzkammer",fr:"Le Trésor",es:"El Tesoro",it:"Il Tesoro",ru:"Сокровищница",ja:"宝物庫",zh:"宝库",pl:"Skarbiec"},
+      sub:{no:"Logg, media og statistikk",en:"Log, media, stats",de:"Logbuch, Medien, Statistik",fr:"Journal, médias, stats",es:"Registro, medios, estadísticas",it:"Diario, media, statistiche",ru:"Журнал, медиа, статистика",ja:"記録・メディア・統計",zh:"日志、媒体、统计",pl:"Dziennik, media, statystyki"},
       folders:[
         {emoji:"📷",name:{no:"Bilder",en:"Photos"}},
         {emoji:"🎬",name:{no:"Video",en:"Video"}},
@@ -359,23 +401,23 @@ const APP_CONFIG = {
         {emoji:"📊",name:{no:"Statistikk",en:"Statistics"},sub:{no:"km · høydemeter · tid",en:"km · ascent · time"}},
       ]},
     { id:"basen", emoji:"🏕️",
-      name:{no:"Basen",en:"Base camp"},
-      sub:{no:"Overnatting og proviant",en:"Lodging & provisions"},
+      name:{no:"Basen",en:"Base camp",de:"Basislager",fr:"Camp de base",es:"Campamento base",it:"Campo base",ru:"База",ja:"ベースキャンプ",zh:"大本营",pl:"Baza"},
+      sub:{no:"Overnatting og proviant",en:"Lodging & provisions",de:"Unterkunft & Verpflegung",fr:"Hébergement et provisions",es:"Alojamiento y provisiones",it:"Alloggio e provviste",ru:"Ночлег и провизия",ja:"宿泊と食料",zh:"住宿与补给",pl:"Nocleg i prowiant"},
       folders:[
         {emoji:"🛖",name:{no:"Overnatting",en:"Lodging"},sub:{no:"DNT-hytte · telt",en:"Cabin · tent"}},
         {emoji:"🍲",name:{no:"Meny og proviant",en:"Menu & food"}},
         {emoji:"🛒",name:{no:"Innkjøp",en:"Shopping"},sub:{no:"Landhandelen før turen",en:"Last shop before"}},
       ]},
     { id:"turfolget", emoji:"👥",
-      name:{no:"Turfølget",en:"The Party"},
-      sub:{no:"Fellesskap og deling",en:"Group & sharing"},
+      name:{no:"Turfølget",en:"The Party",de:"Die Gruppe",fr:"Le Groupe",es:"El Grupo",it:"Il Gruppo",ru:"Компания",ja:"同行者",zh:"同行队伍",pl:"Grupa"},
+      sub:{no:"Fellesskap og deling",en:"Group & sharing",de:"Gemeinschaft & Teilen",fr:"Groupe et partage",es:"Grupo y compartir",it:"Gruppo e condivisione",ru:"Группа и обмен",ja:"仲間と共有",zh:"团队与分享",pl:"Wspólnota i udostępnianie"},
       folders:[
         {emoji:"🔗",name:{no:"Felles tur-ID",en:"Shared trip ID"}},
         {emoji:"🖼️",name:{no:"Felles galleri",en:"Shared gallery"}},
       ]},
     { id:"postkort", emoji:"📮",
-      name:{no:"Postkortet",en:"The Postcard"},
-      sub:{no:"Eksport og fremvisning",en:"Export & casting"},
+      name:{no:"Postkortet",en:"The Postcard",de:"Die Postkarte",fr:"La Carte postale",es:"La Postal",it:"La Cartolina",ru:"Открытка",ja:"ポストカード",zh:"明信片",pl:"Pocztówka"},
+      sub:{no:"Eksport og fremvisning",en:"Export & casting",de:"Export & Anzeige",fr:"Export et diffusion",es:"Exportar y proyectar",it:"Esporta e proietta",ru:"Экспорт и показ",ja:"書き出しと表示",zh:"导出与投屏",pl:"Eksport i wyświetlanie"},
       folders:[
         {emoji:"✨",name:{no:"Lag postkort / slideshow",en:"Make postcard"},sub:{no:"Private pins strippes bort",en:"Private pins removed"}},
         {emoji:"📺",name:{no:"Cast til storskjerm",en:"Cast to TV"}},
@@ -388,29 +430,80 @@ const APP_CONFIG = {
 
 
 /* ── i18n (UI-chrome). Mynt/mappe-tekst kommer fra config. ── */
+/* ── 10 språk. UI-tekster. Mangler en oversettelse, faller den til engelsk.
+   Irina m.fl. kan rette ru/ja/zh direkte her uten å røre kode. ── */
+const LANGS = [
+  {c:"no",label:"Norsk"},{c:"en",label:"English"},{c:"de",label:"Deutsch"},
+  {c:"fr",label:"Français"},{c:"es",label:"Español"},{c:"it",label:"Italiano"},
+  {c:"ru",label:"Русский"},{c:"ja",label:"日本語"},{c:"zh",label:"中文"},{c:"pl",label:"Polski"}
+];
 const I18N = {
-  no:{ tagline:"Inngangsdøren", start:"Start", edit_trip:"Endre tur",
-    pick:"Velg en mynt", swipe:"Sveip sidelengs eller bruk pilene. Mynten foran deg åpnes.",
-    th_rom:"Rom", th_svart:"Svart", th_kontrast:"Kontrast",
-    test_media:"📷 Test kamera og mikrofon", back:"Tilbake til mynter",
-    add_folder:"Legg til egen mappe", ask:"Spør",
-    ai_hint:"AI er med deg på hele turen — spør om vær, rute, sikkerhet eller utstyr.",
-    ai_placeholder:"Spør AI om noe på turen…", open:"Åpne",
-    auth_demo:"Lokal demo — ikke innlogget", auth_in:"Innlogget",
-    sign_in:"Logg inn", sign_out:"Logg ut", new_folder:"Ny mappe" },
-  en:{ tagline:"Front door", start:"Start", edit_trip:"Edit trip",
-    pick:"Pick a coin", swipe:"Swipe sideways or use the arrows. The coin in front opens.",
-    th_rom:"Space", th_svart:"Black", th_kontrast:"Contrast",
-    test_media:"📷 Test camera and microphone", back:"Back to coins",
-    add_folder:"Add your own folder", ask:"Ask",
-    ai_hint:"AI is with you the whole trip — ask about weather, route, safety or gear.",
-    ai_placeholder:"Ask AI anything on the trip…", open:"Open",
-    auth_demo:"Local demo — not signed in", auth_in:"Signed in",
-    sign_in:"Sign in", sign_out:"Sign out", new_folder:"New folder" }
+  no:{ tagline:"Inngangsdøren", start:"Start", edit_trip:"Endre tur", pick:"Velg en mynt",
+    swipe:"Sveip sidelengs eller bruk pilene. Mynten foran deg åpnes.",
+    test_media:"📷 Test kamera og mikrofon", back:"Tilbake til mynter", add_folder:"Legg til egen mappe",
+    ask:"Spør", ai_hint:"AI er med deg på hele turen — spør om vær, rute, sikkerhet eller utstyr.",
+    ai_placeholder:"Spør AI om noe på turen…", open:"Åpne", auth_demo:"Lokal demo — ikke innlogget",
+    auth_in:"Innlogget", sign_in:"Logg inn", sign_out:"Logg ut", new_folder:"Ny mappe" },
+  en:{ tagline:"Front door", start:"Start", edit_trip:"Edit trip", pick:"Pick a coin",
+    swipe:"Swipe sideways or use the arrows. The coin in front opens.",
+    test_media:"📷 Test camera and microphone", back:"Back to coins", add_folder:"Add your own folder",
+    ask:"Ask", ai_hint:"AI is with you the whole trip — ask about weather, route, safety or gear.",
+    ai_placeholder:"Ask AI anything on the trip…", open:"Open", auth_demo:"Local demo — not signed in",
+    auth_in:"Signed in", sign_in:"Sign in", sign_out:"Sign out", new_folder:"New folder" },
+  de:{ tagline:"Eingangstür", start:"Start", edit_trip:"Tour bearbeiten", pick:"Wähle eine Münze",
+    swipe:"Wische seitwärts oder nutze die Pfeile. Die vordere Münze öffnet sich.",
+    test_media:"📷 Kamera und Mikrofon testen", back:"Zurück zu den Münzen", add_folder:"Eigenen Ordner hinzufügen",
+    ask:"Fragen", ai_hint:"Die KI begleitet dich — frag nach Wetter, Route, Sicherheit oder Ausrüstung.",
+    ai_placeholder:"Frag die KI etwas zur Tour…", open:"Öffnen", auth_demo:"Lokale Demo — nicht angemeldet",
+    auth_in:"Angemeldet", sign_in:"Anmelden", sign_out:"Abmelden", new_folder:"Neuer Ordner" },
+  fr:{ tagline:"Porte d'entrée", start:"Départ", edit_trip:"Modifier", pick:"Choisis une pièce",
+    swipe:"Glissez sur le côté ou utilisez les flèches. La pièce devant s'ouvre.",
+    test_media:"📷 Tester caméra et micro", back:"Retour aux pièces", add_folder:"Ajouter un dossier",
+    ask:"Demander", ai_hint:"L'IA vous accompagne — météo, itinéraire, sécurité ou équipement.",
+    ai_placeholder:"Posez une question à l'IA…", open:"Ouvrir", auth_demo:"Démo locale — non connecté",
+    auth_in:"Connecté", sign_in:"Se connecter", sign_out:"Se déconnecter", new_folder:"Nouveau dossier" },
+  es:{ tagline:"Puerta de entrada", start:"Inicio", edit_trip:"Editar viaje", pick:"Elige una moneda",
+    swipe:"Desliza o usa las flechas. Se abre la moneda del frente.",
+    test_media:"📷 Probar cámara y micrófono", back:"Volver a las monedas", add_folder:"Añadir carpeta",
+    ask:"Preguntar", ai_hint:"La IA te acompaña — pregunta por el clima, la ruta, la seguridad o el equipo.",
+    ai_placeholder:"Pregúntale algo a la IA…", open:"Abrir", auth_demo:"Demo local — sin sesión",
+    auth_in:"Conectado", sign_in:"Iniciar sesión", sign_out:"Cerrar sesión", new_folder:"Nueva carpeta" },
+  it:{ tagline:"Porta d'ingresso", start:"Partenza", edit_trip:"Modifica", pick:"Scegli una moneta",
+    swipe:"Scorri o usa le frecce. Si apre la moneta davanti.",
+    test_media:"📷 Prova fotocamera e microfono", back:"Torna alle monete", add_folder:"Aggiungi cartella",
+    ask:"Chiedi", ai_hint:"L'IA è con te — chiedi di meteo, percorso, sicurezza o attrezzatura.",
+    ai_placeholder:"Chiedi qualcosa all'IA…", open:"Apri", auth_demo:"Demo locale — non connesso",
+    auth_in:"Connesso", sign_in:"Accedi", sign_out:"Esci", new_folder:"Nuova cartella" },
+  ru:{ tagline:"Входная дверь", start:"Старт", edit_trip:"Изменить", pick:"Выберите монету",
+    swipe:"Проведите в сторону или используйте стрелки. Открывается передняя монета.",
+    test_media:"📷 Проверить камеру и микрофон", back:"Назад к монетам", add_folder:"Добавить папку",
+    ask:"Спросить", ai_hint:"ИИ с вами всю поездку — спросите о погоде, маршруте, безопасности или снаряжении.",
+    ai_placeholder:"Спросите ИИ о поездке…", open:"Открыть", auth_demo:"Локальная демо — вход не выполнен",
+    auth_in:"Вход выполнен", sign_in:"Войти", sign_out:"Выйти", new_folder:"Новая папка" },
+  ja:{ tagline:"入口", start:"出発地", edit_trip:"編集", pick:"コインを選ぶ",
+    swipe:"横にスワイプするか矢印を使ってください。手前のコインが開きます。",
+    test_media:"📷 カメラとマイクをテスト", back:"コイン一覧へ戻る", add_folder:"フォルダを追加",
+    ask:"質問", ai_hint:"AIが旅に同行します — 天気、ルート、安全、装備について聞いてください。",
+    ai_placeholder:"AIに何でも聞いてください…", open:"開く", auth_demo:"ローカルデモ — 未ログイン",
+    auth_in:"ログイン中", sign_in:"ログイン", sign_out:"ログアウト", new_folder:"新しいフォルダ" },
+  zh:{ tagline:"入口", start:"起点", edit_trip:"编辑", pick:"选择一枚硬币",
+    swipe:"左右滑动或使用箭头。前方的硬币会打开。",
+    test_media:"📷 测试摄像头和麦克风", back:"返回硬币", add_folder:"添加文件夹",
+    ask:"提问", ai_hint:"AI全程陪伴 — 询问天气、路线、安全或装备。",
+    ai_placeholder:"向AI提问…", open:"打开", auth_demo:"本地演示 — 未登录",
+    auth_in:"已登录", sign_in:"登录", sign_out:"登出", new_folder:"新建文件夹" },
+  pl:{ tagline:"Drzwi wejściowe", start:"Start", edit_trip:"Edytuj", pick:"Wybierz monetę",
+    swipe:"Przesuń w bok lub użyj strzałek. Otworzy się przednia moneta.",
+    test_media:"📷 Test kamery i mikrofonu", back:"Powrót do monet", add_folder:"Dodaj folder",
+    ask:"Zapytaj", ai_hint:"AI towarzyszy ci przez całą wyprawę — pytaj o pogodę, trasę, bezpieczeństwo lub sprzęt.",
+    ai_placeholder:"Zapytaj AI o cokolwiek…", open:"Otwórz", auth_demo:"Lokalne demo — niezalogowany",
+    auth_in:"Zalogowany", sign_in:"Zaloguj", sign_out:"Wyloguj", new_folder:"Nowy folder" }
 };
+function t(key){ return (I18N[LANG]&&I18N[LANG][key]) || I18N.en[key] || I18N.no[key] || key; }
+function tr(o){ return o ? (o[LANG]||o.en||o.no||'') : ''; }
 
-let LANG = "no", THEME = "rom", current = 0, muted = false;
-const L = ()=>(APP_CONFIG.name[LANG]||APP_CONFIG.name.no);
+let LANG = "no", THEME = "deepspace", muted = false, current = 0;
+const L = ()=>tr(APP_CONFIG.name);
 
 /* state: mappene per mynt (her bor brukerens omdøping/+).
    TODO: persister til Firestore pr. bruker+tur når innlogget. */
@@ -422,10 +515,14 @@ function init(){
   document.documentElement.style.setProperty('--accent', APP_CONFIG.accent);
   document.getElementById('appLogo').textContent = APP_CONFIG.emoji;
   document.getElementById('tripIco').textContent = APP_CONFIG.emoji;
+  // fyll språkvelger
+  const sel=document.getElementById('langSel');
+  sel.innerHTML = LANGS.map(l=>'<option value="'+l.c+'">'+l.label+'</option>').join('');
   // auto-språk fra nettleser (nb/nn → no)
   let nav = (navigator.language||"no").slice(0,2).toLowerCase();
   if(nav==="nb"||nav==="nn") nav="no";
-  setLang(I18N[nav] ? nav : "no");
+  setLang(I18N[nav] ? nav : "en");
+  setTheme("deepspace");
   current = Math.floor(APP_CONFIG.coins.length/2);
   renderCarousel();
   initFirebase();
@@ -435,26 +532,37 @@ function init(){
 /* ── språk ── */
 function setLang(l){
   LANG=l;
-  document.documentElement.lang = (l==="no") ? "nb" : "en"; // skjermleser-stemme
-  document.getElementById('lang-no').setAttribute('aria-pressed', l==='no');
-  document.getElementById('lang-en').setAttribute('aria-pressed', l==='en');
+  document.documentElement.lang = (l==="no") ? "nb" : l; // skjermleser-stemme
+  const sel=document.getElementById('langSel'); if(sel) sel.value=l;
   document.querySelectorAll('[data-i18n]').forEach(el=>{
-    const k=el.getAttribute('data-i18n'); if(I18N[l][k]) el.textContent=I18N[l][k];
+    const k=el.getAttribute('data-i18n'); el.textContent=t(k);
   });
-  document.getElementById('appName').textContent = APP_CONFIG.name[l];
-  document.getElementById('tripName').textContent = APP_CONFIG.trip[l]||APP_CONFIG.trip.no;
-  document.getElementById('aiInput').placeholder = I18N[l].ai_placeholder;
-  document.getElementById('aiHint').textContent = I18N[l].ai_hint;
-  document.getElementById('openBtn').textContent = I18N[l].open + " →";
+  document.getElementById('appName').textContent = tr(APP_CONFIG.name);
+  document.getElementById('tripName').textContent = tr(APP_CONFIG.trip);
+  document.getElementById('aiInput').placeholder = t('ai_placeholder');
+  document.getElementById('aiHint').textContent = t('ai_hint');
+  document.getElementById('openBtn').textContent = t('open') + " →";
   renderCarousel();
-  if(document.getElementById('detail').classList.contains('show')) renderFolders();
+  if(document.getElementById('folderview').classList.contains('show')) renderFolderView();
+  else if(document.getElementById('detail').classList.contains('show')) renderFolders();
 }
 
-/* ── tema ── */
-function setTheme(t){
-  THEME=t; document.documentElement.setAttribute('data-theme', t);
-  ['rom','svart','kontrast'].forEach(x=>
-    document.getElementById('th-'+x).setAttribute('aria-pressed', x===t));
+/* ── tema (6) ── */
+function setTheme(th){
+  THEME=th; document.documentElement.setAttribute('data-theme', th);
+  const sel=document.getElementById('themeSel'); if(sel) sel.value=th;
+  drawStars();
+}
+function toggleDys(){
+  const on = document.documentElement.getAttribute('data-font')==='dys';
+  document.documentElement.setAttribute('data-font', on?'':'dys');
+  document.getElementById('dysBtn').setAttribute('aria-pressed', String(!on));
+}
+function toggleContrast(){
+  const on = document.documentElement.getAttribute('data-contrast')==='on';
+  document.documentElement.setAttribute('data-contrast', on?'':'on');
+  document.getElementById('contrastBtn').setAttribute('aria-pressed', String(!on));
+  drawStars();
 }
 
 /* ── carousel ── */
@@ -467,9 +575,10 @@ function renderCarousel(){
     if(d>2) return;
     const el=document.createElement('div');
     el.className='coin '+(i===current?'active':d===1?'near':'far');
-    el.innerHTML='<span class="emoji">'+c.emoji+'</span>';
+    el.innerHTML='<span class="emoji">'+c.emoji+'</span>'+
+      (coinColor[c.id]?'<span class="coindot" style="background:'+coinColor[c.id]+'"></span>':'');
     el.setAttribute('role','button');
-    el.setAttribute('aria-label', c.name[LANG]);
+    el.setAttribute('aria-label', tr(c.name));
     el.onclick=()=> i===current ? openCoin() : (current=i, renderCarousel());
     car.insertBefore(el, prev.nextSibling);
   });
@@ -478,7 +587,7 @@ function renderCarousel(){
   order.sort((a,b)=>0);
   const c=APP_CONFIG.coins[current];
   document.getElementById('coinLabel').innerHTML =
-    '<h3>'+c.name[LANG]+'</h3><p>'+c.sub[LANG]+'</p>';
+    '<h3>'+tr(c.name)+'</h3><p>'+tr(c.sub)+'</p>';
   const dots=document.getElementById('dots'); dots.innerHTML='';
   APP_CONFIG.coins.forEach((_,i)=>{
     const dot=document.createElement('i');
@@ -511,8 +620,12 @@ car.addEventListener('touchend',e=>{
 function openCoin(){
   const c=APP_CONFIG.coins[current];
   document.getElementById('dEmoji').textContent=c.emoji;
-  document.getElementById('dTitle').textContent=c.name[LANG];
-  document.getElementById('dSub').textContent=c.sub[LANG];
+  document.getElementById('dTitle').textContent=tr(c.name);
+  document.getElementById('dSub').textContent=tr(c.sub);
+  const dc=document.getElementById('dColor');
+  dc.style.background=coinColor[c.id]||'transparent';
+  dc.style.borderColor=coinColor[c.id]||'var(--line2)';
+  dc.onclick=(e)=>colorCoin(e,c.id);
   openFolderIdx=null; openPeakIdx=null;
   document.getElementById('folderview').classList.remove('show');
   renderFolders();
@@ -534,16 +647,18 @@ function renderFolders(){
   folderState[c.id].forEach((f,idx)=>{
     const row=document.createElement('div');
     row.className='folder'+(f.flag?' flag':'');
-    const sub=f.sub?('<span class="fsub">'+f.sub[LANG]+'</span>'):'';
+    if(f.color) row.style.borderLeft='5px solid '+f.color;
+    const sub=f.sub?('<span class="fsub">'+tr(f.sub)+'</span>'):'';
     let count='';
     if(f.type==='peaks') count=(f.peaks?f.peaks.length:0)+' '+(LANG==='no'?'topper':'peaks');
     else if(f.type==='links') count=(f.links?f.links.length:0)+' '+(LANG==='no'?'lenker':'links');
     else if(f.media&&f.media.length) count=f.media.length+' 📎';
     row.innerHTML=
       '<span class="femoji">'+(f.emoji||'📁')+'</span>'+
-      '<div style="flex:1;min-width:0"><span class="fname2">'+escapeHtml(f.name[LANG])+'</span>'+sub+'</div>'+
+      '<div style="flex:1;min-width:0"><span class="fname2">'+escapeHtml(tr(f.name))+'</span>'+sub+'</div>'+
       (f.flag?'<span class="badge">langtur</span>':'')+
       (count?'<span class="fcount">'+count+'</span>':'')+
+      '<button class="cdot" style="background:'+(f.color||'transparent')+';border-color:'+(f.color||'var(--line2)')+'" aria-label="Farge" onclick="event.stopPropagation();colorFolder(event,\''+c.id+'\','+idx+')"></button>'+
       '<button class="pen" aria-label="Endre navn" onclick="event.stopPropagation();renamePrompt(\''+c.id+'\','+idx+')">✏️</button>'+
       '<button class="del" aria-label="Slett mappe" onclick="event.stopPropagation();delFolder(\''+c.id+'\','+idx+')">🗑️</button>'+
       '<span class="chev">›</span>';
@@ -554,7 +669,7 @@ function renderFolders(){
 }
 function renamePrompt(cid,idx){
   const f=folderState[cid][idx];
-  const v=prompt(LANG==='no'?'Nytt mappenavn:':'New folder name:', f.name[LANG]);
+  const v=prompt(LANG==='no'?'Nytt mappenavn:':'New folder name:', tr(f.name));
   if(v===null)return; f.name[LANG]=v.trim()||f.name[LANG]; renderFolders();
 }
 function delFolder(cid,idx){
@@ -601,7 +716,7 @@ function renderFolderView(){
 function peaksListHtml(f){
   const T=(no,en)=>LANG==='no'?no:en;
   let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake til Skattkammeret','Back')+'</button>';
-  h+='<div class="vtitle"><span class="e">🏔️</span><div><h3>'+escapeHtml(f.name[LANG])+'</h3>'+
+  h+='<div class="vtitle"><span class="e">🏔️</span><div><h3>'+escapeHtml(tr(f.name))+'</h3>'+
       '<div class="sub">'+T('Trykk en topp for å se alle turene','Tap a peak to see all trips')+'</div></div></div>';
   if(!f.peaks.length) h+='<p style="color:var(--txt-3);font-size:14px">'+T('Ingen topper ennå.','No peaks yet.')+'</p>';
   f.peaks.forEach((p,i)=>{
@@ -635,14 +750,18 @@ function peakDetailHtml(f,pi){
       '<button class="tinybtn" aria-label="Endre topp" onclick="renamePeak('+pi+')">✏️</button>'+
       '<button class="tinybtn" aria-label="Slett topp" onclick="delPeak('+pi+')">🗑️</button></div>';
   p.turer.forEach((t,ti)=>{
-    h+='<div class="turcard">'+
+    const cstyle = t.color ? ' style="border-left:5px solid '+t.color+'"' : '';
+    h+='<div class="turcard"'+cstyle+' ondragover="event.preventDefault();this.classList.add(\'dz-over\')" ondragleave="this.classList.remove(\'dz-over\')" ondrop="dropTur(event,'+pi+','+ti+')">'+
        '<div class="th"><span class="tlabel">'+T('Tur ','Trip ')+(ti+1)+'</span>'+
-       '<button class="tinybtn" aria-label="Slett tur" onclick="delTur('+pi+','+ti+')">🗑️</button></div>'+
-       '<input class="fld" type="date" value="'+(t.date||'')+'" onchange="setTurField('+pi+','+ti+',\'date\',this.value)" aria-label="Dato">'+
+       '<span style="display:flex;gap:4px;align-items:center">'+
+       '<button class="cdot" style="background:'+(t.color||'transparent')+';border-color:'+(t.color||'var(--line2)')+'" aria-label="Farge" onclick="colorTur(event,'+pi+','+ti+')"></button>'+
+       '<button class="tinybtn" aria-label="Slett tur" onclick="delTur('+pi+','+ti+')">🗑️</button></span></div>'+
+       '<input class="fld" type="date" value="'+(t.date||'')+'" onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'date\',this.value)" aria-label="Dato">'+
        '<textarea class="fld" placeholder="'+T('Minne, vær, hvem du var med …','Memory, weather, who you were with …')+'" '+
-         'onchange="setTurField('+pi+','+ti+',\'note\',this.value)">'+escapeHtml(t.note||'')+'</textarea>'+
+         'onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'note\',this.value)">'+escapeHtml(t.note||'')+'</textarea>'+
        mediaGridHtml(t.media, pi, ti)+
        '<button class="addmedia" onclick="addTurMedia('+pi+','+ti+')">📷 '+T('Legg til bilde eller video','Add photo or video')+'</button>'+
+       '<div class="draghint">'+T('eller dra filer hit · lim med Ctrl+V','or drag files here · paste with Ctrl+V')+'</div>'+
        '</div>';
   });
   h+='<button class="addbtn" onclick="addTur('+pi+')">＋ '+T('Legg til tur','Add trip')+'</button>';
@@ -674,12 +793,14 @@ function mediaFolderHtml(f){
   const T=(no,en)=>LANG==='no'?no:en;
   if(f.note===undefined)f.note=""; if(!f.media)f.media=[];
   let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake','Back')+'</button>';
-  h+='<div class="vtitle"><span class="e">'+(f.emoji||'📁')+'</span><div><h3>'+escapeHtml(f.name[LANG])+'</h3>'+
-     (f.sub?'<div class="sub">'+f.sub[LANG]+'</div>':'')+'</div></div>';
+  h+='<div class="vtitle"><span class="e">'+(f.emoji||'📁')+'</span><div><h3>'+escapeHtml(tr(f.name))+'</h3>'+
+     (f.sub?'<div class="sub">'+tr(f.sub)+'</div>':'')+'</div></div>';
   h+='<textarea class="fld" placeholder="'+T('Skriv notater her …','Write notes here …')+'" '+
      'onchange="setFolderNote(this.value)">'+escapeHtml(f.note)+'</textarea>';
+  h+='<div ondragover="event.preventDefault();this.classList.add(\'dz-over\')" ondragleave="this.classList.remove(\'dz-over\')" ondrop="dropFolder(event)">';
   h+=mediaGridHtml(f.media,null,null);
   h+='<button class="addmedia" onclick="addFolderMedia()">📷 '+T('Legg til bilde eller video','Add photo or video')+'</button>';
+  h+='<div class="draghint">'+T('eller dra filer hit · lim med Ctrl+V','or drag files here · paste with Ctrl+V')+'</div></div>';
   return h;
 }
 function setFolderNote(v){ curFolder().note=v; saveState(); }
@@ -691,8 +812,8 @@ function linksFolderHtml(f){
   const T=(no,en)=>LANG==='no'?no:en;
   if(!f.links)f.links=[];
   let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake','Back')+'</button>';
-  h+='<div class="vtitle"><span class="e">'+(f.emoji||'🔖')+'</span><div><h3>'+escapeHtml(f.name[LANG])+'</h3>'+
-     (f.sub?'<div class="sub">'+f.sub[LANG]+'</div>':'')+'</div></div>';
+  h+='<div class="vtitle"><span class="e">'+(f.emoji||'🔖')+'</span><div><h3>'+escapeHtml(tr(f.name))+'</h3>'+
+     (f.sub?'<div class="sub">'+tr(f.sub)+'</div>':'')+'</div></div>';
   if(!f.links.length) h+='<p style="color:var(--txt-3);font-size:14px">'+T('Ingen lenker ennå.','No links yet.')+'</p>';
   f.links.forEach((lnk,i)=>{
     const safe=escapeHtml(lnk.url||'');
@@ -781,32 +902,92 @@ document.addEventListener('keydown',e=>{
     if(Math.abs(dx)>45) viewerNav(dx<0?1:-1);
   });
 })();
+async function filesToMedia(files, cb){
+  const arr=[];
+  for(const file of files){
+    if(!file || (!file.type.startsWith('image') && !file.type.startsWith('video'))) continue;
+    const type=file.type.startsWith('video')?'video':'image';
+    if(storage && auth && auth.currentUser){
+      try{
+        const path=APP_CONFIG.id+'/'+auth.currentUser.uid+'/'+Date.now()+'_'+(file.name||'paste').replace(/[^\w.\-]/g,'_');
+        const ref=storage.ref().child(path);
+        await ref.put(file);
+        arr.push({url:await ref.getDownloadURL(), type, name:file.name||'fil', path});
+      }catch(e){ arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil'}); }
+    }else{
+      arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil'}); // demo: kun denne økten
+    }
+  }
+  if(arr.length) cb(arr);
+}
 function pickFiles(cb){
   const inp=document.createElement('input');
   inp.type='file'; inp.accept='image/*,video/*'; inp.multiple=true;
-  inp.onchange=async ()=>{
-    const files=[...inp.files]; if(!files.length)return;
-    const arr=[];
-    for(const file of files){
-      const type=file.type.startsWith('video')?'video':'image';
-      if(storage && auth && auth.currentUser){
-        try{
-          const path=APP_CONFIG.id+'/'+auth.currentUser.uid+'/'+Date.now()+'_'+file.name.replace(/[^\w.\-]/g,'_');
-          const ref=storage.ref().child(path);
-          await ref.put(file);
-          arr.push({url:await ref.getDownloadURL(), type, name:file.name, path});
-        }catch(e){
-          console.warn('Opplasting feilet, lokal visning.',e);
-          arr.push({url:URL.createObjectURL(file), type, name:file.name});
-        }
-      }else{
-        arr.push({url:URL.createObjectURL(file), type, name:file.name}); // demo: kun denne økten
-      }
-    }
-    cb(arr);
-  };
+  inp.onchange=()=>filesToMedia([...inp.files], cb);
   inp.click();
 }
+
+/* ---- DRA OG SLIPP + LIM INN (Ctrl+V) ---- */
+let lastTur=null;
+function dropTur(e,pi,ti){
+  e.preventDefault(); e.currentTarget.classList.remove('dz-over');
+  filesToMedia([...(e.dataTransfer.files||[])], arr=>{ curFolder().peaks[pi].turer[ti].media.push(...arr); renderFolderView(); });
+}
+function dropFolder(e){
+  e.preventDefault(); e.currentTarget.classList.remove('dz-over');
+  filesToMedia([...(e.dataTransfer.files||[])], arr=>{ curFolder().media.push(...arr); renderFolderView(); });
+}
+document.addEventListener('paste',e=>{
+  if(!document.getElementById('folderview').classList.contains('show'))return;
+  const files=[...((e.clipboardData&&e.clipboardData.items)||[])]
+    .filter(i=>i.kind==='file').map(i=>i.getAsFile()).filter(Boolean);
+  if(!files.length)return;
+  const f=curFolder();
+  if(f.type==='peaks'){
+    if(openPeakIdx===null)return;
+    const ti=(lastTur && lastTur.pi===openPeakIdx)?lastTur.ti:0;
+    filesToMedia(files, arr=>{ f.peaks[openPeakIdx].turer[ti].media.push(...arr); renderFolderView(); });
+  }else if(f.type==='links'){ return; }
+  else{ filesToMedia(files, arr=>{ f.media.push(...arr); renderFolderView(); }); }
+});
+
+/* ---- 8-FARGERS MERKING (gjenfinning, som de andre appene) ---- */
+const PALETTE=['#e2574c','#e8893b','#e8c14a','#4caf6e','#3bb3a0','#4a8fe2','#9b7ede','#e07ea8'];
+const coinColor={};
+let _colorSetter=null;
+function showColorPop(e){
+  e.stopPropagation();
+  const pop=document.getElementById('colorpop');
+  pop.innerHTML = PALETTE.map(c=>'<button style="background:'+c+'" aria-label="Farge" onclick="applyColor(\''+c+'\')"></button>').join('')
+    + '<button class="clr" aria-label="Fjern farge" onclick="applyColor(\'\')">×</button>';
+  const r=e.currentTarget.getBoundingClientRect();
+  pop.style.display='flex';
+  let left=r.left+window.scrollX;
+  const maxL=window.scrollX+document.documentElement.clientWidth-220;
+  if(left>maxL) left=maxL;
+  pop.style.left=Math.max(8,left)+'px';
+  pop.style.top=(r.bottom+window.scrollY+6)+'px';
+}
+function applyColor(c){
+  if(_colorSetter)_colorSetter(c);
+  _colorSetter=null;
+  document.getElementById('colorpop').style.display='none';
+  saveState(); rerenderColorViews();
+}
+function rerenderColorViews(){
+  renderCarousel();
+  if(document.getElementById('folderview').classList.contains('show')) renderFolderView();
+  else if(document.getElementById('detail').classList.contains('show')) renderFolders();
+}
+function colorFolder(e,cid,idx){ _colorSetter=c=>{folderState[cid][idx].color=c;}; showColorPop(e); }
+function colorTur(e,pi,ti){ _colorSetter=c=>{curFolder().peaks[pi].turer[ti].color=c;}; showColorPop(e); }
+function colorCoin(e,cid){ _colorSetter=c=>{coinColor[cid]=c;}; showColorPop(e); }
+document.addEventListener('click',e=>{
+  const pop=document.getElementById('colorpop');
+  if(pop.style.display!=='flex')return;
+  if(pop.contains(e.target))return;
+  pop.style.display='none'; _colorSetter=null;
+});
 function escapeHtml(s){return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
 
 /* ── AI via backend-proxy (aldri nøkkel i frontend) ── */
@@ -820,7 +1001,7 @@ async function askAI(){
       method:'POST', headers:{'Content-Type':'application/json'},
       body:JSON.stringify({
         model:'claude-sonnet-4-6', max_tokens:600,
-        system:'Du er en turassistent i appen «'+L()+'», modul «'+c.name[LANG]+'». Svar kort, konkret og trygt. Brukerens språk: '+LANG+'.',
+        system:'Du er en turassistent i appen «'+L()+'», modul «'+tr(c.name)+'». Svar kort, konkret og trygt. Brukerens språk: '+LANG+'.',
         messages:[{role:'user',content:q}]
       })
     });
@@ -922,9 +1103,9 @@ function initFirebase(){
     auth.onAuthStateChanged(async u=>{
       fbUser=u;
       document.getElementById('authStatus').textContent =
-        u ? (I18N[LANG].auth_in+': '+(u.displayName||u.email||'')) : I18N[LANG].auth_demo;
+        u ? (t('auth_in')+': '+(u.displayName||u.email||'')) : t('auth_demo');
       document.getElementById('authBtn').textContent =
-        u ? I18N[LANG].sign_out : I18N[LANG].sign_in;
+        u ? t('sign_out') : t('sign_in');
       if(u) await loadState();
     });
   }catch(e){ console.warn('Firebase init feilet — lokal demo.', e); }
@@ -969,7 +1150,8 @@ function toggleAuth(){
   });
 }
 
-/* ── stjernebakgrunn (Rom) ── */
+/* ── stjernebakgrunn (mørke romtemaer) ── */
+let _starsBound=false;
 function drawStars(){
   const c=document.getElementById('stars'); if(!c) return;
   const ctx=c.getContext('2d'), dpr=window.devicePixelRatio||1;
@@ -983,7 +1165,8 @@ function drawStars(){
     }
     ctx.globalAlpha=1;
   }
-  addEventListener('resize',size); size();
+  if(!_starsBound){ addEventListener('resize',size); _starsBound=true; }
+  size();
 }
 
 init();
