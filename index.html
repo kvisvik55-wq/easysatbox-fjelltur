@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="no">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover" />
+<title>EasySatBox Tours — mal</title>
+<style>
+  /* ============================================================
+     FELLES GRUNNMUR — STIL
+     Tre temaer: Rom (default), Svart, Kontrast (UU).
+     Bytt aldri på dette per app — det arves likt av alle.
+  ============================================================ */
+  :root{
+    --accent:#1de9a6; --accent-ink:#06321f;
+    --bg:#070d1c; --bg2:#0c1428; --card:#101a30; --card2:#15233f;
+    --line:#213152; --line2:#2c3d63;
+    --txt:#eaf2ff; --txt-2:#9fb2d8; --txt-3:#6b7da3;
+    --radius:14px; --maxw:760px;
+  }
+  html[data-theme="svart"]{
+    --bg:#000000; --bg2:#070707; --card:#0e0e0e; --card2:#161616;
+    --line:#262626; --line2:#383838; --txt:#f2f2f2; --txt-2:#9a9a9a; --txt-3:#6a6a6a;
+  }
+  html[data-theme="kontrast"]{
+    --accent:#ffd400; --accent-ink:#000000;
+    --bg:#000000; --bg2:#000000; --card:#000000; --card2:#0a0a0a;
+    --line:#ffffff; --line2:#ffffff; --txt:#ffffff; --txt-2:#ffffff; --txt-3:#e6e6e6;
+    --radius:8px;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0; background:var(--bg); color:var(--txt);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,system-ui,sans-serif;
+    min-height:100vh; overflow-x:hidden;
+  }
+  /* romstjerner (kun Rom-tema) */
+  #stars{position:fixed;inset:0;pointer-events:none;opacity:.55;z-index:0}
+  html[data-theme="svart"] #stars,html[data-theme="kontrast"] #stars{display:none}
+  .wrap{position:relative;z-index:1;max-width:var(--maxw);margin:0 auto;padding:14px 16px 40px}
+
+  /* topplinje */
+  header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+  .brand{display:flex;align-items:center;gap:10px}
+  .logo{width:40px;height:40px;border-radius:11px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:22px}
+  .brand h1{font-size:17px;margin:0;line-height:1.1;font-weight:600}
+  .brand p{font-size:11px;margin:0;color:var(--txt-3);letter-spacing:.12em;text-transform:uppercase}
+  .controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .seg{display:flex;background:var(--card);border:1px solid var(--line);border-radius:999px;overflow:hidden}
+  .seg button{background:transparent;border:0;color:var(--txt-2);font:inherit;font-size:13px;padding:7px 13px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);font-weight:600}
+  .iconbtn{width:38px;height:38px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--txt-2);font-size:17px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+  /* turbar */
+  .tripbar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin-bottom:18px}
+  .tripbar .ico{width:34px;height:34px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px}
+  .tripbar .t1{font-size:14px;font-weight:600;line-height:1.2}
+  .tripbar .t2{font-size:12px;color:var(--txt-3)}
+  .tripbar button{margin-left:auto;background:transparent;border:1px solid var(--line2);color:var(--txt-2);border-radius:999px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
+
+  /* carousel */
+  .stage{text-align:center;margin:6px 0 4px}
+  .stage h2{font-size:26px;margin:0 0 4px;font-weight:700}
+  .stage p{font-size:13px;color:var(--txt-2);margin:0 0 18px}
+  .carousel{position:relative;display:flex;align-items:center;justify-content:center;gap:12px;min-height:160px;touch-action:pan-y}
+  .coin{flex:0 0 auto;border-radius:50%;background:var(--card);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .28s cubic-bezier(.4,0,.2,1);color:var(--txt-3)}
+  .coin .emoji{font-size:24px;filter:grayscale(.4);opacity:.7}
+  .coin.far{width:42px;height:42px;opacity:.35}
+  .coin.near{width:60px;height:60px}
+  .coin.near .emoji{font-size:26px}
+  .coin.active{width:96px;height:96px;background:var(--card2);border:2px solid var(--accent);box-shadow:0 0 0 6px color-mix(in srgb,var(--accent) 14%,transparent);color:var(--txt)}
+  .coin.active .emoji{font-size:42px;filter:none;opacity:1}
+  .arrow{position:absolute;top:50%;transform:translateY(-50%);width:42px;height:42px;border-radius:50%;background:var(--card);border:1px solid var(--line);color:var(--txt-2);font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:2}
+  .arrow.prev{left:0} .arrow.next{right:0}
+  .label{text-align:center;margin:16px 0 6px}
+  .label h3{font-size:20px;margin:0;font-weight:600}
+  .label p{font-size:13px;color:var(--txt-2);margin:4px 0 0}
+  .dots{display:flex;gap:7px;justify-content:center;margin:14px 0}
+  .dots i{width:7px;height:7px;border-radius:50%;background:var(--line2);cursor:pointer}
+  .dots i.on{background:var(--accent);width:20px;border-radius:4px}
+  .open-btn{display:block;width:100%;max-width:340px;margin:8px auto 0;background:var(--accent);color:var(--accent-ink);border:0;border-radius:999px;padding:15px;font:inherit;font-size:16px;font-weight:700;cursor:pointer}
+
+  /* kameratest + footer-info */
+  .pretest{display:flex;gap:8px;justify-content:center;margin:18px 0 0;flex-wrap:wrap}
+  .pretest button{background:var(--card);border:1px solid var(--line);color:var(--txt-2);border-radius:999px;padding:9px 14px;font:inherit;font-size:13px;cursor:pointer}
+
+  /* mynt-detalj (mapper) */
+  .detail{display:none}
+  .detail.show{display:block}
+  .stage.hide,.carousel.hide,.label.hide,.dots.hide,.open-btn.hide,.pretest.hide{display:none}
+  .back{background:transparent;border:0;color:var(--txt-2);font:inherit;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:4px 0;margin-bottom:6px}
+  .dhead{text-align:center;margin:6px 0 16px}
+  .dhead .emoji{font-size:40px}
+  .dhead h3{font-size:22px;margin:6px 0 2px;font-weight:600}
+  .dhead p{font-size:13px;color:var(--txt-2);margin:0}
+  .folder{display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:9px}
+  .folder.flag{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 8%,var(--card))}
+  .folder .femoji{font-size:19px;width:24px;text-align:center}
+  .folder .fname{flex:1;font-size:15px;background:transparent;border:0;color:var(--txt);font:inherit;outline:none;border-bottom:1px solid transparent;padding:2px 0}
+  .folder .fname:focus{border-bottom:1px solid var(--accent)}
+  .folder .fsub{font-size:11px;color:var(--txt-3);display:block;margin-top:2px}
+  .badge{font-size:10px;color:var(--accent-ink);background:var(--accent);padding:2px 8px;border-radius:999px;font-weight:600}
+  .folder .pen,.folder .del{background:transparent;border:0;color:var(--txt-3);font-size:15px;cursor:pointer;padding:4px}
+  .addfolder{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;background:transparent;border:1px dashed var(--line2);border-radius:var(--radius);padding:12px;color:var(--accent);font:inherit;font-size:14px;cursor:pointer}
+
+  /* AI-boks (AI overalt) */
+  .ai{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
+  .ai .row{display:flex;gap:8px}
+  .ai input{flex:1;background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--txt);font:inherit;font-size:14px;padding:11px 12px;outline:none}
+  .ai input:focus{border-color:var(--accent)}
+  .ai .send{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:0 16px;font:inherit;font-weight:600;cursor:pointer}
+  .ai .hint{font-size:11px;color:var(--txt-3);margin:8px 2px 0}
+  .ai .answer{margin-top:10px;font-size:14px;line-height:1.55;color:var(--txt);white-space:pre-wrap;display:none}
+  .ai .answer.show{display:block}
+
+  /* auth-stripe */
+  .authbar{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--txt-3);justify-content:center;margin-top:26px}
+  .authbar button{background:transparent;border:1px solid var(--line);color:var(--txt-2);border-radius:999px;padding:5px 12px;font:inherit;font-size:12px;cursor:pointer}
+  .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}
+  @media(prefers-reduced-motion:reduce){.coin{transition:none}}
+</style>
+</head>
+<body>
+<canvas id="stars"></canvas>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo" id="appLogo">⛰️</div>
+      <div>
+        <h1 id="appName">Fjelltur</h1>
+        <p data-i18n="tagline">Inngangsdøren</p>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Språk">
+        <button id="lang-no" aria-pressed="true" onclick="setLang('no')">NO</button>
+        <button id="lang-en" aria-pressed="false" onclick="setLang('en')">EN</button>
+      </div>
+      <div class="seg" role="group" aria-label="Tema">
+        <button id="th-rom" aria-pressed="true" onclick="setTheme('rom')" data-i18n="th_rom">Rom</button>
+        <button id="th-svart" aria-pressed="false" onclick="setTheme('svart')" data-i18n="th_svart">Svart</button>
+        <button id="th-kontrast" aria-pressed="false" onclick="setTheme('kontrast')" data-i18n="th_kontrast">Kontrast</button>
+      </div>
+      <button class="iconbtn" id="muteBtn" aria-label="Lyd" onclick="toggleMute()">🔊</button>
+    </div>
+  </header>
+
+  <div class="tripbar">
+    <div class="ico" id="tripIco">⛰️</div>
+    <div>
+      <div class="t1" id="tripName">Tur 014 — Børgefjell</div>
+      <div class="t2"><span data-i18n="start">Start</span>: <span id="tripStart">Viermdalen</span></div>
+    </div>
+    <button onclick="editTrip()" data-i18n="edit_trip">Endre tur</button>
+  </div>
+
+  <!-- ===== CAROUSEL (sliding door) ===== -->
+  <div class="stage" id="stage">
+    <h2 data-i18n="pick">Velg en mynt</h2>
+    <p data-i18n="swipe">Sveip sidelengs eller bruk pilene. Mynten foran deg åpnes.</p>
+  </div>
+  <div class="carousel" id="carousel" aria-label="Mynter">
+    <button class="arrow prev" aria-label="Forrige" onclick="move(-1)">‹</button>
+    <button class="arrow next" aria-label="Neste" onclick="move(1)">›</button>
+  </div>
+  <div class="label" id="coinLabel"></div>
+  <div class="dots" id="dots"></div>
+  <button class="open-btn" id="openBtn" onclick="openCoin()"></button>
+
+  <div class="pretest" id="pretest" style="flex-direction:column;align-items:center">
+    <button onclick="testMedia()" data-i18n="test_media">📷 Test kamera og mikrofon</button>
+    <div id="camPreview" style="display:none;margin-top:12px;text-align:center;width:100%">
+      <video id="camVideo" playsinline autoplay muted style="width:100%;max-width:320px;border-radius:14px;border:1px solid var(--line);background:#000;transform:scaleX(-1)"></video>
+      <div style="height:6px;max-width:320px;margin:8px auto 0;background:var(--card);border-radius:999px;overflow:hidden"><div id="micBar" style="height:100%;width:0;background:var(--accent);transition:width .08s"></div></div>
+      <div style="font-size:11px;color:var(--txt-3);margin-top:4px" id="micLabel"></div>
+      <button onclick="stopMedia()" style="margin-top:10px;background:var(--card);border:1px solid var(--line);color:var(--txt-2);border-radius:999px;padding:8px 14px;font:inherit;font-size:13px;cursor:pointer" id="camCloseBtn"></button>
+    </div>
+  </div>
+
+  <!-- ===== MYNT-DETALJ (mapper) ===== -->
+  <div class="detail" id="detail">
+    <button class="back" onclick="closeCoin()">‹ <span data-i18n="back">Tilbake til mynter</span></button>
+    <div class="dhead">
+      <div class="emoji" id="dEmoji"></div>
+      <h3 id="dTitle"></h3>
+      <p id="dSub"></p>
+    </div>
+    <div id="folders"></div>
+    <button class="addfolder" onclick="addFolder()">＋ <span data-i18n="add_folder">Legg til egen mappe</span></button>
+
+    <div class="ai">
+      <div class="row">
+        <input id="aiInput" placeholder="" />
+        <button class="send" onclick="askAI()" data-i18n="ask">Spør</button>
+      </div>
+      <div class="hint" id="aiHint"></div>
+      <div class="answer" id="aiAnswer"></div>
+    </div>
+  </div>
+
+  <div class="authbar">
+    <span id="authStatus" data-i18n="auth_demo">Lokal demo — ikke innlogget</span>
+    <button id="authBtn" onclick="toggleAuth()" data-i18n="sign_in">Logg inn</button>
+  </div>
+</div>
+
+<!-- Firebase (compat) — valgfritt. Appen funker uten, da kjører lokal demo. -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ▼▼▼  APP_CONFIG — DET ENESTE DU ENDRER PER NISJEAPP  ▼▼▼
+   For å lage Fisketur/Jakt/Sopp: kopier fila, bytt denne blokka,
+   deploy til ny URL. Alt under er felles grunnmur og røres ikke.
+   ════════════════════════════════════════════════════════════ */
+const APP_CONFIG = {
+  id: "fjelltur",
+  name: { no:"Fjelltur", en:"Mountain trip" },
+  emoji: "⛰️",
+  accent: "#1de9a6",        // bytt farge per app om ønskelig
+
+  // Firebase: lim inn fra Firebase-konsollen (prosjekt mylife-2-f8ae2).
+  // La stå tomt for å kjøre lokal demo uten innlogging.
+  firebase: {
+    apiKey:"", authDomain:"mylife-2-f8ae2.firebaseapp.com",
+    projectId:"mylife-2-f8ae2", appId:""
+  },
+
+  // AI går ALLTID via backend-proxy. Aldri API-nøkkel i frontend.
+  aiProxyUrl: "/api/claude",
+
+  // Eksempeltur (kan endres av bruker i appen)
+  trip: { no:"Tur 014 — Børgefjell", en:"Trip 014 — Børgefjell", start:"Viermdalen" },
+
+  // ── MYNTENE og deres MAPPER ──
+  // flag:true  = uthevet (langtur-tillegg). sub = liten undertekst.
+  coins: [
+    { id:"ekspeditor", emoji:"🧭",
+      name:{no:"Ekspeditøren",en:"The Planner"},
+      sub:{no:"Plan, lokasjon og reise",en:"Plan, location and travel"},
+      folders:[
+        {emoji:"📍",name:{no:"Turinfo",en:"Trip info"}},
+        {emoji:"🚗",name:{no:"Transport",en:"Transport"},sub:{no:"Bil · buss · tog · fly",en:"Car · bus · train · flight"}},
+        {emoji:"🌦️",name:{no:"Vær og forhold",en:"Weather & conditions"}},
+        {emoji:"📢",name:{no:"Si fra hvor du går",en:"Tell someone"}},
+      ]},
+    { id:"orakel", emoji:"🗺️",
+      name:{no:"Orakelet og kartet",en:"Oracle & Map"},
+      sub:{no:"Digitale verktøy",en:"Digital tools"},
+      folders:[
+        {emoji:"🧭",name:{no:"Offline-kart",en:"Offline map"}},
+        {emoji:"🥾",name:{no:"Spor og etapper",en:"Track & legs"}},
+        {emoji:"🤖",name:{no:"AI-assistent",en:"AI assistant"}},
+      ]},
+    { id:"vokter", emoji:"🛡️",
+      name:{no:"Vokteren",en:"The Guardian"},
+      sub:{no:"Sikkerhet og helse",en:"Safety & health"},
+      folders:[
+        {emoji:"⚠️",name:{no:"Fjellvett og skred",en:"Mountain safety"}},
+        {emoji:"🩹",name:{no:"Førstehjelp og medisin",en:"First aid"}},
+        {emoji:"🤒",name:{no:"Sykdom og skade-logg",en:"Illness & injury log"},flag:true},
+        {emoji:"🆘",name:{no:"Nød — 112 / satellitt",en:"Emergency"}},
+      ]},
+    { id:"rustning", emoji:"🎒",
+      name:{no:"Rustningen",en:"The Armor"},
+      sub:{no:"Utstyr, klær, strøm og lagring",en:"Gear, clothes, power, storage"},
+      folders:[
+        {emoji:"✅",name:{no:"Pakkeliste",en:"Packing list"}},
+        {emoji:"👕",name:{no:"Klær og renhold",en:"Clothes & hygiene"}},
+        {emoji:"🔋",name:{no:"Strøm og lading",en:"Power & charging"},flag:true},
+        {emoji:"☁️",name:{no:"Lagring og mobil",en:"Storage & phone"},sub:{no:"Auto-opplasting til Firebase",en:"Auto-upload to Firebase"},flag:true},
+      ]},
+    { id:"skattkammer", emoji:"💎",
+      name:{no:"Skattkammeret",en:"The Treasury"},
+      sub:{no:"Logg, media og statistikk",en:"Log, media, stats"},
+      folders:[
+        {emoji:"📷",name:{no:"Bilder",en:"Photos"}},
+        {emoji:"🎬",name:{no:"Video",en:"Video"}},
+        {emoji:"🏔️",name:{no:"Topper og private pins",en:"Peaks & private pins"}},
+        {emoji:"📊",name:{no:"Statistikk",en:"Statistics"},sub:{no:"km · høydemeter · tid",en:"km · ascent · time"}},
+      ]},
+    { id:"basen", emoji:"🏕️",
+      name:{no:"Basen",en:"Base camp"},
+      sub:{no:"Overnatting og proviant",en:"Lodging & provisions"},
+      folders:[
+        {emoji:"🛖",name:{no:"Overnatting",en:"Lodging"},sub:{no:"DNT-hytte · telt",en:"Cabin · tent"}},
+        {emoji:"🍲",name:{no:"Meny og proviant",en:"Menu & food"}},
+        {emoji:"🛒",name:{no:"Innkjøp",en:"Shopping"},sub:{no:"Landhandelen før turen",en:"Last shop before"}},
+      ]},
+    { id:"turfolget", emoji:"👥",
+      name:{no:"Turfølget",en:"The Party"},
+      sub:{no:"Fellesskap og deling",en:"Group & sharing"},
+      folders:[
+        {emoji:"🔗",name:{no:"Felles tur-ID",en:"Shared trip ID"}},
+        {emoji:"🖼️",name:{no:"Felles galleri",en:"Shared gallery"}},
+      ]},
+    { id:"postkort", emoji:"📮",
+      name:{no:"Postkortet",en:"The Postcard"},
+      sub:{no:"Eksport og fremvisning",en:"Export & casting"},
+      folders:[
+        {emoji:"✨",name:{no:"Lag postkort / slideshow",en:"Make postcard"},sub:{no:"Private pins strippes bort",en:"Private pins removed"}},
+        {emoji:"📺",name:{no:"Cast til storskjerm",en:"Cast to TV"}},
+      ]},
+  ]
+};
+/* ════════════════════════════════════════════════════════════
+   ▲▲▲  SLUTT APP_CONFIG  —  ALT UNDER ER FELLES GRUNNMUR  ▲▲▲
+   ════════════════════════════════════════════════════════════ */
+
+
+/* ── i18n (UI-chrome). Mynt/mappe-tekst kommer fra config. ── */
+const I18N = {
+  no:{ tagline:"Inngangsdøren", start:"Start", edit_trip:"Endre tur",
+    pick:"Velg en mynt", swipe:"Sveip sidelengs eller bruk pilene. Mynten foran deg åpnes.",
+    th_rom:"Rom", th_svart:"Svart", th_kontrast:"Kontrast",
+    test_media:"📷 Test kamera og mikrofon", back:"Tilbake til mynter",
+    add_folder:"Legg til egen mappe", ask:"Spør",
+    ai_hint:"AI er med deg på hele turen — spør om vær, rute, sikkerhet eller utstyr.",
+    ai_placeholder:"Spør AI om noe på turen…", open:"Åpne",
+    auth_demo:"Lokal demo — ikke innlogget", auth_in:"Innlogget",
+    sign_in:"Logg inn", sign_out:"Logg ut", new_folder:"Ny mappe" },
+  en:{ tagline:"Front door", start:"Start", edit_trip:"Edit trip",
+    pick:"Pick a coin", swipe:"Swipe sideways or use the arrows. The coin in front opens.",
+    th_rom:"Space", th_svart:"Black", th_kontrast:"Contrast",
+    test_media:"📷 Test camera and microphone", back:"Back to coins",
+    add_folder:"Add your own folder", ask:"Ask",
+    ai_hint:"AI is with you the whole trip — ask about weather, route, safety or gear.",
+    ai_placeholder:"Ask AI anything on the trip…", open:"Open",
+    auth_demo:"Local demo — not signed in", auth_in:"Signed in",
+    sign_in:"Sign in", sign_out:"Sign out", new_folder:"New folder" }
+};
+
+let LANG = "no", THEME = "rom", current = 0, muted = false;
+const L = ()=>(APP_CONFIG.name[LANG]||APP_CONFIG.name.no);
+
+/* state: mappene per mynt (her bor brukerens omdøping/+).
+   TODO: persister til Firestore pr. bruker+tur når innlogget. */
+const folderState = {};
+APP_CONFIG.coins.forEach(c=> folderState[c.id] = c.folders.map(f=>({...f, name:{...f.name}})));
+
+/* ── oppstart ── */
+function init(){
+  document.documentElement.style.setProperty('--accent', APP_CONFIG.accent);
+  document.getElementById('appLogo').textContent = APP_CONFIG.emoji;
+  document.getElementById('tripIco').textContent = APP_CONFIG.emoji;
+  // auto-språk fra nettleser (nb/nn → no)
+  let nav = (navigator.language||"no").slice(0,2).toLowerCase();
+  if(nav==="nb"||nav==="nn") nav="no";
+  setLang(I18N[nav] ? nav : "no");
+  current = Math.floor(APP_CONFIG.coins.length/2);
+  renderCarousel();
+  initFirebase();
+  drawStars();
+}
+
+/* ── språk ── */
+function setLang(l){
+  LANG=l;
+  document.documentElement.lang = (l==="no") ? "nb" : "en"; // skjermleser-stemme
+  document.getElementById('lang-no').setAttribute('aria-pressed', l==='no');
+  document.getElementById('lang-en').setAttribute('aria-pressed', l==='en');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{
+    const k=el.getAttribute('data-i18n'); if(I18N[l][k]) el.textContent=I18N[l][k];
+  });
+  document.getElementById('appName').textContent = APP_CONFIG.name[l];
+  document.getElementById('tripName').textContent = APP_CONFIG.trip[l]||APP_CONFIG.trip.no;
+  document.getElementById('aiInput').placeholder = I18N[l].ai_placeholder;
+  document.getElementById('aiHint').textContent = I18N[l].ai_hint;
+  document.getElementById('openBtn').textContent = I18N[l].open + " →";
+  renderCarousel();
+  if(document.getElementById('detail').classList.contains('show')) renderFolders();
+}
+
+/* ── tema ── */
+function setTheme(t){
+  THEME=t; document.documentElement.setAttribute('data-theme', t);
+  ['rom','svart','kontrast'].forEach(x=>
+    document.getElementById('th-'+x).setAttribute('aria-pressed', x===t));
+}
+
+/* ── carousel ── */
+function renderCarousel(){
+  const car=document.getElementById('carousel');
+  car.querySelectorAll('.coin').forEach(e=>e.remove());
+  const n=APP_CONFIG.coins.length, prev=car.querySelector('.prev');
+  APP_CONFIG.coins.forEach((c,i)=>{
+    const d=Math.abs(i-current);
+    if(d>2) return;
+    const el=document.createElement('div');
+    el.className='coin '+(i===current?'active':d===1?'near':'far');
+    el.innerHTML='<span class="emoji">'+c.emoji+'</span>';
+    el.setAttribute('role','button');
+    el.setAttribute('aria-label', c.name[LANG]);
+    el.onclick=()=> i===current ? openCoin() : (current=i, renderCarousel());
+    car.insertBefore(el, prev.nextSibling);
+  });
+  // reflow i visuell rekkefølge
+  const order=[...car.querySelectorAll('.coin')];
+  order.sort((a,b)=>0);
+  const c=APP_CONFIG.coins[current];
+  document.getElementById('coinLabel').innerHTML =
+    '<h3>'+c.name[LANG]+'</h3><p>'+c.sub[LANG]+'</p>';
+  const dots=document.getElementById('dots'); dots.innerHTML='';
+  APP_CONFIG.coins.forEach((_,i)=>{
+    const dot=document.createElement('i');
+    if(i===current) dot.className='on';
+    dot.onclick=()=>{current=i;renderCarousel();};
+    dots.appendChild(dot);
+  });
+}
+function move(dir){
+  current=Math.max(0,Math.min(APP_CONFIG.coins.length-1,current+dir));
+  renderCarousel();
+}
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('detail').classList.contains('show'))return;
+  if(e.key==='ArrowLeft')move(-1); if(e.key==='ArrowRight')move(1);
+  if(e.key==='Enter')openCoin();
+});
+// touch-swipe
+let tsx=0;
+const car=document.getElementById('carousel');
+car.addEventListener('touchstart',e=>tsx=e.touches[0].clientX,{passive:true});
+car.addEventListener('touchend',e=>{
+  const dx=e.changedTouches[0].clientX-tsx;
+  if(Math.abs(dx)>40) move(dx<0?1:-1);
+});
+
+/* ── mynt-detalj + mapper ── */
+function openCoin(){
+  const c=APP_CONFIG.coins[current];
+  document.getElementById('dEmoji').textContent=c.emoji;
+  document.getElementById('dTitle').textContent=c.name[LANG];
+  document.getElementById('dSub').textContent=c.sub[LANG];
+  renderFolders();
+  document.getElementById('aiAnswer').classList.remove('show');
+  ['stage','carousel','coinLabel','dots','openBtn','pretest'].forEach(id=>
+    document.getElementById(id).classList.add('hide'));
+  document.getElementById('detail').classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function closeCoin(){
+  document.getElementById('detail').classList.remove('show');
+  ['stage','carousel','coinLabel','dots','openBtn','pretest'].forEach(id=>
+    document.getElementById(id).classList.remove('hide'));
+}
+function renderFolders(){
+  const c=APP_CONFIG.coins[current], box=document.getElementById('folders');
+  box.innerHTML='';
+  folderState[c.id].forEach((f,idx)=>{
+    const row=document.createElement('div');
+    row.className='folder'+(f.flag?' flag':'');
+    const sub=f.sub?('<span class="fsub">'+f.sub[LANG]+'</span>'):'';
+    row.innerHTML=
+      '<span class="femoji">'+(f.emoji||'📁')+'</span>'+
+      '<div style="flex:1"><input class="fname" value="'+escapeHtml(f.name[LANG])+'" '+
+        'onchange="renameFolder(\''+c.id+'\','+idx+',this.value)" aria-label="Mappenavn">'+sub+'</div>'+
+      (f.flag?'<span class="badge">langtur</span>':'')+
+      '<button class="pen" aria-label="Endre navn" onclick="this.previousElementSibling;this.parentNode.querySelector(\'.fname\').focus()">✏️</button>'+
+      '<button class="del" aria-label="Slett mappe" onclick="delFolder(\''+c.id+'\','+idx+')">🗑️</button>';
+    box.appendChild(row);
+  });
+}
+function renameFolder(cid,idx,val){ folderState[cid][idx].name[LANG]=val.trim()||I18N[LANG].new_folder; }
+function delFolder(cid,idx){ folderState[cid].splice(idx,1); renderFolders(); }
+function addFolder(){
+  const c=APP_CONFIG.coins[current];
+  folderState[c.id].push({emoji:'📁', name:{no:I18N.no.new_folder, en:I18N.en.new_folder}});
+  renderFolders();
+}
+function escapeHtml(s){return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+
+/* ── AI via backend-proxy (aldri nøkkel i frontend) ── */
+async function askAI(){
+  const inp=document.getElementById('aiInput'), out=document.getElementById('aiAnswer');
+  const q=inp.value.trim(); if(!q) return;
+  const c=APP_CONFIG.coins[current];
+  out.classList.add('show'); out.textContent = (LANG==='no'?'Tenker…':'Thinking…');
+  try{
+    const r=await fetch(APP_CONFIG.aiProxyUrl,{
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6', max_tokens:600,
+        system:'Du er en turassistent i appen «'+L()+'», modul «'+c.name[LANG]+'». Svar kort, konkret og trygt. Brukerens språk: '+LANG+'.',
+        messages:[{role:'user',content:q}]
+      })
+    });
+    if(!r.ok) throw new Error('proxy '+r.status);
+    const data=await r.json();
+    const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || JSON.stringify(data);
+    out.textContent=txt;
+  }catch(err){
+    out.textContent = (LANG==='no'
+      ? '⚠️ AI-proxy ikke koblet til ennå. Sett opp /api/claude i backend (Railway/Netlify) med ANTHROPIC_API_KEY.\n('+err.message+')'
+      : '⚠️ AI proxy not connected yet. Set up /api/claude in the backend.\n('+err.message+')');
+  }
+  inp.value='';
+}
+document.getElementById('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
+
+/* ── kamera/mikrofon-test FØR man går inn ──
+   Viser ekte forhåndsvisning. Krever HTTPS eller localhost (ikke file://). */
+let mediaStream=null, audioCtx=null, rafMic=null;
+async function testMedia(){
+  const prev=document.getElementById('camPreview');
+  document.getElementById('camCloseBtn').textContent = LANG==='no'?'Lukk forhåndsvisning':'Close preview';
+  document.getElementById('micLabel').textContent = LANG==='no'?'Snakk — søylen skal bevege seg':'Speak — the bar should move';
+  if(!window.isSecureContext){
+    alert(LANG==='no'
+      ? '⚠️ Kamera krever HTTPS eller localhost. Du har trolig åpnet fila direkte (file://).\n\nKjør den fra en server i stedet:\n1) Åpne mappa i terminal\n2) python3 -m http.server 8000\n3) Gå til http://localhost:8000 i Chrome\n\nEller deploy til Netlify/Railway (HTTPS).'
+      : '⚠️ Camera requires HTTPS or localhost. You likely opened the file via file://.\nServe it: python3 -m http.server 8000 → http://localhost:8000');
+    return;
+  }
+  try{
+    mediaStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:true});
+    const v=document.getElementById('camVideo');
+    v.srcObject=mediaStream; v.muted=true;
+    v.setAttribute('playsinline',''); v.playsInline=true;   // iOS: ellers svart/fullskjerm
+    await v.play().catch(()=>{});
+    prev.style.display='block';
+    startMicMeter();
+    prev.scrollIntoView({behavior:'smooth',block:'center'});
+  }catch(e){
+    let msg;
+    if(e.name==='NotAllowedError') msg=LANG==='no'
+      ? '⚠️ Tilgang blokkert. Trykk lås-/innstillingsikonet til venstre i adressefeltet → Tillatelser → tillat kamera og mikrofon, og last siden på nytt.'
+      : '⚠️ Permission blocked. Click the lock icon → allow camera and microphone, then reload.';
+    else if(e.name==='NotFoundError') msg=LANG==='no'?'⚠️ Fant ikke kamera/mikrofon på enheten.':'⚠️ No camera/microphone found.';
+    else if(e.name==='NotReadableError') msg=LANG==='no'?'⚠️ Kameraet er i bruk av et annet program. Lukk Teams/Zoom/andre faner og prøv igjen.':'⚠️ Camera is in use by another app.';
+    else msg='⚠️ '+e.name+': '+e.message;
+    alert(msg);
+  }
+}
+function startMicMeter(){
+  try{
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=audioCtx.createMediaStreamSource(mediaStream);
+    const an=audioCtx.createAnalyser(); an.fftSize=256; src.connect(an);
+    const data=new Uint8Array(an.frequencyBinCount), bar=document.getElementById('micBar');
+    (function loop(){
+      an.getByteFrequencyData(data);
+      const avg=data.reduce((a,b)=>a+b,0)/data.length;
+      bar.style.width=Math.min(100,Math.round(avg*1.6))+'%';
+      rafMic=requestAnimationFrame(loop);
+    })();
+  }catch(e){}
+}
+function stopMedia(){
+  if(rafMic) cancelAnimationFrame(rafMic);
+  if(audioCtx){ audioCtx.close(); audioCtx=null; }
+  if(mediaStream){ mediaStream.getTracks().forEach(t=>t.stop()); mediaStream=null; }
+  document.getElementById('camVideo').srcObject=null;
+  document.getElementById('camPreview').style.display='none';
+}
+
+/* ── tur / lyd / auth ── */
+function editTrip(){
+  const name=prompt(LANG==='no'?'Turnavn:':'Trip name:', document.getElementById('tripName').textContent);
+  if(name===null)return;
+  const start=prompt(LANG==='no'?'Startpunkt:':'Start point:', document.getElementById('tripStart').textContent);
+  document.getElementById('tripName').textContent=name||document.getElementById('tripName').textContent;
+  if(start!==null) document.getElementById('tripStart').textContent=start;
+}
+function toggleMute(){ muted=!muted; document.getElementById('muteBtn').textContent=muted?'🔇':'🔊'; }
+
+/* ── Firebase (valgfritt) ── */
+let fb=null, auth=null;
+function initFirebase(){
+  if(!APP_CONFIG.firebase.apiKey || typeof firebase==='undefined') return; // lokal demo
+  try{
+    fb=firebase.initializeApp(APP_CONFIG.firebase);
+    auth=firebase.auth();
+    auth.onAuthStateChanged(u=>{
+      document.getElementById('authStatus').textContent =
+        u ? (I18N[LANG].auth_in+': '+(u.displayName||u.email||'')) : I18N[LANG].auth_demo;
+      document.getElementById('authBtn').textContent =
+        u ? I18N[LANG].sign_out : I18N[LANG].sign_in;
+    });
+  }catch(e){ console.warn('Firebase init feilet — lokal demo.', e); }
+}
+function toggleAuth(){
+  if(!auth){ alert(LANG==='no'
+      ? 'Firebase ikke konfigurert. Lim inn nøkler i APP_CONFIG.firebase, og legg appens URL under Authentication → Authorized Domains.'
+      : 'Firebase not configured.'); return; }
+  if(auth.currentUser){ auth.signOut(); }
+  else{ auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(e=>alert(e.message)); }
+}
+
+/* ── stjernebakgrunn (Rom) ── */
+function drawStars(){
+  const c=document.getElementById('stars'); if(!c) return;
+  const ctx=c.getContext('2d'), dpr=window.devicePixelRatio||1;
+  function size(){ c.width=innerWidth*dpr; c.height=innerHeight*dpr; draw(); }
+  function draw(){
+    ctx.clearRect(0,0,c.width,c.height);
+    for(let i=0;i<140;i++){
+      const x=Math.random()*c.width, y=Math.random()*c.height, r=Math.random()*1.4*dpr;
+      ctx.globalAlpha=Math.random()*0.7+0.2; ctx.fillStyle='#cfe3ff';
+      ctx.beginPath(); ctx.arc(x,y,r,0,7); ctx.fill();
+    }
+    ctx.globalAlpha=1;
+  }
+  addEventListener('resize',size); size();
+}
+
+init();
+</script>
+</body>
+</html>
