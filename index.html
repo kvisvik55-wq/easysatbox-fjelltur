@@ -149,7 +149,22 @@
   .turcard .tlabel{font-size:14px;font-weight:600;color:var(--accent)}
   .fld{width:100%;background:var(--bg2);border:1px solid var(--line);border-radius:10px;color:var(--txt);font:inherit;font-size:14px;padding:10px;outline:none;margin-bottom:8px}
   .fld:focus{border-color:var(--accent)}
-  textarea.fld{min-height:58px;resize:vertical}
+  textarea.fld{min-height:130px;resize:vertical;overflow:hidden;line-height:1.5}
+  /* utskrift / PDF-rapport */
+  #printArea{display:none}
+  @media print{
+    body > *:not(#printArea){display:none !important}
+    #printArea{display:block !important}
+  }
+  .preport{color:#000;font-family:-apple-system,system-ui,sans-serif;padding:6px}
+  .preport h1{font-size:24px;margin:0 0 2px}
+  .preport .psub{color:#444;font-size:12px;margin-bottom:14px;border-bottom:1px solid #ccc;padding-bottom:8px}
+  .preport .pnote{white-space:pre-wrap;font-size:15px;line-height:1.55;margin-bottom:16px}
+  .preport .pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+  .preport figure{margin:0;break-inside:avoid}
+  .preport figure img{width:100%;border:1px solid #ccc;border-radius:6px;display:block}
+  .preport figcaption{font-size:10px;color:#444;margin-top:2px}
+  .preport .vbox{border:1px dashed #aaa;border-radius:6px;padding:14px 8px;font-size:12px;color:#444;text-align:center}
   .mediagrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:8px;margin:4px 0 8px}
   .thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000;cursor:pointer}
   .thumb img,.thumb video{width:100%;height:100%;object-fit:cover;display:block}
@@ -362,6 +377,8 @@
     <button id="camModeVideo" class="cam-mode" onclick="setCamMode('video')">Video</button>
   </div>
 </div>
+
+<div id="printArea"></div>
 
 <!-- Firebase (compat) — valgfritt. Appen funker uten, da kjører lokal demo. -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -809,7 +826,10 @@ function renderFolderView(){
     fv.innerHTML = mediaFolderHtml(f);
   }
   saveState();
+  growAll();
 }
+function autoGrow(el){ el.style.height='auto'; el.style.height=(el.scrollHeight+2)+'px'; }
+function growAll(){ document.querySelectorAll('#folderview textarea.fld').forEach(autoGrow); }
 
 /* ---- TOPP-LISTE ---- */
 function peaksListHtml(f){
@@ -857,7 +877,7 @@ function peakDetailHtml(f,pi){
        '<button class="tinybtn" aria-label="Slett tur" onclick="delTur('+pi+','+ti+')">🗑️</button></span></div>'+
        '<input class="fld" type="date" value="'+(t.date||'')+'" onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'date\',this.value)" aria-label="Dato">'+
        '<textarea class="fld" placeholder="'+T('Minne, vær, hvem du var med …','Memory, weather, who you were with …')+'" '+
-         'onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'note\',this.value)">'+escapeHtml(t.note||'')+'</textarea>'+
+         'oninput="autoGrow(this)" onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'note\',this.value)">'+escapeHtml(t.note||'')+'</textarea>'+
        mediaGridHtml(t.media, pi, ti)+
        '<button class="addmedia" onclick="openCam({kind:\'tur\',pi:'+pi+',ti:'+ti+'})">📷 '+T('Ta bilde / video','Take photo / video')+'</button>'+
        '<button class="addmedia" onclick="addTurMedia('+pi+','+ti+')">🖼️ '+T('Importer fra galleri','Import from gallery')+'</button>'+
@@ -896,7 +916,8 @@ function mediaFolderHtml(f){
   h+='<div class="vtitle"><span class="e">'+(f.emoji||'📁')+'</span><div><h3>'+escapeHtml(tr(f.name))+'</h3>'+
      (f.sub?'<div class="sub">'+tr(f.sub)+'</div>':'')+'</div></div>';
   h+='<textarea class="fld" placeholder="'+T('Skriv notater her …','Write notes here …')+'" '+
-     'onchange="setFolderNote(this.value)">'+escapeHtml(f.note)+'</textarea>';
+     'oninput="autoGrow(this)" onchange="setFolderNote(this.value)">'+escapeHtml(f.note)+'</textarea>';
+  h+='<button class="addmedia" onclick="printFolder()">📄 '+T('Skriv ut / lag PDF','Print / make PDF')+'</button>';
   h+='<div ondragover="event.preventDefault();this.classList.add(\'dz-over\')" ondragleave="this.classList.remove(\'dz-over\')" ondrop="dropFolder(event)">';
   h+=mediaGridHtml(f.media,null,null);
   h+='<button class="addmedia" onclick="openCam({kind:\'folder\'})">📷 '+T('Ta bilde / video','Take photo / video')+'</button>';
@@ -905,6 +926,31 @@ function mediaFolderHtml(f){
   return h;
 }
 function setFolderNote(v){ curFolder().note=v; saveState(); }
+
+/* ── Rapport / utskrift / PDF ── */
+function buildReport(title, sub, note, media){
+  let h='<div class="preport"><h1>'+escapeHtml(title)+'</h1>';
+  if(sub) h+='<div class="psub">'+escapeHtml(sub)+'</div>';
+  if(note && note.trim()) h+='<div class="pnote">'+escapeHtml(note)+'</div>';
+  if(media && media.length){
+    h+='<div class="pgrid">';
+    media.forEach(m=>{
+      const cap=escapeHtml(m.title||m.name||'');
+      if(m.type==='video') h+='<figure><div class="vbox">🎬 '+(cap||'Video')+'</div></figure>';
+      else h+='<figure><img src="'+m.url+'"><figcaption>'+cap+'</figcaption></figure>';
+    });
+    h+='</div>';
+  }
+  return h+'</div>';
+}
+function doPrint(html){ document.getElementById('printArea').innerHTML=html; window.print(); }
+function printFolder(){
+  const f=curFolder(), tp=TRIPS.find(t=>t.id===activeTripId);
+  const sub=[tp?tp.name:'', tp&&tp.varighet?tp.varighet:'',
+    (LANG==='no'?'Skrevet ut ':'Printed ')+new Date().toLocaleDateString(LANG==='no'?'no-NO':undefined)]
+    .filter(Boolean).join('  ·  ');
+  doPrint(buildReport(tr(f.name), sub, f.note||'', f.media||[]));
+}
 function addFolderMedia(){ pickFiles(arr=>{ curFolder().media.push(...arr); renderFolderView(); }); }
 function delFolderMedia(mi){ curFolder().media.splice(mi,1); renderFolderView(); }
 
@@ -1309,19 +1355,46 @@ function snapPhoto(){
   c.toBlob(b=>{ if(b) deliverCapture(new File([b],'foto_'+Date.now()+'.jpg',{type:'image/jpeg'})); }, 'image/jpeg', 0.92);
   // bildet lagres, kamera blir stående åpent så du kan ta flere
 }
+let capCanvas=null, capCanvasRaf=null, capCanvasStream=null;
+function startCanvasPipe(){
+  const v=document.getElementById('capVideo');
+  const vw=v.videoWidth||1280, vh=v.videoHeight||720;
+  if(!HTMLCanvasElement.prototype.captureStream) return null; // ikke støttet → fall tilbake
+  capCanvas=document.createElement('canvas'); capCanvas.width=vw; capCanvas.height=vh;
+  const ctx=capCanvas.getContext('2d');
+  (function draw(){
+    let sw=vw, sh=vh, sx=0, sy=0;
+    if(capZoom>1){ sw=vw/capZoom; sh=vh/capZoom; sx=(vw-sw)/2; sy=(vh-sh)/2; }
+    try{ ctx.drawImage(v, sx,sy,sw,sh, 0,0,vw,vh); }catch(e){}
+    capCanvasRaf=requestAnimationFrame(draw);
+  })();
+  capCanvasStream=capCanvas.captureStream(30);
+  capStream.getAudioTracks().forEach(t=>capCanvasStream.addTrack(t)); // lyd fra mikrofon
+  return capCanvasStream;
+}
+function stopCanvasPipe(){
+  if(capCanvasRaf){ cancelAnimationFrame(capCanvasRaf); capCanvasRaf=null; }
+  if(capCanvasStream){ capCanvasStream.getVideoTracks().forEach(t=>t.stop()); capCanvasStream=null; }
+  capCanvas=null;
+}
 function toggleRec(){
   if(capRec && capRec.state==='recording'){ capRec.stop(); return; }
   capChunks=[];
+  // Maskinvare-zoom ligger allerede i bildene → ta opp råstrøm.
+  // Digital zoom → ta opp via canvas så zoomen bakes inn (funker på PC også).
+  let recStream = capStream;
+  if(!capHwZoom){ const cs=startCanvasPipe(); if(cs) recStream=cs; }
   let opts=null;
   ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'].some(m=>{
     if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)){ opts={mimeType:m}; return true; } return false;
   });
-  try{ capRec = opts ? new MediaRecorder(capStream,opts) : new MediaRecorder(capStream); }
-  catch(e){ alert(LANG==='no'?'Videoopptak støttes ikke i denne nettleseren.':'Video recording not supported.'); return; }
+  try{ capRec = opts ? new MediaRecorder(recStream,opts) : new MediaRecorder(recStream); }
+  catch(e){ stopCanvasPipe(); alert(LANG==='no'?'Videoopptak støttes ikke i denne nettleseren.':'Video recording not supported.'); return; }
   capRec.ondataavailable=e=>{ if(e.data && e.data.size) capChunks.push(e.data); };
   capRec.onstop=()=>{
     clearInterval(capTimer); capSecs=0; document.getElementById('camTimer').textContent='';
     document.getElementById('camShutter').classList.remove('rec');
+    stopCanvasPipe();
     const type=capChunks[0]?capChunks[0].type:'video/webm';
     const ext=type.includes('mp4')?'mp4':'webm';
     const blob=new Blob(capChunks,{type});
@@ -1343,6 +1416,7 @@ function deliverCapture(file){
 }
 function closeCam(){
   if(capRec && capRec.state==='recording'){ try{capRec.stop();}catch(e){} }
+  stopCanvasPipe();
   stopCapStream();
   document.getElementById('capVideo').srcObject=null;
   document.getElementById('camModal').classList.remove('show');
