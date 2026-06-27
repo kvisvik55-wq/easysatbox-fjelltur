@@ -193,7 +193,7 @@
   .coin{position:relative}
   .cdot{width:20px;height:20px;border-radius:50%;border:2px solid var(--line2);background:transparent;cursor:pointer;padding:0;flex:0 0 auto}
   .coindot{position:absolute;bottom:6px;right:6px;width:15px;height:15px;border-radius:50%;border:2px solid var(--bg)}
-  .colorpop{display:none;position:absolute;z-index:1100;gap:8px;flex-wrap:wrap;width:206px;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:11px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
+  .colorpop{display:none;position:absolute;z-index:1300;gap:8px;flex-wrap:wrap;width:206px;background:var(--card);border:1px solid var(--line2);border-radius:12px;padding:11px;box-shadow:0 8px 24px rgba(0,0,0,.45)}
   .colorpop button{width:30px;height:30px;border-radius:50%;border:0;cursor:pointer;padding:0}
   .colorpop button.clr{background:var(--card2);border:1px solid var(--line2);color:var(--txt-2);font-size:16px}
   .dz-over{outline:2px dashed var(--accent);outline-offset:3px;border-radius:var(--radius)}
@@ -210,6 +210,20 @@
   .tripcard .tc-name{font-weight:600;font-size:15px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .tripcard .tc-meta{font-size:12px;color:var(--txt-3)}
   .tripcard .tc-badge{font-size:11px;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:2px 9px;font-weight:600}
+  .cammodal{display:none;position:fixed;inset:0;z-index:1400;background:#000;flex-direction:column}
+  .cammodal.show{display:flex}
+  #capVideo{flex:1;width:100%;height:100%;object-fit:cover;background:#000}
+  .cam-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none}
+  .cam-flash.go{animation:camflash .35s ease-out}
+  @keyframes camflash{0%{opacity:.85}100%{opacity:0}}
+  .cam-top{position:absolute;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:16px;padding-top:max(16px,env(safe-area-inset-top))}
+  .cam-top button{width:46px;height:46px;border-radius:50%;border:0;background:rgba(0,0,0,.45);color:#fff;font-size:18px;cursor:pointer}
+  .cam-timer{color:#fff;background:rgba(0,0,0,.45);padding:6px 12px;border-radius:999px;font-size:14px;font-variant-numeric:tabular-nums}
+  .cam-bottom{position:absolute;bottom:0;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:20px;padding:24px;padding-bottom:max(24px,env(safe-area-inset-bottom))}
+  .cam-mode{background:rgba(0,0,0,.45);color:#fff;border:0;border-radius:999px;padding:9px 15px;font:inherit;font-size:13px;cursor:pointer}
+  .cam-mode.active{background:var(--accent);color:var(--accent-ink);font-weight:600}
+  .cam-shutter{width:72px;height:72px;border-radius:50%;border:5px solid #fff;background:#fff;cursor:pointer;flex:0 0 auto;transition:border-radius .15s,background .15s}
+  .cam-shutter.rec{background:#e2574c;border-radius:20px;width:64px;height:64px}
   @media(prefers-reduced-motion:reduce){.coin{transition:none}}
 </style>
 </head>
@@ -321,6 +335,21 @@
     <div class="tm-head"><h3 id="tmTitle">Mine turer</h3><button class="tm-x" aria-label="Lukk" onclick="closeTrips()">✕</button></div>
     <div id="tripsList"></div>
     <button class="addbtn" id="tmAdd" onclick="newTripPrompt()">＋ Ny tur</button>
+  </div>
+</div>
+
+<div id="camModal" class="cammodal">
+  <video id="capVideo" playsinline autoplay muted></video>
+  <div id="camFlash" class="cam-flash"></div>
+  <div class="cam-top">
+    <button onclick="closeCam()" aria-label="Lukk">✕</button>
+    <div id="camTimer" class="cam-timer"></div>
+    <button id="camSwitch" onclick="switchCam()" aria-label="Bytt kamera">🔄</button>
+  </div>
+  <div class="cam-bottom">
+    <button id="camModePhoto" class="cam-mode active" onclick="setCamMode('photo')">Foto</button>
+    <button id="camShutter" class="cam-shutter" onclick="camShutter()" aria-label="Ta opp"></button>
+    <button id="camModeVideo" class="cam-mode" onclick="setCamMode('video')">Video</button>
   </div>
 </div>
 
@@ -820,7 +849,8 @@ function peakDetailHtml(f,pi){
        '<textarea class="fld" placeholder="'+T('Minne, vær, hvem du var med …','Memory, weather, who you were with …')+'" '+
          'onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'note\',this.value)">'+escapeHtml(t.note||'')+'</textarea>'+
        mediaGridHtml(t.media, pi, ti)+
-       '<button class="addmedia" onclick="addTurMedia('+pi+','+ti+')">📷 '+T('Legg til bilde eller video','Add photo or video')+'</button>'+
+       '<button class="addmedia" onclick="openCam({kind:\'tur\',pi:'+pi+',ti:'+ti+'})">📷 '+T('Ta bilde / video','Take photo / video')+'</button>'+
+       '<button class="addmedia" onclick="addTurMedia('+pi+','+ti+')">🖼️ '+T('Importer fra galleri','Import from gallery')+'</button>'+
        '<div class="draghint">'+T('eller dra filer hit · lim med Ctrl+V','or drag files here · paste with Ctrl+V')+'</div>'+
        '</div>';
   });
@@ -859,7 +889,8 @@ function mediaFolderHtml(f){
      'onchange="setFolderNote(this.value)">'+escapeHtml(f.note)+'</textarea>';
   h+='<div ondragover="event.preventDefault();this.classList.add(\'dz-over\')" ondragleave="this.classList.remove(\'dz-over\')" ondrop="dropFolder(event)">';
   h+=mediaGridHtml(f.media,null,null);
-  h+='<button class="addmedia" onclick="addFolderMedia()">📷 '+T('Legg til bilde eller video','Add photo or video')+'</button>';
+  h+='<button class="addmedia" onclick="openCam({kind:\'folder\'})">📷 '+T('Ta bilde / video','Take photo / video')+'</button>';
+  h+='<button class="addmedia" onclick="addFolderMedia()">🖼️ '+T('Importer fra galleri','Import from gallery')+'</button>';
   h+='<div class="draghint">'+T('eller dra filer hit · lim med Ctrl+V','or drag files here · paste with Ctrl+V')+'</div></div>';
   return h;
 }
@@ -1036,9 +1067,11 @@ function applyColor(c){
 }
 function rerenderColorViews(){
   renderCarousel();
+  if(document.getElementById('tripsModal').classList.contains('show')) renderTripsList();
   if(document.getElementById('folderview').classList.contains('show')) renderFolderView();
   else if(document.getElementById('detail').classList.contains('show')) renderFolders();
 }
+function colorTrip(e,id){ _colorSetter=c=>{ const tp=TRIPS.find(t=>t.id===id); if(tp)tp.color=c; }; showColorPop(e); }
 function colorFolder(e,cid,idx){ _colorSetter=c=>{folderState[cid][idx].color=c;}; showColorPop(e); }
 function colorTur(e,pi,ti){ _colorSetter=c=>{curFolder().peaks[pi].turer[ti].color=c;}; showColorPop(e); }
 function colorCoin(e,cid){ _colorSetter=c=>{coinColor[cid]=c;}; showColorPop(e); }
@@ -1137,6 +1170,104 @@ function stopMedia(){
   document.getElementById('camPreview').style.display='none';
 }
 
+/* ── KAMERA-OPPTAK i appen (foto + video) — funker på mobil OG PC ── */
+let capStream=null, capTarget=null, capMode='photo', capFacing='environment';
+let capRec=null, capChunks=[], capTimer=null, capSecs=0;
+function fmtSec(s){ const m=Math.floor(s/60), r=s%60; return m+':'+(r<10?'0':'')+r; }
+async function openCam(target){
+  if(!window.isSecureContext){
+    alert(LANG==='no'?'⚠️ Kamera krever HTTPS. Åpne appen via netlify-lenken, ikke som lokal fil.':'⚠️ Camera requires HTTPS.');
+    return;
+  }
+  capTarget=target; capMode='photo';
+  document.getElementById('camModePhoto').classList.add('active');
+  document.getElementById('camModeVideo').classList.remove('active');
+  document.getElementById('camShutter').classList.remove('rec');
+  document.getElementById('camTimer').textContent='';
+  document.getElementById('camModal').classList.add('show');
+  await startCap();
+}
+async function startCap(){
+  stopCapStream();
+  try{
+    capStream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode:capFacing}, audio:(capMode==='video')
+    });
+    const v=document.getElementById('capVideo');
+    v.srcObject=capStream; v.muted=true; v.setAttribute('playsinline',''); v.playsInline=true;
+    await v.play().catch(()=>{});
+  }catch(e){
+    let msg;
+    if(e.name==='NotAllowedError') msg=LANG==='no'?'⚠️ Tilgang blokkert. Trykk lås-ikonet i adressefeltet → tillat kamera (og mikrofon for video), og prøv igjen.':'⚠️ Permission blocked.';
+    else if(e.name==='NotFoundError') msg=LANG==='no'?'⚠️ Fant ikke kamera på enheten.':'⚠️ No camera found.';
+    else if(e.name==='NotReadableError') msg=LANG==='no'?'⚠️ Kameraet er i bruk av et annet program.':'⚠️ Camera in use elsewhere.';
+    else msg='⚠️ '+e.name+': '+e.message;
+    alert(msg); closeCam();
+  }
+}
+function stopCapStream(){ if(capStream){ capStream.getTracks().forEach(t=>t.stop()); capStream=null; } }
+function setCamMode(m){
+  if(capRec && capRec.state==='recording') return; // ikke bytt midt i opptak
+  capMode=m;
+  document.getElementById('camModePhoto').classList.toggle('active',m==='photo');
+  document.getElementById('camModeVideo').classList.toggle('active',m==='video');
+  startCap(); // video trenger lydspor
+}
+function switchCam(){
+  if(capRec && capRec.state==='recording') return;
+  capFacing = capFacing==='environment'?'user':'environment';
+  startCap();
+}
+function camShutter(){ capMode==='photo' ? snapPhoto() : toggleRec(); }
+function snapPhoto(){
+  const v=document.getElementById('capVideo');
+  if(!v.videoWidth) return;
+  const c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+  const fl=document.getElementById('camFlash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go');
+  c.toBlob(b=>{ if(b) deliverCapture(new File([b],'foto_'+Date.now()+'.jpg',{type:'image/jpeg'})); }, 'image/jpeg', 0.92);
+  // bildet lagres, kamera blir stående åpent så du kan ta flere
+}
+function toggleRec(){
+  if(capRec && capRec.state==='recording'){ capRec.stop(); return; }
+  capChunks=[];
+  let opts=null;
+  ['video/webm;codecs=vp9','video/webm;codecs=vp8','video/webm','video/mp4'].some(m=>{
+    if(window.MediaRecorder && MediaRecorder.isTypeSupported && MediaRecorder.isTypeSupported(m)){ opts={mimeType:m}; return true; } return false;
+  });
+  try{ capRec = opts ? new MediaRecorder(capStream,opts) : new MediaRecorder(capStream); }
+  catch(e){ alert(LANG==='no'?'Videoopptak støttes ikke i denne nettleseren.':'Video recording not supported.'); return; }
+  capRec.ondataavailable=e=>{ if(e.data && e.data.size) capChunks.push(e.data); };
+  capRec.onstop=()=>{
+    clearInterval(capTimer); capSecs=0; document.getElementById('camTimer').textContent='';
+    document.getElementById('camShutter').classList.remove('rec');
+    const type=capChunks[0]?capChunks[0].type:'video/webm';
+    const ext=type.includes('mp4')?'mp4':'webm';
+    const blob=new Blob(capChunks,{type});
+    deliverCapture(new File([blob],'video_'+Date.now()+'.'+ext,{type}));
+    closeCam(); // lukk etter video
+  };
+  capRec.start();
+  document.getElementById('camShutter').classList.add('rec');
+  capSecs=0; document.getElementById('camTimer').textContent='● 0:00';
+  capTimer=setInterval(()=>{ capSecs++; document.getElementById('camTimer').textContent='● '+fmtSec(capSecs); },1000);
+}
+function deliverCapture(file){
+  filesToMedia([file], arr=>{
+    if(!capTarget) return;
+    if(capTarget.kind==='tur'){ curFolder().peaks[capTarget.pi].turer[capTarget.ti].media.push(...arr); }
+    else { if(!curFolder().media) curFolder().media=[]; curFolder().media.push(...arr); }
+    renderFolderView();
+  });
+}
+function closeCam(){
+  if(capRec && capRec.state==='recording'){ try{capRec.stop();}catch(e){} }
+  stopCapStream();
+  document.getElementById('capVideo').srcObject=null;
+  document.getElementById('camModal').classList.remove('show');
+  capTarget=null;
+}
+
 /* ── tur / lyd / auth ── */
 function editTrip(){ editTripById(activeTripId); }
 
@@ -1152,11 +1283,13 @@ function renderTripsList(){
   TRIPS.forEach(tp=>{
     const card=document.createElement('div');
     card.className='tripcard'+(tp.id===activeTripId?' active':'');
+    if(tp.color){ card.style.borderLeft='5px solid '+tp.color; card.style.background='linear-gradient(0deg,'+tp.color+'26,'+tp.color+'26), var(--bg2)'; }
     const meta=[tp.varighet,tp.start].filter(Boolean).join(' · ');
     card.innerHTML='<span style="font-size:22px">'+APP_CONFIG.emoji+'</span>'+
       '<div class="tc-main"><div class="tc-name">'+escapeHtml(tp.name)+'</div>'+
       (meta?'<div class="tc-meta">'+escapeHtml(meta)+'</div>':'')+'</div>'+
       (tp.id===activeTripId?'<span class="tc-badge">'+T('aktiv','active')+'</span>':'')+
+      '<button class="cdot" style="background:'+(tp.color||'transparent')+';border-color:'+(tp.color||'var(--line2)')+'" aria-label="'+T('Farge','Color')+'" onclick="event.stopPropagation();colorTrip(event,\''+tp.id+'\')"></button>'+
       '<button class="tinybtn" aria-label="'+T('Endre','Edit')+'" onclick="event.stopPropagation();editTripById(\''+tp.id+'\')">✏️</button>'+
       '<button class="tinybtn" aria-label="'+T('Slett','Delete')+'" onclick="event.stopPropagation();delTrip(\''+tp.id+'\')">🗑️</button>';
     card.onclick=()=>{ setActiveTrip(tp.id); closeCoin(); renderCarousel(); saveState(); closeTrips(); };
