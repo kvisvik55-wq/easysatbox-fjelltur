@@ -80,9 +80,9 @@
   /* turbar */
   .tripbar{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin-bottom:18px}
   .tripbar .ico{width:34px;height:34px;border-radius:9px;background:var(--card2);display:flex;align-items:center;justify-content:center;font-size:18px}
-  .tripbar .t1{font-size:14px;font-weight:600;line-height:1.2}
-  .tripbar .t2{font-size:12px;color:var(--txt-3)}
-  .tripbar button{margin-left:auto;background:transparent;border:1px solid var(--line2);color:var(--txt-2);border-radius:999px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
+  .tripbar .t1{font-size:14px;font-weight:600;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tripbar .t2{font-size:12px;color:var(--txt-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tripbar button{flex:0 0 auto;background:transparent;border:1px solid var(--line2);color:var(--txt-2);border-radius:999px;padding:6px 12px;font:inherit;font-size:12px;cursor:pointer}
 
   /* carousel */
   .stage{text-align:center;margin:6px 0 4px}
@@ -198,6 +198,18 @@
   .colorpop button.clr{background:var(--card2);border:1px solid var(--line2);color:var(--txt-2);font-size:16px}
   .dz-over{outline:2px dashed var(--accent);outline-offset:3px;border-radius:var(--radius)}
   .draghint{font-size:11px;color:var(--txt-3);margin:4px 2px 0;text-align:center}
+  .tmodal{display:none;position:fixed;inset:0;z-index:1200;background:rgba(0,0,0,.55);align-items:flex-start;justify-content:center;padding:38px 14px;overflow:auto}
+  .tmodal.show{display:flex}
+  .tm-card{width:100%;max-width:560px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .tm-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+  .tm-head h3{margin:0;font-size:18px;color:var(--txt)}
+  .tm-x{background:transparent;border:1px solid var(--line);color:var(--txt-2);border-radius:999px;width:32px;height:32px;cursor:pointer;font:inherit}
+  .tripcard{display:flex;align-items:center;gap:11px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:9px;cursor:pointer}
+  .tripcard.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
+  .tripcard .tc-main{flex:1;min-width:0}
+  .tripcard .tc-name{font-weight:600;font-size:15px;color:var(--txt);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tripcard .tc-meta{font-size:12px;color:var(--txt-3)}
+  .tripcard .tc-badge{font-size:11px;color:var(--accent-ink);background:var(--accent);border-radius:999px;padding:2px 9px;font-weight:600}
   @media(prefers-reduced-motion:reduce){.coin{transition:none}}
 </style>
 </head>
@@ -231,11 +243,12 @@
 
   <div class="tripbar">
     <div class="ico" id="tripIco">⛰️</div>
-    <div>
+    <div style="flex:1;min-width:0">
       <div class="t1" id="tripName">Tur 014 — Børgefjell</div>
-      <div class="t2"><span data-i18n="start">Start</span>: <span id="tripStart">Viermdalen</span></div>
+      <div class="t2" id="tripMeta"></div>
     </div>
-    <button onclick="editTrip()" data-i18n="edit_trip">Endre tur</button>
+    <button onclick="openTrips()" data-i18n="my_trips">Mine turer</button>
+    <button onclick="editTrip()" data-i18n="edit_trip">Endre</button>
   </div>
 
   <!-- ===== CAROUSEL (sliding door) ===== -->
@@ -302,6 +315,14 @@
 </div>
 
 <div id="colorpop" class="colorpop"></div>
+
+<div id="tripsModal" class="tmodal" onclick="if(event.target===this)closeTrips()">
+  <div class="tm-card">
+    <div class="tm-head"><h3 id="tmTitle">Mine turer</h3><button class="tm-x" aria-label="Lukk" onclick="closeTrips()">✕</button></div>
+    <div id="tripsList"></div>
+    <button class="addbtn" id="tmAdd" onclick="newTripPrompt()">＋ Ny tur</button>
+  </div>
+</div>
 
 <!-- Firebase (compat) — valgfritt. Appen funker uten, da kjører lokal demo. -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -428,6 +449,15 @@ const APP_CONFIG = {
    ▲▲▲  SLUTT APP_CONFIG  —  ALT UNDER ER FELLES GRUNNMUR  ▲▲▲
    ════════════════════════════════════════════════════════════ */
 
+/* Rekkefølge på myntene (fremst → bakerst).
+   Tidslinje snudd: fremvisning/minner fremst, gjennomføring i midten,
+   planlegging bakerst. Endre lista for å flytte en mynt. */
+const COIN_ORDER=['skattkammer','postkort','vokter','orakel','turfolget','rustning','basen','ekspeditor'];
+APP_CONFIG.coins.sort((a,b)=>{
+  let ia=COIN_ORDER.indexOf(a.id), ib=COIN_ORDER.indexOf(b.id);
+  if(ia<0)ia=99; if(ib<0)ib=99; return ia-ib;
+});
+
 
 /* ── i18n (UI-chrome). Mynt/mappe-tekst kommer fra config. ── */
 /* ── 10 språk. UI-tekster. Mangler en oversettelse, faller den til engelsk.
@@ -443,13 +473,13 @@ const I18N = {
     test_media:"📷 Test kamera og mikrofon", back:"Tilbake til mynter", add_folder:"Legg til egen mappe",
     ask:"Spør", ai_hint:"AI er med deg på hele turen — spør om vær, rute, sikkerhet eller utstyr.",
     ai_placeholder:"Spør AI om noe på turen…", open:"Åpne", auth_demo:"Lokal demo — ikke innlogget",
-    auth_in:"Innlogget", sign_in:"Logg inn", sign_out:"Logg ut", new_folder:"Ny mappe" },
+    auth_in:"Innlogget", sign_in:"Logg inn", sign_out:"Logg ut", new_folder:"Ny mappe", my_trips:"Mine turer" },
   en:{ tagline:"Front door", start:"Start", edit_trip:"Edit trip", pick:"Pick a coin",
     swipe:"Swipe sideways or use the arrows. The coin in front opens.",
     test_media:"📷 Test camera and microphone", back:"Back to coins", add_folder:"Add your own folder",
     ask:"Ask", ai_hint:"AI is with you the whole trip — ask about weather, route, safety or gear.",
     ai_placeholder:"Ask AI anything on the trip…", open:"Open", auth_demo:"Local demo — not signed in",
-    auth_in:"Signed in", sign_in:"Sign in", sign_out:"Sign out", new_folder:"New folder" },
+    auth_in:"Signed in", sign_in:"Sign in", sign_out:"Sign out", new_folder:"New folder", my_trips:"My trips" },
   de:{ tagline:"Eingangstür", start:"Start", edit_trip:"Tour bearbeiten", pick:"Wähle eine Münze",
     swipe:"Wische seitwärts oder nutze die Pfeile. Die vordere Münze öffnet sich.",
     test_media:"📷 Kamera und Mikrofon testen", back:"Zurück zu den Münzen", add_folder:"Eigenen Ordner hinzufügen",
@@ -507,8 +537,37 @@ const L = ()=>tr(APP_CONFIG.name);
 
 /* state: mappene per mynt (her bor brukerens omdøping/+).
    TODO: persister til Firestore pr. bruker+tur når innlogget. */
-const folderState = {};
-APP_CONFIG.coins.forEach(c=> folderState[c.id] = c.folders.map(f=>JSON.parse(JSON.stringify(f))));
+/* ── TURER som beholdere ──
+   Hver tur har SITT eget innhold (mynter/mapper/topper/farger).
+   En tur kan være en helg, 14 dager i Lofoten, eller 2000 døgn innom mange fjell.
+   folderState/coinColor peker alltid på den AKTIVE turen. ── */
+function freshFolders(){
+  const o={}; APP_CONFIG.coins.forEach(c=> o[c.id]=c.folders.map(f=>JSON.parse(JSON.stringify(f)))); return o;
+}
+let TRIPS=[], activeTripId=null, tripStates={}, tripColors={};
+let folderState={}, coinColor={};
+function setActiveTrip(id){
+  const tp=TRIPS.find(t=>t.id===id); if(!tp) return;
+  activeTripId=id;
+  if(!tripStates[id]) tripStates[id]=freshFolders();
+  if(!tripColors[id]) tripColors[id]={};
+  folderState=tripStates[id]; coinColor=tripColors[id];
+  document.getElementById('tripName').textContent=tp.name;
+  document.getElementById('tripMeta').textContent=tp.varighet||tp.start||'';
+  openFolderIdx=null; openPeakIdx=null;
+}
+function newTrip(name,varighet,start){
+  const id='t'+Date.now()+Math.floor(Math.random()*99);
+  TRIPS.push({id, name:name||(LANG==='no'?'Ny tur':'New trip'), varighet:varighet||'', start:start||'', created:Date.now()});
+  tripStates[id]=freshFolders(); tripColors[id]={};
+  setActiveTrip(id); saveState(); return id;
+}
+function seedDefaultTrip(){
+  const id='t'+Date.now();
+  TRIPS=[{id, name:tr(APP_CONFIG.trip), varighet:'', start:APP_CONFIG.trip.start||'', created:Date.now()}];
+  tripStates[id]=freshFolders(); tripColors[id]={};
+  setActiveTrip(id);
+}
 
 /* ── oppstart ── */
 function init(){
@@ -523,7 +582,8 @@ function init(){
   if(nav==="nb"||nav==="nn") nav="no";
   setLang(I18N[nav] ? nav : "en");
   setTheme("deepspace");
-  current = Math.floor(APP_CONFIG.coins.length/2);
+  seedDefaultTrip();
+  current = 0; // åpne på fremste mynt (Skattkammeret)
   renderCarousel();
   initFirebase();
   drawStars();
@@ -647,7 +707,7 @@ function renderFolders(){
   folderState[c.id].forEach((f,idx)=>{
     const row=document.createElement('div');
     row.className='folder'+(f.flag?' flag':'');
-    if(f.color) row.style.borderLeft='5px solid '+f.color;
+    if(f.color){ row.style.borderLeft='5px solid '+f.color; row.style.background='linear-gradient(0deg,'+f.color+'26,'+f.color+'26), var(--card)'; }
     const sub=f.sub?('<span class="fsub">'+tr(f.sub)+'</span>'):'';
     let count='';
     if(f.type==='peaks') count=(f.peaks?f.peaks.length:0)+' '+(LANG==='no'?'topper':'peaks');
@@ -750,7 +810,7 @@ function peakDetailHtml(f,pi){
       '<button class="tinybtn" aria-label="Endre topp" onclick="renamePeak('+pi+')">✏️</button>'+
       '<button class="tinybtn" aria-label="Slett topp" onclick="delPeak('+pi+')">🗑️</button></div>';
   p.turer.forEach((t,ti)=>{
-    const cstyle = t.color ? ' style="border-left:5px solid '+t.color+'"' : '';
+    const cstyle = t.color ? ' style="border-left:5px solid '+t.color+';background:linear-gradient(0deg,'+t.color+'26,'+t.color+'26), var(--card)"' : '';
     h+='<div class="turcard"'+cstyle+' ondragover="event.preventDefault();this.classList.add(\'dz-over\')" ondragleave="this.classList.remove(\'dz-over\')" ondrop="dropTur(event,'+pi+','+ti+')">'+
        '<div class="th"><span class="tlabel">'+T('Tur ','Trip ')+(ti+1)+'</span>'+
        '<span style="display:flex;gap:4px;align-items:center">'+
@@ -953,7 +1013,7 @@ document.addEventListener('paste',e=>{
 
 /* ---- 8-FARGERS MERKING (gjenfinning, som de andre appene) ---- */
 const PALETTE=['#e2574c','#e8893b','#e8c14a','#4caf6e','#3bb3a0','#4a8fe2','#9b7ede','#e07ea8'];
-const coinColor={};
+/* coinColor er per-tur, settes i setActiveTrip() */
 let _colorSetter=null;
 function showColorPop(e){
   e.stopPropagation();
@@ -1078,12 +1138,55 @@ function stopMedia(){
 }
 
 /* ── tur / lyd / auth ── */
-function editTrip(){
-  const name=prompt(LANG==='no'?'Turnavn:':'Trip name:', document.getElementById('tripName').textContent);
-  if(name===null)return;
-  const start=prompt(LANG==='no'?'Startpunkt:':'Start point:', document.getElementById('tripStart').textContent);
-  document.getElementById('tripName').textContent=name||document.getElementById('tripName').textContent;
-  if(start!==null) document.getElementById('tripStart').textContent=start;
+function editTrip(){ editTripById(activeTripId); }
+
+/* ── Mine turer: opprett / bytt / endre / slett ── */
+function openTrips(){ renderTripsList(); document.getElementById('tripsModal').classList.add('show'); }
+function closeTrips(){ document.getElementById('tripsModal').classList.remove('show'); }
+function renderTripsList(){
+  const T=(no,en)=>LANG==='no'?no:en, box=document.getElementById('tripsList');
+  document.getElementById('tmTitle').textContent=T('Mine turer','My trips');
+  document.getElementById('tmAdd').textContent='＋ '+T('Ny tur','New trip');
+  box.innerHTML='';
+  if(!TRIPS.length){ box.innerHTML='<p style="color:var(--txt-3);font-size:14px">'+T('Ingen turer ennå.','No trips yet.')+'</p>'; return; }
+  TRIPS.forEach(tp=>{
+    const card=document.createElement('div');
+    card.className='tripcard'+(tp.id===activeTripId?' active':'');
+    const meta=[tp.varighet,tp.start].filter(Boolean).join(' · ');
+    card.innerHTML='<span style="font-size:22px">'+APP_CONFIG.emoji+'</span>'+
+      '<div class="tc-main"><div class="tc-name">'+escapeHtml(tp.name)+'</div>'+
+      (meta?'<div class="tc-meta">'+escapeHtml(meta)+'</div>':'')+'</div>'+
+      (tp.id===activeTripId?'<span class="tc-badge">'+T('aktiv','active')+'</span>':'')+
+      '<button class="tinybtn" aria-label="'+T('Endre','Edit')+'" onclick="event.stopPropagation();editTripById(\''+tp.id+'\')">✏️</button>'+
+      '<button class="tinybtn" aria-label="'+T('Slett','Delete')+'" onclick="event.stopPropagation();delTrip(\''+tp.id+'\')">🗑️</button>';
+    card.onclick=()=>{ setActiveTrip(tp.id); closeCoin(); renderCarousel(); saveState(); closeTrips(); };
+    box.appendChild(card);
+  });
+}
+function newTripPrompt(){
+  const T=(no,en)=>LANG==='no'?no:en;
+  const name=prompt(T('Navn på turen:','Trip name:'),''); if(name===null)return;
+  const v=prompt(T('Varighet (f.eks «14 dager», «2000 døgn», «helg»):','Duration (e.g. "14 days", "weekend"):'),'');
+  newTrip(name.trim(), v===null?'':v.trim(), '');
+  closeCoin(); renderCarousel(); renderTripsList();
+}
+function editTripById(id){
+  const T=(no,en)=>LANG==='no'?no:en, tp=TRIPS.find(t=>t.id===id); if(!tp)return;
+  const name=prompt(T('Turnavn:','Trip name:'),tp.name); if(name===null)return;
+  tp.name=name.trim()||tp.name;
+  const v=prompt(T('Varighet (f.eks «14 dager», «2000 døgn»):','Duration (e.g. "14 days"):'),tp.varighet||'');
+  if(v!==null) tp.varighet=v.trim();
+  if(tp.id===activeTripId) setActiveTrip(tp.id);
+  saveState();
+  if(document.getElementById('tripsModal').classList.contains('show')) renderTripsList();
+}
+function delTrip(id){
+  const T=(no,en)=>LANG==='no'?no:en;
+  if(TRIPS.length<=1){ alert(T('Du må ha minst én tur.','You need at least one trip.')); return; }
+  if(!confirm(T('Slette denne turen og alt innholdet?','Delete this trip and all its content?')))return;
+  TRIPS=TRIPS.filter(t=>t.id!==id); delete tripStates[id]; delete tripColors[id];
+  if(activeTripId===id){ setActiveTrip(TRIPS[0].id); closeCoin(); renderCarousel(); }
+  saveState(); renderTripsList();
 }
 function toggleMute(){ muted=!muted; document.getElementById('muteBtn').textContent=muted?'🔇':'🔊'; }
 
@@ -1111,16 +1214,32 @@ function initFirebase(){
   }catch(e){ console.warn('Firebase init feilet — lokal demo.', e); }
 }
 function userDoc(){ return db.collection('users').doc(fbUser.uid).collection('apps').doc(APP_CONFIG.id); }
+function refreshAfterLoad(){
+  renderCarousel();
+  if(document.getElementById('folderview').classList.contains('show')) renderFolderView();
+  else if(document.getElementById('detail').classList.contains('show')) renderFolders();
+}
 async function loadState(){
   try{
     const snap=await userDoc().get();
-    if(snap.exists && snap.data().folderState){
+    const d=snap.exists?snap.data():null;
+    if(d && d.trips && d.trips.length){
       suppressSave=true;
-      const saved=snap.data().folderState;
-      Object.keys(saved).forEach(k=>{ folderState[k]=saved[k]; });
+      TRIPS=d.trips; tripStates=d.tripStates||{}; tripColors=d.tripColors||{};
+      TRIPS.forEach(tp=>{ if(!tripStates[tp.id]) tripStates[tp.id]=freshFolders(); if(!tripColors[tp.id]) tripColors[tp.id]={}; });
+      const want=(d.activeTripId && TRIPS.find(x=>x.id===d.activeTripId)) ? d.activeTripId : TRIPS[0].id;
+      setActiveTrip(want);
       suppressSave=false;
-      if(document.getElementById('folderview').classList.contains('show')) renderFolderView();
-      else if(document.getElementById('detail').classList.contains('show')) renderFolders();
+      refreshAfterLoad();
+    }else if(d && d.folderState){
+      // migrer gammel enkelt-tur til den aktive (seedede) turen
+      suppressSave=true;
+      tripStates[activeTripId]=d.folderState;
+      folderState=tripStates[activeTripId];
+      if(d.trip && d.trip.name){ const tp=TRIPS.find(t=>t.id===activeTripId); if(tp){ tp.name=d.trip.name; tp.start=d.trip.start||''; setActiveTrip(tp.id); } }
+      suppressSave=false;
+      refreshAfterLoad();
+      saveState();
     }else{
       saveState(); // første innlogging: lagre seed-data
     }
@@ -1131,8 +1250,10 @@ function saveState(){
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
     userDoc().set({
-      folderState: folderState,
-      trip:{ name:document.getElementById('tripName').textContent, start:document.getElementById('tripStart').textContent },
+      trips: TRIPS,
+      activeTripId: activeTripId,
+      tripStates: tripStates,
+      tripColors: tripColors,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     },{merge:true}).catch(e=>console.warn('Lagring feilet',e));
   },900);
