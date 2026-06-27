@@ -154,6 +154,11 @@
   .thumb{position:relative;aspect-ratio:1;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#000;cursor:pointer}
   .thumb img,.thumb video{width:100%;height:100%;object-fit:cover;display:block}
   .thumb .x{position:absolute;top:3px;right:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0;font-size:14px;line-height:1;cursor:pointer}
+  .thumb .ren{position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.6);color:#fff;border:0;font-size:11px;line-height:1;cursor:pointer;display:flex;align-items:center;justify-content:center}
+  .thumb .thumbcap{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(0deg,rgba(0,0,0,.78),transparent);color:#fff;font-size:10px;padding:12px 5px 4px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none}
+  .cam-zoom{position:absolute;left:0;right:0;bottom:104px;display:flex;align-items:center;justify-content:center;gap:10px;padding:0 28px}
+  .cam-zoom input[type=range]{flex:1;max-width:300px;accent-color:#fff}
+  .cam-zoom .zlabel{color:#fff;background:rgba(0,0,0,.45);padding:4px 9px;border-radius:999px;font-size:12px;min-width:42px;text-align:center;font-variant-numeric:tabular-nums}
   .addmedia{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--card2);border:1px dashed var(--line2);color:var(--txt-2);border-radius:10px;padding:10px;font:inherit;font-size:13px;cursor:pointer;width:100%}
   .tinybtn{background:transparent;border:0;color:var(--txt-3);font-size:15px;cursor:pointer;padding:2px 4px}
 
@@ -345,6 +350,11 @@
     <button onclick="closeCam()" aria-label="Lukk">✕</button>
     <div id="camTimer" class="cam-timer"></div>
     <button id="camSwitch" onclick="switchCam()" aria-label="Bytt kamera">🔄</button>
+  </div>
+  <div class="cam-zoom" id="camZoomWrap">
+    <span class="zlabel">🔍</span>
+    <input type="range" id="camZoom" min="1" max="5" step="0.1" value="1" oninput="setZoom(this.value)" aria-label="Zoom">
+    <span class="zlabel" id="camZoomVal">1.0×</span>
   </div>
   <div class="cam-bottom">
     <button id="camModePhoto" class="cam-mode active" onclick="setCamMode('photo')">Foto</button>
@@ -939,13 +949,34 @@ function mediaGridHtml(media,pi,ti){
   media.forEach((m,mi)=>{
     const open = (pi===null) ? 'openFolderViewer('+mi+')' : 'openTurViewer('+pi+','+ti+','+mi+')';
     const del  = (pi===null) ? 'delFolderMedia('+mi+')' : 'delTurMedia('+pi+','+ti+','+mi+')';
+    const ren  = (pi===null) ? 'renameFolderMedia('+mi+')' : 'renameTurMedia('+pi+','+ti+','+mi+')';
     const el = m.type==='video'
       ? '<video src="'+m.url+'" muted playsinline></video>'
       : '<img src="'+m.url+'" alt="">';
+    const title = m.title || m.name || '';
     g+='<div class="thumb" onclick="'+open+'">'+el+
+       (title?'<div class="thumbcap">'+escapeHtml(title)+'</div>':'')+
+       '<button class="ren" aria-label="Endre navn" onclick="event.stopPropagation();'+ren+'">✏️</button>'+
        '<button class="x" aria-label="Fjern" onclick="event.stopPropagation();'+del+'">×</button></div>';
   });
   return g+'</div>';
+}
+function suggestMediaName(type){
+  const d=new Date();
+  const dato=d.toLocaleDateString(LANG==='no'?'no-NO':undefined);
+  const tid=d.toLocaleTimeString(LANG==='no'?'no-NO':undefined,{hour:'2-digit',minute:'2-digit'});
+  const pre = type==='video' ? (LANG==='no'?'Video ':'Video ') : (LANG==='no'?'Bilde ':'Photo ');
+  return pre+dato+' '+tid;
+}
+function renameFolderMedia(mi){
+  const m=curFolder().media[mi]; if(!m)return;
+  const v=prompt(LANG==='no'?'Navn på minnet:':'Name:', m.title||suggestMediaName(m.type));
+  if(v===null)return; m.title=v.trim(); renderFolderView();
+}
+function renameTurMedia(pi,ti,mi){
+  const m=curFolder().peaks[pi].turer[ti].media[mi]; if(!m)return;
+  const v=prompt(LANG==='no'?'Navn på minnet:':'Name:', m.title||suggestMediaName(m.type));
+  if(v===null)return; m.title=v.trim(); renderFolderView();
 }
 
 /* ---- FULLSKJERM-FREMVISER ---- */
@@ -963,7 +994,8 @@ function renderViewer(){
   stage.innerHTML = m.type==='video'
     ? '<video src="'+m.url+'" controls autoplay playsinline></video>'
     : '<img src="'+m.url+'" alt="">';
-  document.getElementById('viewerCount').textContent=(viewerIdx+1)+' / '+viewerMedia.length;
+  const cap=(m.title||m.name||'');
+  document.getElementById('viewerCount').textContent=(cap?cap+'  ·  ':'')+(viewerIdx+1)+' / '+viewerMedia.length;
   const multi=viewerMedia.length>1;
   document.querySelector('.vprev').style.display=multi?'':'none';
   document.querySelector('.vnext').style.display=multi?'':'none';
@@ -1003,10 +1035,10 @@ async function filesToMedia(files, cb){
         const path=APP_CONFIG.id+'/'+auth.currentUser.uid+'/'+Date.now()+'_'+(file.name||'paste').replace(/[^\w.\-]/g,'_');
         const ref=storage.ref().child(path);
         await ref.put(file);
-        arr.push({url:await ref.getDownloadURL(), type, name:file.name||'fil', path});
-      }catch(e){ arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil'}); }
+        arr.push({url:await ref.getDownloadURL(), type, name:file.name||'fil', title:suggestMediaName(type), path});
+      }catch(e){ arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil', title:suggestMediaName(type)}); }
     }else{
-      arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil'}); // demo: kun denne økten
+      arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil', title:suggestMediaName(type)}); // demo: kun denne økten
     }
   }
   if(arr.length) cb(arr);
@@ -1173,6 +1205,7 @@ function stopMedia(){
 /* ── KAMERA-OPPTAK i appen (foto + video) — funker på mobil OG PC ── */
 let capStream=null, capTarget=null, capMode='photo', capFacing='environment';
 let capRec=null, capChunks=[], capTimer=null, capSecs=0;
+let capZoom=1, capHwZoom=false, capTrack=null;
 function fmtSec(s){ const m=Math.floor(s/60), r=s%60; return m+':'+(r<10?'0':'')+r; }
 async function openCam(target){
   if(!window.isSecureContext){
@@ -1196,6 +1229,7 @@ async function startCap(){
     const v=document.getElementById('capVideo');
     v.srcObject=capStream; v.muted=true; v.setAttribute('playsinline',''); v.playsInline=true;
     await v.play().catch(()=>{});
+    setupZoom();
   }catch(e){
     let msg;
     if(e.name==='NotAllowedError') msg=LANG==='no'?'⚠️ Tilgang blokkert. Trykk lås-ikonet i adressefeltet → tillat kamera (og mikrofon for video), og prøv igjen.':'⚠️ Permission blocked.';
@@ -1206,6 +1240,48 @@ async function startCap(){
   }
 }
 function stopCapStream(){ if(capStream){ capStream.getTracks().forEach(t=>t.stop()); capStream=null; } }
+function setupZoom(){
+  capZoom=1; capHwZoom=false; capTrack=null;
+  const sl=document.getElementById('camZoom'), v=document.getElementById('capVideo');
+  v.style.transform=''; v.style.transformOrigin='center center';
+  try{
+    capTrack=capStream.getVideoTracks()[0];
+    const caps=capTrack.getCapabilities ? capTrack.getCapabilities() : {};
+    if(caps && caps.zoom && caps.zoom.max>caps.zoom.min){
+      capHwZoom=true;
+      sl.min=caps.zoom.min; sl.max=caps.zoom.max; sl.step=caps.zoom.step||0.1; sl.value=caps.zoom.min;
+      capZoom=caps.zoom.min;
+    }else{
+      sl.min=1; sl.max=5; sl.step=0.1; sl.value=1; capZoom=1;
+    }
+  }catch(e){ sl.min=1; sl.max=5; sl.step=0.1; sl.value=1; }
+  document.getElementById('camZoomVal').textContent=(+sl.value).toFixed(1)+'×';
+}
+function setZoom(val){
+  capZoom=+val;
+  document.getElementById('camZoomVal').textContent=capZoom.toFixed(1)+'×';
+  if(capHwZoom && capTrack){
+    capTrack.applyConstraints({advanced:[{zoom:capZoom}]}).catch(()=>{});
+  }else{
+    document.getElementById('capVideo').style.transform='scale('+capZoom+')';
+  }
+}
+// knip-zoom (pinch) på forhåndsvisningen
+let pinchStart=0, pinchZoom0=1;
+(function bindPinch(){
+  const v=document.getElementById('capVideo'); if(!v) return;
+  v.addEventListener('touchstart',e=>{ if(e.touches.length===2){ pinchStart=pinchDist(e); pinchZoom0=capZoom; } },{passive:true});
+  v.addEventListener('touchmove',e=>{
+    if(e.touches.length===2 && pinchStart){
+      const sl=document.getElementById('camZoom');
+      const ratio=pinchDist(e)/pinchStart;
+      let z=Math.min(+sl.max, Math.max(+sl.min, pinchZoom0*ratio));
+      sl.value=z; setZoom(z);
+    }
+  },{passive:true});
+  v.addEventListener('touchend',e=>{ if(e.touches.length<2) pinchStart=0; });
+})();
+function pinchDist(e){ const a=e.touches[0],b=e.touches[1]; return Math.hypot(a.clientX-b.clientX,a.clientY-b.clientY); }
 function setCamMode(m){
   if(capRec && capRec.state==='recording') return; // ikke bytt midt i opptak
   capMode=m;
@@ -1222,8 +1298,13 @@ function camShutter(){ capMode==='photo' ? snapPhoto() : toggleRec(); }
 function snapPhoto(){
   const v=document.getElementById('capVideo');
   if(!v.videoWidth) return;
-  const c=document.createElement('canvas'); c.width=v.videoWidth; c.height=v.videoHeight;
-  c.getContext('2d').drawImage(v,0,0,c.width,c.height);
+  const vw=v.videoWidth, vh=v.videoHeight;
+  let sx=0, sy=0, sw=vw, sh=vh;
+  if(!capHwZoom && capZoom>1){           // digital zoom: beskjær midten
+    sw=vw/capZoom; sh=vh/capZoom; sx=(vw-sw)/2; sy=(vh-sh)/2;
+  }
+  const c=document.createElement('canvas'); c.width=Math.round(sw); c.height=Math.round(sh);
+  c.getContext('2d').drawImage(v, sx,sy,sw,sh, 0,0,c.width,c.height);
   const fl=document.getElementById('camFlash'); fl.classList.remove('go'); void fl.offsetWidth; fl.classList.add('go');
   c.toBlob(b=>{ if(b) deliverCapture(new File([b],'foto_'+Date.now()+'.jpg',{type:'image/jpeg'})); }, 'image/jpeg', 0.92);
   // bildet lagres, kamera blir stående åpent så du kan ta flere
