@@ -140,6 +140,13 @@
   .vprev{left:12px} .vnext{right:12px}
   .vcount{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(0,0,0,.45);padding:5px 13px;border-radius:999px}
 
+  /* snarvei-lenker */
+  .linkrow{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px;margin-bottom:9px}
+  .linkrow .lk{flex:1;display:flex;align-items:center;gap:11px;color:var(--txt);text-decoration:none;min-width:0}
+  .linkrow .lkemoji{font-size:20px}
+  .linkrow .lklabel{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .linkrow .ext{color:var(--txt-3);font-size:15px}
+
   /* AI-boks (AI overalt) */
   .ai{margin-top:18px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:12px}
   .ai .row{display:flex;gap:8px}
@@ -309,6 +316,14 @@ const APP_CONFIG = {
         {emoji:"🧭",name:{no:"Offline-kart",en:"Offline map"}},
         {emoji:"🥾",name:{no:"Spor og etapper",en:"Track & legs"}},
         {emoji:"🤖",name:{no:"AI-assistent",en:"AI assistant"}},
+        {emoji:"🔖",type:"links",name:{no:"Snarveier og oppslag",en:"Shortcuts & references"},
+          sub:{no:"Hardkodede lenker for denne turtypen",en:"Built-in links for this trip type"},
+          links:[
+            {emoji:"🗺️",label:"UT.no — turforslag og ruter",url:"https://ut.no"},
+            {emoji:"⚠️",label:"Varsom.no — skredvarsel",url:"https://www.varsom.no"},
+            {emoji:"🌦️",label:"Yr.no — værvarsel",url:"https://www.yr.no"},
+            {emoji:"🛖",label:"DNT — hytter og medlemskap",url:"https://www.dnt.no"}
+          ]},
       ]},
     { id:"vokter", emoji:"🛡️",
       name:{no:"Vokteren",en:"The Guardian"},
@@ -522,6 +537,7 @@ function renderFolders(){
     const sub=f.sub?('<span class="fsub">'+f.sub[LANG]+'</span>'):'';
     let count='';
     if(f.type==='peaks') count=(f.peaks?f.peaks.length:0)+' '+(LANG==='no'?'topper':'peaks');
+    else if(f.type==='links') count=(f.links?f.links.length:0)+' '+(LANG==='no'?'lenker':'links');
     else if(f.media&&f.media.length) count=f.media.length+' 📎';
     row.innerHTML=
       '<span class="femoji">'+(f.emoji||'📁')+'</span>'+
@@ -573,6 +589,8 @@ function renderFolderView(){
   const f=curFolder(), fv=document.getElementById('folderview');
   if(f.type==='peaks'){
     fv.innerHTML = (openPeakIdx===null) ? peaksListHtml(f) : peakDetailHtml(f, openPeakIdx);
+  }else if(f.type==='links'){
+    fv.innerHTML = linksFolderHtml(f);
   }else{
     fv.innerHTML = mediaFolderHtml(f);
   }
@@ -667,6 +685,40 @@ function mediaFolderHtml(f){
 function setFolderNote(v){ curFolder().note=v; saveState(); }
 function addFolderMedia(){ pickFiles(arr=>{ curFolder().media.push(...arr); renderFolderView(); }); }
 function delFolderMedia(mi){ curFolder().media.splice(mi,1); renderFolderView(); }
+
+/* ---- SNARVEIER / OPPSLAGSVERK (hardkodede lenker per app) ---- */
+function linksFolderHtml(f){
+  const T=(no,en)=>LANG==='no'?no:en;
+  if(!f.links)f.links=[];
+  let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake','Back')+'</button>';
+  h+='<div class="vtitle"><span class="e">'+(f.emoji||'🔖')+'</span><div><h3>'+escapeHtml(f.name[LANG])+'</h3>'+
+     (f.sub?'<div class="sub">'+f.sub[LANG]+'</div>':'')+'</div></div>';
+  if(!f.links.length) h+='<p style="color:var(--txt-3);font-size:14px">'+T('Ingen lenker ennå.','No links yet.')+'</p>';
+  f.links.forEach((lnk,i)=>{
+    const safe=escapeHtml(lnk.url||'');
+    h+='<div class="linkrow">'+
+       '<a class="lk" href="'+safe+'" target="_blank" rel="noopener noreferrer">'+
+         '<span class="lkemoji">'+(lnk.emoji||'🔖')+'</span>'+
+         '<span class="lklabel">'+escapeHtml(lnk.label||lnk.url||'')+'</span></a>'+
+       '<span class="ext">↗</span>'+
+       '<button class="tinybtn" aria-label="Slett lenke" onclick="delLink('+i+')">🗑️</button>'+
+       '</div>';
+  });
+  h+='<button class="addbtn" onclick="addLink()">＋ '+T('Legg til lenke','Add link')+'</button>';
+  return h;
+}
+function addLink(){
+  const T=(no,en)=>LANG==='no'?no:en;
+  const label=prompt(T('Navn på lenke:','Link name:')); if(!label||!label.trim())return;
+  let url=prompt(T('Adresse (URL):','Address (URL):'),'https://'); if(!url)return;
+  url=url.trim(); if(!/^https?:\/\//i.test(url)) url='https://'+url;
+  curFolder().links.push({emoji:'🔖', label:label.trim(), url});
+  renderFolderView();
+}
+function delLink(i){
+  if(!confirm(LANG==='no'?'Slette lenken?':'Delete link?'))return;
+  curFolder().links.splice(i,1); renderFolderView();
+}
 
 /* ---- FELLES: media-grid + filvelger ---- */
 function mediaGridHtml(media,pi,ti){
