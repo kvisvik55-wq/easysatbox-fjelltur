@@ -587,6 +587,7 @@ const I18N = {
 };
 function t(key){ return (I18N[LANG]&&I18N[LANG][key]) || I18N.en[key] || I18N.no[key] || key; }
 function tr(o){ return o ? (o[LANG]||o.en||o.no||'') : ''; }
+function T(no,en){ return LANG==='no'?no:en; }
 
 let LANG = "no", THEME = "deepspace", muted = false, current = 0;
 const L = ()=>tr(APP_CONFIG.name);
@@ -879,7 +880,7 @@ function peakDetailHtml(f,pi){
        '<textarea class="fld" placeholder="'+T('Minne, vær, hvem du var med …','Memory, weather, who you were with …')+'" '+
          'oninput="autoGrow(this)" onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'note\',this.value)">'+escapeHtml(t.note||'')+'</textarea>'+
        mediaGridHtml(t.media, pi, ti)+
-       '<button class="addmedia" onclick="openCam({kind:\'tur\',pi:'+pi+',ti:'+ti+'})">📷 '+T('Ta bilde / video','Take photo / video')+'</button>'+
+       captureBtns("{kind:'tur',pi:"+pi+",ti:"+ti+"}")+
        '<button class="addmedia" onclick="addTurMedia('+pi+','+ti+')">🖼️ '+T('Importer fra galleri','Import from gallery')+'</button>'+
        '<div class="draghint">'+T('eller dra filer hit · lim med Ctrl+V','or drag files here · paste with Ctrl+V')+'</div>'+
        '</div>';
@@ -920,7 +921,7 @@ function mediaFolderHtml(f){
   h+='<button class="addmedia" onclick="printFolder()">📄 '+T('Skriv ut / lag PDF','Print / make PDF')+'</button>';
   h+='<div ondragover="event.preventDefault();this.classList.add(\'dz-over\')" ondragleave="this.classList.remove(\'dz-over\')" ondrop="dropFolder(event)">';
   h+=mediaGridHtml(f.media,null,null);
-  h+='<button class="addmedia" onclick="openCam({kind:\'folder\'})">📷 '+T('Ta bilde / video','Take photo / video')+'</button>';
+  h+=captureBtns("{kind:'folder'}");
   h+='<button class="addmedia" onclick="addFolderMedia()">🖼️ '+T('Importer fra galleri','Import from gallery')+'</button>';
   h+='<div class="draghint">'+T('eller dra filer hit · lim med Ctrl+V','or drag files here · paste with Ctrl+V')+'</div></div>';
   return h;
@@ -1259,9 +1260,11 @@ function isMobileDevice(){
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
     || (navigator.maxTouchPoints>1 && /Macintosh/i.test(navigator.userAgent));
 }
-function nativeCapture(target){
+function nativeCapture(target, mode){
   const inp=document.createElement('input');
-  inp.type='file'; inp.accept='image/*,video/*'; inp.capture='environment'; inp.multiple=false;
+  inp.type='file';
+  inp.accept = (mode==='video') ? 'video/*' : 'image/*'; // ÉN type → kameraet åpnes pålitelig
+  inp.capture='environment';
   inp.onchange=()=>{
     filesToMedia([...inp.files], arr=>{
       if(target.kind==='tur'){ curFolder().peaks[target.pi].turer[target.ti].media.push(...arr); }
@@ -1270,6 +1273,15 @@ function nativeCapture(target){
     });
   };
   inp.click();
+}
+/* Knapper for opptak — tilpasset enhet. Mobil: telefonens kamera (foto/video hver for seg).
+   PC: kamera i nettleseren. */
+function captureBtns(targetExpr){
+  if(isMobileDevice()){
+    return '<button class="addmedia" onclick="nativeCapture('+targetExpr+',\'image\')">📷 '+T('Ta bilde','Take photo')+'</button>'+
+           '<button class="addmedia" onclick="nativeCapture('+targetExpr+',\'video\')">🎥 '+T('Ta video','Take video')+'</button>';
+  }
+  return '<button class="addmedia" onclick="openCam('+targetExpr+')">📷 '+T('Ta bilde / video','Take photo / video')+'</button>';
 }
 function openCam(target){
   if(isMobileDevice()){ nativeCapture(target); return; }
