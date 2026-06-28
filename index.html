@@ -401,7 +401,7 @@
   <div class="tm-card" style="max-width:680px">
     <div class="tm-head"><h3 id="mapTitle">Kart</h3><button class="tm-x" aria-label="Lukk" onclick="closeMap()">✕</button></div>
     <div style="display:flex;gap:8px;margin-bottom:10px">
-      <input id="mapQ" class="fld" style="margin:0;min-height:0" placeholder="Sted, f.eks. «Snøhetta» — eller lat,lon" onkeydown="if(event.key==='Enter')mapSearch()">
+      <input id="mapQ" class="fld" style="margin:0;min-height:0" placeholder="Sted, adresse eller lat,lon — f.eks. «Snøhetta» eller «Chamonix»" onkeydown="if(event.key==='Enter')mapSearch()">
       <button class="back" style="margin:0" onclick="mapSearch()">Vis</button>
       <button class="back" style="margin:0;padding:12px 16px" aria-label="Min posisjon" onclick="mapHere()">📍</button>
     </div>
@@ -1213,7 +1213,14 @@ function ensureGeo(cb){
     ()=>cb(null), {timeout:6000, maximumAge:600000}
   );
 }
-/* ── Kart (OpenStreetMap-innebygd + Google Maps-lenke) ── */
+/* ── Kart (Google Maps innebygd — internasjonalt, Google geokoder selv) ── */
+function gmapEmbed(q){ return 'https://www.google.com/maps?q='+encodeURIComponent(q)+'&z=12&output=embed'; }
+function gmapLink(q){ return 'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q); }
+function showMapQuery(q,label){
+  document.getElementById('mapFrame').src=gmapEmbed(q);
+  document.getElementById('mapGmaps').href=gmapLink(q);
+  document.getElementById('mapTitle').textContent=(LANG==='no'?'Kart — ':'Map — ')+(label||q);
+}
 function openMap(){
   document.getElementById('mapModal').classList.add('show');
   document.getElementById('mapTitle').textContent=T('Kart','Map');
@@ -1222,27 +1229,14 @@ function openMap(){
   if(q && !document.getElementById('mapFrame').src){ document.getElementById('mapQ').value=q; mapSearch(); }
 }
 function closeMap(){ document.getElementById('mapModal').classList.remove('show'); }
-function setMap(lat,lon,label){
-  const d=0.03;
-  const bbox=[lon-d,lat-d,lon+d,lat+d].map(n=>n.toFixed(5)).join(',');
-  document.getElementById('mapFrame').src='https://www.openstreetmap.org/export/embed.html?bbox='+bbox+'&layer=mapnik&marker='+lat.toFixed(5)+','+lon.toFixed(5);
-  document.getElementById('mapGmaps').href='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(label||(lat+','+lon));
-}
-async function mapSearch(){
+function mapSearch(){
   const q=document.getElementById('mapQ').value.trim(); if(!q)return;
-  const m=q.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
-  if(m){ setMap(parseFloat(m[1]),parseFloat(m[2]),q); return; }
-  try{
-    const r=await fetch(APP_CONFIG.aiProxyUrl+'?geocode='+encodeURIComponent(q));
-    const j=await r.json();
-    if(j && j.lat!=null && j.lon!=null) setMap(parseFloat(j.lat),parseFloat(j.lon),q);
-    else alert(T('Fant ikke stedet. Prøv et annet navn, eller skriv lat,lon.','Place not found. Try another name, or enter lat,lon.'));
-  }catch(e){ alert(T('Kartoppslag feilet.','Map lookup failed.')); }
+  showMapQuery(q,q);   // Google slår opp navnet selv — internasjonalt
 }
 function mapHere(){
   if(!navigator.geolocation){ alert(T('Enheten har ikke GPS.','No GPS on device.')); return; }
   navigator.geolocation.getCurrentPosition(
-    p=>setMap(p.coords.latitude,p.coords.longitude,T('Min posisjon','My location')),
+    p=>showMapQuery(p.coords.latitude.toFixed(5)+','+p.coords.longitude.toFixed(5), T('Min posisjon','My location')),
     ()=>alert(T('Fikk ikke posisjon.','Could not get position.'))
   );
 }
