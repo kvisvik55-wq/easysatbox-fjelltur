@@ -253,6 +253,8 @@
   .cam-mode.active{background:var(--accent);color:var(--accent-ink);font-weight:600}
   .cam-shutter{width:72px;height:72px;border-radius:50%;border:5px solid #fff;background:#fff;cursor:pointer;flex:0 0 auto;transition:border-radius .15s,background .15s}
   .cam-shutter.rec{background:#e2574c;border-radius:20px;width:64px;height:64px}
+  .uptoast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);z-index:1500;background:var(--accent);color:var(--accent-ink);font-weight:600;font-size:14px;padding:11px 20px;border-radius:999px;box-shadow:0 6px 20px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s}
+  .uptoast.show{opacity:1;transform:translateX(-50%) translateY(0)}
   @media(prefers-reduced-motion:reduce){.coin{transition:none}}
 </style>
 </head>
@@ -388,6 +390,7 @@
 </div>
 
 <div id="printArea"></div>
+<div id="uploadToast" class="uptoast">⬆️ Laster opp…</div>
 
 <!-- Firebase (compat) — valgfritt. Appen funker uten, da kjører lokal demo. -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -1081,22 +1084,34 @@ document.addEventListener('keydown',e=>{
   });
 })();
 async function filesToMedia(files, cb){
+  const uploading = !!(storage && auth && auth.currentUser);
+  if(uploading) showUploading(true);
   const arr=[];
-  for(const file of files){
-    if(!file || (!file.type.startsWith('image') && !file.type.startsWith('video'))) continue;
-    const type=file.type.startsWith('video')?'video':'image';
-    if(storage && auth && auth.currentUser){
-      try{
-        const path=APP_CONFIG.id+'/'+auth.currentUser.uid+'/'+Date.now()+'_'+(file.name||'paste').replace(/[^\w.\-]/g,'_');
-        const ref=storage.ref().child(path);
-        await ref.put(file);
-        arr.push({url:await ref.getDownloadURL(), type, name:file.name||'fil', title:suggestMediaName(type), path});
-      }catch(e){ arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil', title:suggestMediaName(type)}); }
-    }else{
-      arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil', title:suggestMediaName(type)}); // demo: kun denne økten
+  try{
+    for(const file of files){
+      if(!file || (!file.type.startsWith('image') && !file.type.startsWith('video'))) continue;
+      const type=file.type.startsWith('video')?'video':'image';
+      if(uploading){
+        try{
+          const path=APP_CONFIG.id+'/'+auth.currentUser.uid+'/'+Date.now()+'_'+(file.name||'paste').replace(/[^\w.\-]/g,'_');
+          const ref=storage.ref().child(path);
+          await ref.put(file);
+          arr.push({url:await ref.getDownloadURL(), type, name:file.name||'fil', title:suggestMediaName(type), path});
+        }catch(e){ arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil', title:suggestMediaName(type)}); }
+      }else{
+        arr.push({url:URL.createObjectURL(file), type, name:file.name||'fil', title:suggestMediaName(type)}); // demo: kun denne økten
+      }
     }
+  } finally {
+    if(uploading) showUploading(false);
   }
   if(arr.length) cb(arr);
+}
+let _uploads=0;
+function showUploading(on){
+  _uploads=Math.max(0,_uploads+(on?1:-1));
+  const el=document.getElementById('uploadToast');
+  if(el) el.classList.toggle('show', _uploads>0);
 }
 function pickFiles(cb){
   const inp=document.createElement('input');
@@ -1274,7 +1289,14 @@ function nativeCapture(target, mode){
   inp.accept = (mode==='video') ? 'video/*' : 'image/*'; // ÉN type → kameraet åpnes pålitelig
   inp.capture='environment';
   inp.onchange=()=>{
-    filesToMedia([...inp.files], arr=>{
+    const files=[...inp.files]; if(!files.length) return;
+    let title;
+    if(mode!=='video'){   // navneforslag for bilde, som i de andre appene
+      const ans=prompt(T('Navn på bildet — legg til eller bare lagre:','Photo name — add or just save:'), suggestMediaName('image'));
+      title = (ans===null) ? null : (ans.trim()||null);
+    }
+    filesToMedia(files, arr=>{
+      if(title) arr.forEach(m=>m.title=title);
       if(target.kind==='tur'){ curFolder().peaks[target.pi].turer[target.ti].media.push(...arr); }
       else { if(!curFolder().media) curFolder().media=[]; curFolder().media.push(...arr); }
       renderFolderView();
@@ -1594,6 +1616,10 @@ function toggleAuth(){
       : 'Firebase not configured yet.'); return; }
   if(auth.currentUser){ auth.signOut(); return; }
   const p=new firebase.auth.GoogleAuthProvider();
+  // I installert app (PWA) blokkeres pop-up → bruk redirect direkte
+  const standalone = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                     || window.navigator.standalone===true;
+  if(standalone){ auth.signInWithRedirect(p).catch(e=>alert(e.message)); return; }
   auth.signInWithPopup(p).catch(e=>{
     if(['auth/popup-blocked','auth/cancelled-popup-request','auth/operation-not-supported-in-this-environment'].includes(e.code))
       auth.signInWithRedirect(p);
