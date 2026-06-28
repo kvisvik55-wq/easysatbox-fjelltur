@@ -2212,7 +2212,7 @@ function initWatchIfRequested(){
   return true;
 }
 function ensureLeaflet(cb){
-  if(typeof L!=='undefined'){ cb(); return; }
+  if(typeof window.L!=='undefined'){ cb(); return; }
   const css=document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
   const s=document.createElement('script'); s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
   s.onload=()=>cb();
@@ -2220,11 +2220,11 @@ function ensureLeaflet(cb){
   document.head.appendChild(s);
 }
 function startWatch(token){
-  if(typeof L==='undefined'){ setWatchStatus(nb('Kart utilgjengelig.','Map unavailable.')); return; }
+  if(typeof window.L==='undefined'){ setWatchStatus(nb('Kart utilgjengelig.','Map unavailable.')); return; }
   let map;
   try{
-    map=L.map('watchMap',{zoomControl:true}).setView([62.0,9.0],5);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+    map=window.L.map('watchMap',{zoomControl:true}).setView([62.0,9.0],5);
+    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
     setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){} }, 250);
   }catch(e){ setWatchStatus(nb('Kartfeil: ','Map error: ')+(e&&e.message||e)); return; }
   setWatchStatus(nb('Kobler til…','Connecting…'));
@@ -2236,10 +2236,10 @@ function startWatch(token){
     setWatchTitle(d.title||t('followme_title'));
     lastActive = d.active!==false;
     const pts=(d.track||[]).map(p=>[p.lat,p.lng]);
-    if(pts.length){ if(trail) trail.setLatLngs(pts); else trail=L.polyline(pts,{color:'#e0584d',weight:4,opacity:.85}).addTo(map); }
+    if(pts.length){ if(trail) trail.setLatLngs(pts); else trail=window.L.polyline(pts,{color:'#e0584d',weight:4,opacity:.85}).addTo(map); }
     if(d.pos){
       const ll=[d.pos.lat,d.pos.lng];
-      if(marker) marker.setLatLng(ll); else marker=L.marker(ll).addTo(map);
+      if(marker) marker.setLatLng(ll); else marker=window.L.marker(ll).addTo(map);
       if(!centered){ map.setView(ll,14); centered=true; } else map.panTo(ll,{animate:true});
       lastTs=d.pos.ts||0;
       renderSeen(lastTs,lastActive);
