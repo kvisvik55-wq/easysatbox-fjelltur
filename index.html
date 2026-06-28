@@ -1199,6 +1199,21 @@ function ensureGeo(cb){
     ()=>cb(null), {timeout:6000, maximumAge:600000}
   );
 }
+function cleanAI(s){
+  return s.split('\n').map(line=>{
+    // dropp markdown-tabell-skillelinjer (|---|---|)
+    if(/^\s*\|?[\s|:_-]*-{2,}[\s|:_-]*\|?\s*$/.test(line)) return null;
+    let l=line;
+    l=l.replace(/^\s*>\s?/,'');                                   // fjern sitat-strek (>)
+    l=l.replace(/\*\*(.*?)\*\*/g,'$1').replace(/\*(.*?)\*/g,'$1'); // fjern fet/kursiv
+    l=l.replace(/`{1,3}/g,'').replace(/^#{1,6}\s*/,'');           // fjern kode/overskrift-tegn
+    if(l.includes('|')){                                          // tabell-rad → ren tekst
+      l=l.replace(/^\s*\|/,'').replace(/\|\s*$/,'');
+      l=l.split('|').map(c=>c.trim()).filter(Boolean).join(': ');
+    }
+    return l;
+  }).filter(l=>l!==null).join('\n').replace(/\n{3,}/g,'\n\n').trim();
+}
 async function askAI(){
   const inp=document.getElementById('aiInput'), out=document.getElementById('aiAnswer');
   const q=inp.value.trim(); if(!q) return;
@@ -1211,7 +1226,9 @@ async function askAI(){
           'Aktiv tur: «'+(tp?tp.name:'')+'»'+(tp&&tp.varighet?(' ('+tp.varighet+')'):'')+'. '+
           'Svar konkret og trygt, på språket: '+LANG+'. '+
           'Du KAN hente SANNTIDS vær via get_weather-verktøyet (MET/Yr). Når brukeren spør om vær, '+
-          'BRUK verktøyet — oppgi lat og lon hvis du kjenner stedet (f.eks. norske fjell), ellers place (stedsnavn).';
+          'BRUK verktøyet — oppgi lat og lon hvis du kjenner stedet (f.eks. norske fjell), ellers place (stedsnavn). '+
+          'VIKTIG om format: svar i REN, lesbar tekst. IKKE bruk markdown-tabeller, IKKE bruk tegnene | eller #. '+
+          'Bruk gjerne korte linjer; en enkel liste kan starte hver linje med «- ». Hold svaret kort.';
   if(geo) sys+=' Brukerens nåværende posisjon: lat '+geo.lat.toFixed(4)+', lon '+geo.lon.toFixed(4)+' — bruk denne når brukeren mener «her».';
   const tools=[{
     name:'get_weather',
@@ -1229,7 +1246,7 @@ async function askAI(){
     if(!r.ok) throw new Error('proxy '+r.status);
     const data=await r.json();
     const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || '(tomt svar)';
-    out.textContent=txt;
+    out.textContent=cleanAI(txt);
   }catch(err){
     out.textContent = (LANG==='no'
       ? '⚠️ AI ikke koblet til ennå. Last opp netlify/functions/claude.js til GitHub, og legg ANTHROPIC_API_KEY i Netlify → Environment variables.\n('+err.message+')'
