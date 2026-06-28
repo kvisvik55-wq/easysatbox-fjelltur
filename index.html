@@ -123,7 +123,11 @@
   .detail{display:none}
   .detail.show{display:block}
   .stage.hide,.carousel.hide,.label.hide,.dots.hide,.open-btn.hide,.pretest.hide{display:none}
-  .back{background:transparent;border:0;color:var(--txt-2);font:inherit;font-size:14px;cursor:pointer;display:flex;align-items:center;gap:6px;padding:4px 0;margin-bottom:6px}
+  .back{background:var(--card2);border:2px solid var(--accent);color:var(--txt);font:inherit;font-size:16px;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:12px 20px 12px 16px;border-radius:999px;margin-bottom:14px;min-height:48px;box-shadow:0 2px 8px rgba(0,0,0,.25)}
+  .back::before{content:"←";font-size:22px;font-weight:700;color:var(--accent);line-height:1}
+  .back:active{transform:scale(.97)}
+  .back:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  html[data-contrast="on"] .back{background:#000;border-color:#ffd400;color:#fff}
   .dhead{text-align:center;margin:6px 0 16px}
   .dhead .emoji{font-size:40px}
   .dhead h3{font-size:22px;margin:6px 0 2px;font-weight:600}
@@ -321,7 +325,7 @@
 
   <!-- ===== MYNT-DETALJ (mapper) ===== -->
   <div class="detail" id="detail">
-    <button class="back" onclick="closeCoin()">‹ <span data-i18n="back">Tilbake til mynter</span></button>
+    <button class="back" onclick="closeCoin()"><span data-i18n="back">Tilbake til mynter</span></button>
     <div class="dhead">
       <div class="emoji" id="dEmoji"></div>
       <h3 id="dTitle"></h3>
@@ -423,7 +427,7 @@ const APP_CONFIG = {
   },
 
   // AI går ALLTID via backend-proxy. Aldri API-nøkkel i frontend.
-  aiProxyUrl: "/api/claude",
+  aiProxyUrl: "/.netlify/functions/claude",
 
   // Eksempeltur (kan endres av bruker i appen)
   trip: { no:"Tur 014 — Børgefjell", en:"Trip 014 — Børgefjell", start:"Viermdalen" },
@@ -846,7 +850,7 @@ function growAll(){ document.querySelectorAll('#folderview textarea.fld').forEac
 /* ---- TOPP-LISTE ---- */
 function peaksListHtml(f){
   const T=(no,en)=>LANG==='no'?no:en;
-  let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake til Skattkammeret','Back')+'</button>';
+  let h='<button class="back" onclick="backToFolders()">'+T('Tilbake til Skattkammeret','Back')+'</button>';
   h+='<div class="vtitle"><span class="e">🏔️</span><div><h3>'+escapeHtml(tr(f.name))+'</h3>'+
       '<div class="sub">'+T('Trykk en topp for å se alle turene','Tap a peak to see all trips')+'</div></div></div>';
   if(!f.peaks.length) h+='<p style="color:var(--txt-3);font-size:14px">'+T('Ingen topper ennå.','No peaks yet.')+'</p>';
@@ -874,7 +878,7 @@ function addPeak(){
 /* ---- TOPP-DETALJ (turene) ---- */
 function peakDetailHtml(f,pi){
   const T=(no,en)=>LANG==='no'?no:en, p=f.peaks[pi];
-  let h='<button class="back" onclick="backToPeaks()">‹ '+T('Tilbake til topper','Back to peaks')+'</button>';
+  let h='<button class="back" onclick="backToPeaks()">'+T('Tilbake til topper','Back to peaks')+'</button>';
   h+='<div class="vtitle"><span class="e">🏔️</span><div style="flex:1"><h3>'+escapeHtml(p.name)+'</h3>'+
       (p.elev?'<div class="sub">'+escapeHtml(p.elev)+' moh · ':'<div class="sub">')+
       p.turer.length+' '+(p.turer.length===1?T('tur','trip'):T('turer','trips'))+'</div></div>'+
@@ -924,7 +928,7 @@ function delTurMedia(pi,ti,mi){ curFolder().peaks[pi].turer[ti].media.splice(mi,
 function mediaFolderHtml(f){
   const T=(no,en)=>LANG==='no'?no:en;
   if(f.note===undefined)f.note=""; if(!f.media)f.media=[];
-  let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake','Back')+'</button>';
+  let h='<button class="back" onclick="backToFolders()">'+T('Tilbake','Back')+'</button>';
   h+='<div class="vtitle"><span class="e">'+(f.emoji||'📁')+'</span><div><h3>'+escapeHtml(tr(f.name))+'</h3>'+
      (f.sub?'<div class="sub">'+tr(f.sub)+'</div>':'')+'</div></div>';
   h+='<textarea class="fld" placeholder="'+T('Skriv notater her …','Write notes here …')+'" '+
@@ -970,7 +974,7 @@ function delFolderMedia(mi){ curFolder().media.splice(mi,1); renderFolderView();
 function linksFolderHtml(f){
   const T=(no,en)=>LANG==='no'?no:en;
   if(!f.links)f.links=[];
-  let h='<button class="back" onclick="backToFolders()">‹ '+T('Tilbake','Back')+'</button>';
+  let h='<button class="back" onclick="backToFolders()">'+T('Tilbake','Back')+'</button>';
   h+='<div class="vtitle"><span class="e">'+(f.emoji||'🔖')+'</span><div><h3>'+escapeHtml(tr(f.name))+'</h3>'+
      (f.sub?'<div class="sub">'+tr(f.sub)+'</div>':'')+'</div></div>';
   if(!f.links.length) h+='<p style="color:var(--txt-3);font-size:14px">'+T('Ingen lenker ennå.','No links yet.')+'</p>';
@@ -1206,8 +1210,8 @@ async function askAI(){
     out.textContent=txt;
   }catch(err){
     out.textContent = (LANG==='no'
-      ? '⚠️ AI-proxy ikke koblet til ennå. Sett opp /api/claude i backend (Railway/Netlify) med ANTHROPIC_API_KEY.\n('+err.message+')'
-      : '⚠️ AI proxy not connected yet. Set up /api/claude in the backend.\n('+err.message+')');
+      ? '⚠️ AI ikke koblet til ennå. Last opp netlify/functions/claude.js til GitHub, og legg ANTHROPIC_API_KEY i Netlify → Environment variables.\n('+err.message+')'
+      : '⚠️ AI not connected yet. Add netlify/functions/claude.js and set ANTHROPIC_API_KEY in Netlify.\n('+err.message+')');
   }
   inp.value='';
 }
