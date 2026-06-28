@@ -2253,7 +2253,7 @@ function startWatch(token){
     if(pts.length){ if(trail) trail.setLatLngs(pts); else trail=window.L.polyline(pts,{color:'#e0584d',weight:4,opacity:.85}).addTo(map); }
     if(d.pos){
       const ll=[d.pos.lat,d.pos.lng], acc=d.pos.acc||0;
-      if(marker) marker.setLatLng(ll); else marker=window.L.marker(ll).addTo(map);
+      if(marker) marker.setLatLng(ll); else marker=window.L.circleMarker(ll,{radius:8,color:'#ffffff',weight:3,fillColor:'#e0584d',fillOpacity:1}).addTo(map);
       if(acc>0){ if(accCircle){ accCircle.setLatLng(ll); accCircle.setRadius(acc); } else accCircle=window.L.circle(ll,{radius:acc,color:'#4a90d9',weight:1,fillOpacity:.12}).addTo(map); }
       if(!centered){ map.setView(ll, acc>2000?11:14); centered=true; } else map.panTo(ll,{animate:true});
       lastTs=d.pos.ts||0; lastAccV=acc;
