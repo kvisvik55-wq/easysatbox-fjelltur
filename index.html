@@ -1233,10 +1233,10 @@ async function mapSearch(){
   const m=q.match(/^\s*(-?\d+(?:\.\d+)?)\s*,\s*(-?\d+(?:\.\d+)?)\s*$/);
   if(m){ setMap(parseFloat(m[1]),parseFloat(m[2]),q); return; }
   try{
-    const r=await fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&q='+encodeURIComponent(q));
+    const r=await fetch(APP_CONFIG.aiProxyUrl+'?geocode='+encodeURIComponent(q));
     const j=await r.json();
-    if(j&&j[0]) setMap(parseFloat(j[0].lat),parseFloat(j[0].lon),q);
-    else alert(T('Fant ikke stedet.','Place not found.'));
+    if(j && j.lat!=null && j.lon!=null) setMap(parseFloat(j.lat),parseFloat(j.lon),q);
+    else alert(T('Fant ikke stedet. Prøv et annet navn, eller skriv lat,lon.','Place not found. Try another name, or enter lat,lon.'));
   }catch(e){ alert(T('Kartoppslag feilet.','Map lookup failed.')); }
 }
 function mapHere(){
