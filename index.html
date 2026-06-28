@@ -2194,6 +2194,9 @@ async function stopFollowMe(){
 }
 
 /* ── Følger-side (ingen innlogging): ?watch=token ── */
+function setWatchStatus(m){ const e=document.getElementById('watchStatus'); if(e) e.textContent=m; }
+function setWatchTitle(m){ const e=document.getElementById('watchTitle'); if(e) e.textContent=m; }
+function nb(no,en){ return (LANG==='no')?no:en; }
 function initWatchIfRequested(){
   const token=new URLSearchParams(location.search).get('watch');
   if(!token) return false;
@@ -2201,20 +2204,36 @@ function initWatchIfRequested(){
   let nv=(navigator.language||'no').slice(0,2).toLowerCase(); if(nv==='nb'||nv==='nn')nv='no';
   LANG = I18N[nv] ? nv : 'en';
   document.documentElement.lang = (LANG==='no')?'nb':LANG;
+  setWatchTitle('EasySatBox');
+  setWatchStatus(nb('Laster kart…','Loading map…'));
   initFirebase();          // setter db; ingen innlogging nødvendig for å LESE publicShare
-  startWatch(token);
+  if(!db){ setWatchStatus(nb('Database utilgjengelig.','Database unavailable.')); return true; }
+  ensureLeaflet(()=>startWatch(token));
   return true;
 }
+function ensureLeaflet(cb){
+  if(typeof L!=='undefined'){ cb(); return; }
+  const css=document.createElement('link'); css.rel='stylesheet'; css.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css'; document.head.appendChild(css);
+  const s=document.createElement('script'); s.src='https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+  s.onload=()=>cb();
+  s.onerror=()=>setWatchStatus(nb('Kunne ikke laste kartet (nett/blokkering).','Could not load map (network/blocked).'));
+  document.head.appendChild(s);
+}
 function startWatch(token){
-  const status=document.getElementById('watchStatus');
-  if(!db || typeof L==='undefined'){ if(status) status.textContent=t('watch_notfound'); return; }
-  const map=L.map('watchMap',{zoomControl:true}).setView([62.0,9.0],5);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
-  let marker=null, trail=null, centered=false, lastTs=0, lastActive=true;
+  if(typeof L==='undefined'){ setWatchStatus(nb('Kart utilgjengelig.','Map unavailable.')); return; }
+  let map;
+  try{
+    map=L.map('watchMap',{zoomControl:true}).setView([62.0,9.0],5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);
+    setTimeout(()=>{ try{ map.invalidateSize(); }catch(e){} }, 250);
+  }catch(e){ setWatchStatus(nb('Kartfeil: ','Map error: ')+(e&&e.message||e)); return; }
+  setWatchStatus(nb('Kobler til…','Connecting…'));
+  let marker=null, trail=null, centered=false, lastTs=0, lastActive=true, gotData=false;
   db.collection('publicShare').doc(token).onSnapshot(snap=>{
-    if(!snap.exists){ if(status) status.textContent=t('watch_notfound'); return; }
+    gotData=true;
+    if(!snap.exists){ setWatchStatus(t('watch_notfound')); return; }
     const d=snap.data();
-    const tEl=document.getElementById('watchTitle'); if(tEl) tEl.textContent=d.title||t('followme_title');
+    setWatchTitle(d.title||t('followme_title'));
     lastActive = d.active!==false;
     const pts=(d.track||[]).map(p=>[p.lat,p.lng]);
     if(pts.length){ if(trail) trail.setLatLngs(pts); else trail=L.polyline(pts,{color:'#e0584d',weight:4,opacity:.85}).addTo(map); }
@@ -2223,15 +2242,22 @@ function startWatch(token){
       if(marker) marker.setLatLng(ll); else marker=L.marker(ll).addTo(map);
       if(!centered){ map.setView(ll,14); centered=true; } else map.panTo(ll,{animate:true});
       lastTs=d.pos.ts||0;
+      renderSeen(lastTs,lastActive);
+    } else {
+      setWatchStatus(lastActive ? nb('Venter på posisjon… (deler fra en enhet uten GPS?)','Waiting for position… (sharing from a device without GPS?)') : t('watch_ended'));
     }
-    renderSeen(lastTs,lastActive);
-  }, err=>{ if(status) status.textContent=t('watch_notfound'); });
-  setInterval(()=>renderSeen(lastTs,lastActive), 30000);
+  }, err=>{
+    const code=(err&&err.code)||'';
+    if(code==='permission-denied') setWatchStatus(nb('Tilgang avvist — publiser firestore-reglene (publicShare).','Access denied — publish the Firestore rules (publicShare).'));
+    else setWatchStatus(t('watch_notfound')+(code?(' ('+code+')'):''));
+  });
+  setTimeout(()=>{ if(!gotData) setWatchStatus(nb('Ingen respons fra databasen ennå…','No response from database yet…')); }, 6000);
+  setInterval(()=>{ if(marker) renderSeen(lastTs,lastActive); }, 30000);
 }
 function renderSeen(ts,active){
   const el=document.getElementById('watchStatus'); if(!el) return;
   if(active===false){ el.textContent=t('watch_ended'); return; }
-  if(!ts){ el.textContent=t('watch_live'); return; }
+  if(!ts){ el.textContent='🔴 '+t('watch_live'); return; }
   const mins=Math.floor((Date.now()-ts)/60000);
   if(mins<1){ el.textContent='🔴 '+t('watch_live'); return; }
   const clk=new Date(ts).toLocaleTimeString(LANG==='no'?'no-NO':undefined,{hour:'2-digit',minute:'2-digit'});
