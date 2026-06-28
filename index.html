@@ -286,7 +286,7 @@
       </select>
       <button class="iconbtn" id="dysBtn" aria-label="Dysleksivennlig skrift" aria-pressed="false" onclick="toggleDys()" title="Dysleksiskrift">Aa</button>
       <button class="iconbtn" id="contrastBtn" aria-label="Høy kontrast" aria-pressed="false" onclick="toggleContrast()" title="Høy kontrast">◐</button>
-      <button class="iconbtn" id="muteBtn" aria-label="Lyd" onclick="toggleMute()">🔊</button>
+      <button class="iconbtn" id="muteBtn" aria-label="Les opp AI-svar" aria-pressed="false" onclick="toggleSpeak()" title="Les opp svar">🔇</button>
     </div>
   </header>
 
@@ -339,6 +339,7 @@
     <div class="ai">
       <div class="row">
         <input id="aiInput" placeholder="" />
+        <button class="send" id="micBtn" onclick="startVoice()" aria-label="Snakk" title="Snakk" style="padding:0 16px">🎤</button>
         <button class="send" onclick="askAI()" data-i18n="ask">Spør</button>
       </div>
       <div class="hint" id="aiHint"></div>
@@ -1259,6 +1260,29 @@ function cleanAI(s){
     return l;
   }).filter(l=>l!==null).join('\n').replace(/\n{3,}/g,'\n\n').trim();
 }
+/* ── Tale-til-tekst (gratis i nettleseren, ingen nøkkel). Sender automatisk når du er ferdig. ── */
+const VOICE_LANG={no:'nb-NO',en:'en-US',de:'de-DE',fr:'fr-FR',es:'es-ES',it:'it-IT',ru:'ru-RU',ja:'ja-JP',zh:'zh-CN',pl:'pl-PL'};
+let recog=null, recogOn=false;
+function startVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const btn=document.getElementById('micBtn');
+  if(!SR){ alert(T('Enheten støtter ikke tale-til-tekst i denne nettleseren.','Speech-to-text is not supported in this browser.')); return; }
+  if(recogOn && recog){ recog.stop(); return; }   // trykk igjen = stopp
+  recog=new SR();
+  recog.lang=VOICE_LANG[LANG]||'en-US';
+  recog.interimResults=false;
+  recog.maxAlternatives=1;
+  recog.onstart=()=>{ recogOn=true; if(btn){btn.textContent='🔴'; btn.style.opacity='1';} };
+  recog.onerror=(e)=>{ recogOn=false; if(btn) btn.textContent='🎤';
+    if(e.error==='not-allowed'||e.error==='service-not-allowed') alert(T('Mikrofon ikke tillatt. Gi appen tilgang til mikrofonen.','Microphone not allowed. Grant the app microphone access.'));
+  };
+  recog.onend=()=>{ recogOn=false; if(btn) btn.textContent='🎤'; };
+  recog.onresult=(e)=>{
+    const txt=(e.results[0] && e.results[0][0] && e.results[0][0].transcript||'').trim();
+    if(txt){ const inp=document.getElementById('aiInput'); inp.value=txt; askAI(); }   // ett trykk: snakk → svar
+  };
+  try{ recog.start(); }catch(err){ /* allerede i gang */ }
+}
 async function askAI(){
   const inp=document.getElementById('aiInput'), out=document.getElementById('aiAnswer');
   const q=inp.value.trim(); if(!q) return;
@@ -1311,7 +1335,9 @@ async function askAI(){
     if(!r.ok) throw new Error('proxy '+r.status);
     const data=await r.json();
     const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || '(tomt svar)';
-    out.innerHTML=aiHtml(cleanAI(txt));
+    const clean=cleanAI(txt);
+    out.innerHTML=aiHtml(clean);
+    maybeSpeak(clean);
   }catch(err){
     out.textContent = (LANG==='no'
       ? '⚠️ AI ikke koblet til ennå. Last opp netlify/functions/claude.js til GitHub, og legg ANTHROPIC_API_KEY i Netlify → Environment variables.\n('+err.message+')'
@@ -1320,6 +1346,8 @@ async function askAI(){
   inp.value='';
 }
 document.getElementById('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
+if(!(window.SpeechRecognition||window.webkitSpeechRecognition)){ const mb=document.getElementById('micBtn'); if(mb) mb.style.display='none'; }
+if(!('speechSynthesis' in window)){ const sb=document.getElementById('muteBtn'); if(sb) sb.style.display='none'; }
 
 /* ── kamera/mikrofon-test FØR man går inn ──
    Viser ekte forhåndsvisning. Krever HTTPS eller localhost (ikke file://). */
@@ -1648,7 +1676,29 @@ function delTrip(id){
   if(activeTripId===id){ setActiveTrip(TRIPS[0].id); closeCoin(); renderCarousel(); }
   saveState(); renderTripsList();
 }
-function toggleMute(){ muted=!muted; document.getElementById('muteBtn').textContent=muted?'🔇':'🔊'; }
+/* ── Les opp AI-svar (tekst-til-tale, gratis i nettleseren). Viktig for svaksynte. ── */
+let speakOn=false;
+function stripForSpeech(s){ return s.replace(/https?:\/\/[^\s]+/g,'').replace(/[•\*_#>|]/g,'').replace(/\s{2,}/g,' ').trim(); }
+function speakNow(text){
+  if(!('speechSynthesis' in window)) return;
+  try{
+    window.speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(stripForSpeech(text));
+    u.lang=VOICE_LANG[LANG]||'en-US';
+    window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+function maybeSpeak(text){ if(speakOn) speakNow(text); }
+function toggleSpeak(){
+  speakOn=!speakOn;
+  const b=document.getElementById('muteBtn');
+  b.textContent=speakOn?'🔊':'🔇';
+  b.setAttribute('aria-pressed',String(speakOn));
+  if(speakOn){
+    const a=document.getElementById('aiAnswer');
+    if(a && a.textContent.trim()) speakNow(a.textContent);   // les opp svaret som allerede står
+  } else if('speechSynthesis' in window){ window.speechSynthesis.cancel(); }
+}
 
 /* ── Firebase: Auth + Firestore + Storage ──
    Lim inn web-config i APP_CONFIG.firebase. Uten nøkler: lokal demo.
