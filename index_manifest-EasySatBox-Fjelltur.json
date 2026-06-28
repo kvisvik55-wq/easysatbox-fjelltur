@@ -1,0 +1,164 @@
+{
+  "manifest_versjon": "1.0",
+  "sist_oppdatert": "2026-06-27T18:30:00.000Z",
+  "prosjekt_info": {
+    "app_navn": "EasySatBox Fjelltur",
+    "planet": "Software",
+    "status": "ID-PU-FDV-UU",
+    "fase": "U",
+    "eier": "Jan Arve Kvisvik (JAK Arkitekt AS)",
+    "eier_uid": "g35rQSetsISXZ3UpjVkHPtvfhBm1",
+    "delt_med": [],
+    "min_bc": "ja",
+    "url": "https://easysatbox-fjelltur.netlify.app"
+  },
+  "infrastruktur": {
+    "github": "https://github.com/kvisvik55-wq/easysatbox-fjelltur",
+    "netlify": "https://easysatbox-fjelltur.netlify.app",
+    "railway": "",
+    "database": "Firebase Firestore + Storage (mylife-2-f8ae2, Blaze)"
+  },
+  "bidragsytere": [
+    { "rolle": "Arkitektur & idé", "navn": "Jan Arve Kvisvik (JAK Arkitekt AS)" },
+    { "rolle": "Kode & struktur", "navn": "Claude" },
+    { "rolle": "Visuell grafikk", "navn": "Gemini" },
+    { "rolle": "Sparring & innspill", "navn": "ChatGPT" }
+  ],
+  "uu_status": [
+    { "krav": "Tastaturnavigering", "oppfylt": true },
+    { "krav": "Stemmestyring / Voice-to-Structure", "oppfylt": false },
+    { "krav": "Høy kontrast", "oppfylt": true },
+    { "krav": "Skjermleser / alt-tekst", "oppfylt": true },
+    { "krav": "Store trykkflater", "oppfylt": true },
+    { "krav": "Dysleksivennlig tekst", "oppfylt": false }
+  ],
+  "filer": [],
+  "bugs": [],
+  "arkitektur": [
+    {
+      "navn": "01_Idé_og_Konsept",
+      "uu_tale_beskrivelse": "Nivå 1: Idé og konsept. Et hjem for hele turlivet — før, under og etter turen — ikke enda et verktøy. Mal for alle turtyper: fjelltur, moltetur, fisketur, sopptur.",
+      "prefab": true,
+      "sub_nivaer": [
+        {
+          "navn": "Hjem_for_turlivet_ikke_enda_et_verktøy",
+          "uu_tale_beskrivelse": "Innsikten: folk har notisbøker, papirlapper og rot. Appen gir tankene en adresse — planlegging, gjennomføring, mimring og deling samlet.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Universell_mal_kopier_og_lag_variant",
+          "uu_tale_beskrivelse": "Alt hobbyspesifikt ligger i én APP_CONFIG-blokk. Ny app = kopier fila, bytt config, deploy til ny URL.",
+          "prefab": false,
+          "sub_nivaer": []
+        }
+      ]
+    },
+    {
+      "navn": "02_Mynt-strukturen",
+      "uu_tale_beskrivelse": "Nivå 2: Sliding-door med 8 mynter. Hver mynt åpner prefab-mapper med blyant (omdøp) og pluss (egne mapper). Det rotete får en form før brukeren blir forvirret.",
+      "prefab": true,
+      "sub_nivaer": [
+        {
+          "navn": "Sliding-door_8_mynter_sveip_pil_prikker",
+          "uu_tale_beskrivelse": "Ekspeditøren, Orakelet, Vokteren, Rustningen, Skattkammeret, Basen, Turfølget, Postkortet.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Mapper_med_blyant_og_pluss",
+          "uu_tale_beskrivelse": "Prefab-mapper kan omdøpes eller slettes; bruker kan legge til egne. Langtur-mapper (strøm, lagring, sykdom) for ekspedisjoner.",
+          "prefab": false,
+          "sub_nivaer": []
+        }
+      ]
+    },
+    {
+      "navn": "03_Skattkammeret_og_Mine_topper",
+      "uu_tale_beskrivelse": "Nivå 3: Loggen og minneboka. Topper samler flere turer; etterregistrering av gamle turer; HQ-bilder og video; fullskjerm-fremviser for foredrag.",
+      "prefab": true,
+      "sub_nivaer": [
+        {
+          "navn": "Topper_samler_flere_turer_med_dato_og_notat",
+          "uu_tale_beskrivelse": "Hver topp viser antall turer; hver tur har dato, minne, bilder og video. Personlig fjell-CV over tid.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Etterregistrering_aldri_for_sent",
+          "uu_tale_beskrivelse": "Gamle turer legges inn nå — hent bilder fra kamerarullen. Appen er verdifull fra dag én.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Fullskjerm-fremviser_pil_og_sveip",
+          "uu_tale_beskrivelse": "Trykk et bilde for fullskjerm; bla med pil eller sveip; video med kontroller. Bygget for foredrag og casting — ingen ekstern programvare.",
+          "prefab": false,
+          "sub_nivaer": []
+        }
+      ]
+    },
+    {
+      "navn": "04_UU_og_Språk",
+      "uu_tale_beskrivelse": "Nivå 4: Universell utforming. NO/EN med auto-deteksjon, tre temaer inkl. høy kontrast, kameratest før man går inn, alt-tekst og store knapper.",
+      "prefab": true,
+      "sub_nivaer": [
+        {
+          "navn": "Sprak_NO-EN_auto-deteksjon",
+          "uu_tale_beskrivelse": "Velger språk fra nettleseren (nb/nn → no); document.lang settes for riktig skjermleserstemme. Bruker kan overstyre.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Tre_temaer_Rom_Svart_Kontrast",
+          "uu_tale_beskrivelse": "Romtema med stjerner, rent svart, og høykontrast med gul aksent for UU. (Dysleksifont gjenstår.)",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Test_kamera_og_mikrofon_før_man_går_inn",
+          "uu_tale_beskrivelse": "Live forhåndsvisning + mikrofonmåler på forsiden, så tillatelser fikses før bruk. Krever HTTPS.",
+          "prefab": false,
+          "sub_nivaer": []
+        }
+      ]
+    },
+    {
+      "navn": "05_Drift_og_Vedlikehold",
+      "uu_tale_beskrivelse": "Nivå 5: Forvaltning, drift og vedlikehold — FDV. Firebase per bruker, serversikret. Klar for invitasjoner/abonnement og AI-proxy.",
+      "prefab": true,
+      "sub_nivaer": [
+        {
+          "navn": "Firebase_Firestore_Storage_Auth_per_bruker",
+          "uu_tale_beskrivelse": "Delt prosjekt mylife-2-f8ae2. Egne data låst til users/{uid}; egne filer låst til {appId}/{uid}. Synker på tvers av enheter.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Invitasjoner_og_abonnement_planlagt",
+          "uu_tale_beskrivelse": "Eier inviterer medlemmer med rolle (se/bidra) og kan kaste ut. Datamodell klar: trips/{tripId} med ownerUid + members. Forretningsmodellens hjerte.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "AI-proxy_planlagt_ikke_bygd",
+          "uu_tale_beskrivelse": "Claude via Netlify/Railway-funksjon — API-nøkkel aldri i frontend. AI-boks finnes i hver mynt, venter på /api/claude.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Casting_til_storskjerm_planlagt",
+          "uu_tale_beskrivelse": "Skjermspeiling virker i dag via fremviseren; ekte Chromecast-knapp (Cast SDK) gjenstår.",
+          "prefab": false,
+          "sub_nivaer": []
+        },
+        {
+          "navn": "Koble_planeten_til_EasySatBox_Universet",
+          "uu_tale_beskrivelse": "Hovedporten peker til produksjons-URL når verifisert.",
+          "prefab": false,
+          "sub_nivaer": []
+        }
+      ]
+    }
+  ]
+}
