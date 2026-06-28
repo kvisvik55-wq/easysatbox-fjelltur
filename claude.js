@@ -22,12 +22,36 @@ function compass(deg) {
   return dirs[Math.round((((deg % 360) + 360) % 360) / 45) % 8];
 }
 
-async function geocode(place) {
+async function geocodeKartverket(place) {
+  // Kartverkets stedsnavn-API: gratis, offisielt, ingen nøkkel, ideelt for norske steder.
+  const url = 'https://api.kartverket.no/stedsnavn/v1/navn?sok=' + encodeURIComponent(place) +
+              '&utkoordsys=4326&treffPerSide=1&side=1&fuzzy=true';
+  const r = await fetch(url, { headers: { 'User-Agent': UA } });
+  if (!r.ok) return null;
+  const j = await r.json();
+  const n = j && j.navn && j.navn[0];
+  const pt = n && n.representasjonspunkt;
+  if (!pt) return null;
+  const lat = pt.nord, lon = pt['øst'];
+  if (lat == null || lon == null) return null;
+  const navn = n.skrivemåte || n.stedsnavn || place;
+  const komm = (n.kommuner && n.kommuner[0] && n.kommuner[0].kommunenavn) ? ', ' + n.kommuner[0].kommunenavn : '';
+  return { lat: +lat, lon: +lon, name: navn + komm };
+}
+
+async function geocodeNominatim(place) {
   const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&q=' + encodeURIComponent(place);
   const r = await fetch(url, { headers: { 'User-Agent': UA } });
   if (!r.ok) return null;
   const j = await r.json();
   if (Array.isArray(j) && j[0]) return { lat: +j[0].lat, lon: +j[0].lon, name: j[0].display_name };
+  return null;
+}
+
+async function geocode(place) {
+  // Prøv Kartverket først (norske steder), fall tilbake til Nominatim (resten av verden).
+  try { const k = await geocodeKartverket(place); if (k) return k; } catch (e) {}
+  try { const n = await geocodeNominatim(place); if (n) return n; } catch (e) {}
   return null;
 }
 
