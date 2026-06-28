@@ -1190,23 +1190,45 @@ document.addEventListener('click',e=>{
 function escapeHtml(s){return (s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
 
 /* ── AI via backend-proxy (aldri nøkkel i frontend) ── */
+let userGeo=null;
+function ensureGeo(cb){
+  if(userGeo){ cb(userGeo); return; }
+  if(!navigator.geolocation){ cb(null); return; }
+  navigator.geolocation.getCurrentPosition(
+    p=>{ userGeo={lat:p.coords.latitude, lon:p.coords.longitude}; cb(userGeo); },
+    ()=>cb(null), {timeout:6000, maximumAge:600000}
+  );
+}
 async function askAI(){
   const inp=document.getElementById('aiInput'), out=document.getElementById('aiAnswer');
   const q=inp.value.trim(); if(!q) return;
-  const c=APP_CONFIG.coins[current];
+  const c=APP_CONFIG.coins[current], tp=TRIPS.find(t=>t.id===activeTripId);
   out.classList.add('show'); out.textContent = (LANG==='no'?'Tenker…':'Thinking…');
+  // be om posisjon kun ved vær-/stedsspørsmål (slipper unødig tillatelses-spørsmål)
+  const wantGeo=/vær|weather|temperatur|vind|regn|snø|kald|varm|\bher\b|here|forhold|sol|skyet|grader|wind|rain|cold|warm/i.test(q);
+  const geo = wantGeo ? await new Promise(res=>ensureGeo(res)) : null;
+  let sys='Du er en kortfattet, praktisk turassistent i appen «'+L()+'». '+
+          'Aktiv tur: «'+(tp?tp.name:'')+'»'+(tp&&tp.varighet?(' ('+tp.varighet+')'):'')+'. '+
+          'Svar konkret og trygt, på språket: '+LANG+'. '+
+          'Du KAN hente SANNTIDS vær via get_weather-verktøyet (MET/Yr). Når brukeren spør om vær, '+
+          'BRUK verktøyet — oppgi lat og lon hvis du kjenner stedet (f.eks. norske fjell), ellers place (stedsnavn).';
+  if(geo) sys+=' Brukerens nåværende posisjon: lat '+geo.lat.toFixed(4)+', lon '+geo.lon.toFixed(4)+' — bruk denne når brukeren mener «her».';
+  const tools=[{
+    name:'get_weather',
+    description:'Hent sanntids værvarsel fra MET/Yr for et sted. Oppgi lat og lon hvis du kjenner stedet, ellers place (stedsnavn).',
+    input_schema:{type:'object',properties:{
+      place:{type:'string',description:'Stedsnavn, f.eks. «Snøhetta»'},
+      lat:{type:'number'}, lon:{type:'number'}
+    }}
+  }];
   try{
     const r=await fetch(APP_CONFIG.aiProxyUrl,{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6', max_tokens:600,
-        system:'Du er en turassistent i appen «'+L()+'», modul «'+tr(c.name)+'». Svar kort, konkret og trygt. Brukerens språk: '+LANG+'.',
-        messages:[{role:'user',content:q}]
-      })
+      body:JSON.stringify({ max_tokens:700, system:sys, tools, messages:[{role:'user',content:q}] })
     });
     if(!r.ok) throw new Error('proxy '+r.status);
     const data=await r.json();
-    const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || JSON.stringify(data);
+    const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || '(tomt svar)';
     out.textContent=txt;
   }catch(err){
     out.textContent = (LANG==='no'
