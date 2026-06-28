@@ -1830,7 +1830,7 @@ function initFirebase(){
         u ? t('sign_out') : t('sign_in');
       if(u) await loadState();
       if(u && pendingJoin) doJoinNow();
-      if(!u && pendingJoin && !joinPrompted){ joinPrompted=true; alert(t('join_signin')); toggleAuth(); }
+      if(!u && pendingJoin) promptJoinSignin();
     });
   }catch(e){ console.warn('Firebase init feilet — lokal demo.', e); }
 }
@@ -2042,12 +2042,21 @@ function reopenShare(){
 
 /* ── Bli med via lenke ?join=<tripId>&code=<kode> ── */
 function checkJoinLink(){
-  const tid=new URLSearchParams(location.search).get('join');
+  let tid=new URLSearchParams(location.search).get('join');
+  if(tid){ try{ sessionStorage.setItem('esb_pendingJoin',tid); }catch(e){} history.replaceState(null,'',location.pathname); }
+  try{ if(!tid) tid=sessionStorage.getItem('esb_pendingJoin'); }catch(e){}
   if(tid) pendingJoin={tripId:tid};
+}
+function promptJoinSignin(){
+  let tried=false; try{ tried=sessionStorage.getItem('esb_joinAuthTried')==='1'; }catch(e){}
+  if(tried) return;                       // unngå redirect-loop: prøv auto-innlogging kun én gang
+  try{ sessionStorage.setItem('esb_joinAuthTried','1'); }catch(e){}
+  if(confirm(t('join_signin'))) toggleAuth();
 }
 async function doJoinNow(){
   if(!db || !fbUser || !pendingJoin) return;
   const tripId=pendingJoin.tripId; pendingJoin=null;
+  try{ sessionStorage.removeItem('esb_pendingJoin'); sessionStorage.removeItem('esb_joinAuthTried'); }catch(e){}
   const myEmail=(fbUser.email||'').toLowerCase();
   try{
     const ref=db.collection('trips').doc(tripId);
