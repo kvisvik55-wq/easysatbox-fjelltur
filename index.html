@@ -1284,6 +1284,8 @@ async function askAI(){
           'Når du ikke er sikker på ferske detaljer (åpningstider o.l.), si det ærlig. '+
           'Når du nevner et konkret sted, kan du gjerne legge ved en kartlenke på formen '+
           'https://www.google.com/maps/search/?api=1&query=STEDSNAVN (bytt STEDSNAVN med stedet), slik at brukeren kan se det på kart. '+
+          'Appen har også en egen «🗺️ Kart»-knapp øverst som viser et innebygd kart — du kan henvise brukeren dit '+
+          '(«trykk 🗺️ Kart og søk på stedet»). Si ALDRI at du «ikke kan vise kart»; du kan både gi kartlenke og peke på Kart-knappen. '+
           'VIKTIG om format: svar i REN, lesbar tekst. IKKE bruk markdown-tabeller, IKKE bruk tegnene | eller #. '+
           'Bruk gjerne korte linjer; en enkel liste kan starte hver linje med «- ». Hold svaret kort.';
   if(geo) sys+=' Brukerens nåværende posisjon: lat '+geo.lat.toFixed(4)+', lon '+geo.lon.toFixed(4)+' — bruk denne når brukeren mener «her».';
