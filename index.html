@@ -2883,10 +2883,19 @@ function drawStars(){
 
 init();
 
-/* PWA: registrer service worker (installerbar + åpner offline) */
+/* PWA: registrer service worker, og tving ut gammel versjon automatisk */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(e => console.warn('SW feilet', e));
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // Sjekk straks om det finnes en nyere versjon, og igjen ved fokus
+      try{ reg.update(); }catch(e){}
+      document.addEventListener('visibilitychange', () => { if(!document.hidden){ try{ reg.update(); }catch(e){} } });
+      // Når en ny service worker har overtatt, last siden på nytt én gang → fersk kode
+      let reloaded=false;
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if(reloaded) return; reloaded=true; location.reload();
+      });
+    }).catch(e => console.warn('SW feilet', e));
   });
 }
 </script>
