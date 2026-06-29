@@ -1,0 +1,5 @@
+# Firebase Auth-handler servert fra eget domene (samme-origin) → unngår
+# blokkerte tredjeparts-cookies. Status 200 = proxy (URL-en blir værende på
+# easysatbox-fjelltur.netlify.app), ikke en omdirigering.
+/__/auth/*       https://mylife-2-f8ae2.firebaseapp.com/__/auth/:splat       200
+/__/firebase/*   https://mylife-2-f8ae2.firebaseapp.com/__/firebase/:splat   200
