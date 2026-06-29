@@ -220,6 +220,20 @@
   .vclose{position:absolute;top:14px;right:16px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:20px;cursor:pointer;z-index:2}
   .vnav{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:28px;line-height:1;cursor:pointer;z-index:2}
   .vprev{left:12px} .vnext{right:12px}
+  .vedit{position:absolute;top:14px;right:70px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:19px;cursor:pointer;z-index:2}
+  .imed{position:fixed;inset:0;z-index:1100;background:#0b0f1a;display:none;flex-direction:column}
+  .imed.show{display:flex}
+  .imed-top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);flex:0 0 auto}
+  .imed-title{color:var(--txt);font-weight:600}
+  .imed-btn{background:none;border:0;color:var(--txt-2);font:inherit;font-size:15px;cursor:pointer;padding:6px 10px}
+  .imed-save{color:#7ddf9a;font-weight:600}
+  .imed-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0;padding:10px}
+  .imed-stage canvas{max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.4)}
+  .imed-tools{flex:0 0 auto;padding:12px 16px 18px;border-top:1px solid var(--line);background:rgba(0,0,0,.2)}
+  .imed-slider{display:flex;align-items:center;gap:12px;margin:8px 0}
+  .imed-slider label{color:var(--txt-2);font-size:13px;width:104px;flex:0 0 auto}
+  .imed-slider input[type=range]{flex:1;accent-color:var(--accent)}
+  .imed-reset{margin-top:10px;width:100%;background:var(--card2);border:1px solid var(--line2);color:var(--txt-2);border-radius:10px;padding:9px;font:inherit;font-size:13px;cursor:pointer}
   .vcount{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);color:#fff;font-size:13px;background:rgba(0,0,0,.45);padding:5px 13px;border-radius:999px}
 
   /* snarvei-lenker */
@@ -296,6 +310,20 @@
   .sh-roletog{display:flex;gap:8px;margin:8px 0}
   .sh-role{flex:1;background:var(--card2);border:1px solid var(--line);color:var(--txt-2);border-radius:10px;padding:11px;font:inherit;font-size:13px;cursor:pointer}
   .sh-role.on{border-color:var(--accent);color:var(--txt);box-shadow:inset 0 0 0 1px var(--accent)}
+  .trash-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .trash-thumb{width:54px;height:54px;border-radius:8px;overflow:hidden;flex:0 0 auto;background:var(--card2)}
+  .trash-thumb img,.trash-thumb video{width:100%;height:100%;object-fit:cover}
+  .trash-meta{flex:1;min-width:0}
+  .trash-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .trash-sub{font-size:12px;color:var(--txt-3);margin-top:2px}
+  .trash-act{display:flex;gap:6px;flex:0 0 auto}
+  .trash-perm{border-color:#e0584d;color:#e0584d}
+  #trashToast{display:flex;align-items:center;gap:12px}
+  .tt-undo{background:none;border:1px solid rgba(255,255,255,.5);color:#fff;border-radius:999px;padding:4px 12px;font:inherit;font-size:13px;cursor:pointer}
+  .savestat{position:fixed;left:50%;transform:translateX(-50%);bottom:18px;z-index:4000;background:rgba(20,26,40,.96);color:#cfd6e4;border:1px solid var(--line);border-radius:999px;padding:6px 14px;font-size:13px;opacity:0;pointer-events:none;transition:opacity .25s;max-width:90vw;text-align:center}
+  .savestat.show{opacity:1}
+  .savestat.ok{color:#7ddf9a;border-color:rgba(125,223,154,.5)}
+  .savestat.warn{color:#ffcf6b;border-color:rgba(255,207,107,.6);pointer-events:auto}
   @media(prefers-reduced-motion:reduce){.coin{transition:none}}
 </style>
 </head>
@@ -339,6 +367,7 @@
     <button onclick="editTrip()" data-i18n="edit_trip">Endre</button>
     <button onclick="openShare()" id="shareBtn" data-i18n="share_btn">👥 Del</button>
     <button onclick="openFollow()" id="followBtn" data-i18n="follow_btn">📍 Følg</button>
+    <button onclick="openTrash()" id="trashBtn" aria-label="Søppelbøtte">🗑️</button>
   </div>
 
   <!-- ===== CAROUSEL (sliding door) ===== -->
@@ -399,6 +428,7 @@
 <!-- ===== FULLSKJERM-FREMVISER (foredrag/mimring) ===== -->
 <div id="viewer" class="viewer" role="dialog" aria-modal="true" aria-label="Bildevisning" onclick="if(event.target===this)closeViewer()">
   <button class="vclose" aria-label="Lukk" onclick="closeViewer()">✕</button>
+  <button class="vedit" aria-label="Rediger" onclick="openEditorFromViewer()">🎨</button>
   <button class="vnav vprev" aria-label="Forrige" onclick="viewerNav(-1)">‹</button>
   <div id="viewerStage" class="vstage"></div>
   <button class="vnav vnext" aria-label="Neste" onclick="viewerNav(1)">›</button>
@@ -422,6 +452,30 @@
   </div>
 </div>
 <div id="shToast" class="uptoast"></div>
+<div id="trashModal" class="tmodal" onclick="if(event.target===this)closeTrash()">
+  <div class="tm-card">
+    <div class="tm-head"><h3 data-i18n="trash_title">Søppelbøtte</h3><button class="tm-x" aria-label="Lukk" onclick="closeTrash()">✕</button></div>
+    <div id="trashBody"></div>
+  </div>
+</div>
+<div id="trashToast" class="uptoast"><span class="tt-text"></span> <button class="tt-undo" onclick="undoTrash()" data-i18n="trash_undo">Angre</button></div>
+<div id="saveStatus" class="savestat"></div>
+<div id="imgEditor" class="imed">
+  <div class="imed-top">
+    <button class="imed-btn" onclick="closeEditor()" data-i18n="ed_cancel">Avbryt</button>
+    <span class="imed-title" data-i18n="ed_title">Rediger bilde</span>
+    <button class="imed-btn imed-save" onclick="saveEditor()" data-i18n="ed_save">Lagre</button>
+  </div>
+  <div class="imed-stage"><canvas id="edCanvas"></canvas></div>
+  <div class="imed-tools">
+    <div class="imed-slider"><label data-i18n="ed_brightness">Lysstyrke</label><input type="range" id="ed_b" min="50" max="150" value="100" oninput="edSet('b',this.value)"></div>
+    <div class="imed-slider"><label data-i18n="ed_balance">Lysbalanse</label><input type="range" id="ed_c" min="50" max="150" value="100" oninput="edSet('c',this.value)"></div>
+    <div class="imed-slider"><label data-i18n="ed_saturation">Metning</label><input type="range" id="ed_s" min="0" max="200" value="100" oninput="edSet('s',this.value)"></div>
+    <div class="imed-slider"><label data-i18n="ed_hue">Fargetone</label><input type="range" id="ed_h" min="-180" max="180" value="0" oninput="edSet('h',this.value)"></div>
+    <div class="imed-slider"><label data-i18n="ed_temp">Fargetemp</label><input type="range" id="ed_temp" min="-100" max="100" value="0" oninput="edSet('temp',this.value)"></div>
+    <button class="imed-reset" onclick="edReset()" data-i18n="ed_reset">Tilbakestill</button>
+  </div>
+</div>
 <div id="followModal" class="tmodal" onclick="if(event.target===this)closeFollow()">
   <div class="tm-card">
     <div class="tm-head"><h3 data-i18n="followme_title">Følg meg</h3><button class="tm-x" aria-label="Lukk" onclick="closeFollow()">✕</button></div>
@@ -633,7 +687,10 @@ const I18N = {
     invite_new:"Ny invitasjon", invite_who_q:"Hvem inviterer du? (navn eller notat)", status_invited:"Invitert", status_joined:"Ble med", invite_revoke:"Trekk tilbake", invites_none:"Ingen invitasjoner ennå.", invite_label_default:"Invitasjon", invite_revoke_confirm:"Trekke tilbake invitasjonen? Lenken slutter å virke, og personen mister tilgang umiddelbart.",
     invite_intro:"Inviterte logger inn med samme e-post. Gi dem beskjed selv via melding/e-post.", trip_link:"Turlenke", share_invited:"Inviterte", invite_email_label:"Inviter e-post", invite_email_ph:"navn@epost.no", role_deltaker:"Deltaker", role_folger:"Følger", invite_add:"Inviter", invite_bad_email:"Skriv en gyldig e-postadresse.", join_not_invited:"Du er ikke invitert til denne turen (eller den er avsluttet). Be eier invitere e-posten du logger inn med.", strike_confirm:"Fjerne denne personen fra turen? De mister tilgang umiddelbart.",
     follow_btn:"📍 Følg", followme_title:"Følg meg", followme_intro:"Del posisjonen din live. Familie og venner følger deg på kart — uten innlogging, bare med lenka.", followme_signin:"Logg inn for å dele posisjonen din.", followme_start:"Start «Følg meg»", followme_stop:"Stopp deling", followme_link:"Følg-lenke (ingen innlogging)", followme_copylink:"Kopier følg-lenke", live_banner:"DU DELER LIVE", watch_live:"Live nå", watch_lastseen:"Sist sett kl.", watch_ended:"Delingen er avsluttet.", watch_notfound:"Fant ikke turen, eller den er ikke aktiv.",
-    acc_label:"Nøyaktighet", acc_poor:"(omtrentlig)" },
+    acc_label:"Nøyaktighet", acc_poor:"(omtrentlig)",
+    trash_title:"Søppelbøtte", trash_empty:"Søppelbøtta er tom.", trash_moved:"Flyttet til søppelbøtta", trash_undo:"Angre", trash_restore:"Gjenopprett", trash_days_left:"dager igjen", trash_delete_confirm:"Slette permanent? Dette kan ikke angres.",
+    save_saved:"Lagret", save_saving:"Lagrer…", save_local_only:"Lagres kun her – logg inn for å lagre i skyen",
+    ed_title:"Rediger bilde", ed_cancel:"Avbryt", ed_save:"Lagre", ed_reset:"Tilbakestill", ed_brightness:"Lysstyrke", ed_balance:"Lysbalanse", ed_saturation:"Metning", ed_hue:"Fargetone", ed_temp:"Fargetemp", ed_save_fail:"Kunne ikke lagre bildet.", ed_load_fail:"Kunne ikke laste bildet for redigering." },
   en:{ tagline:"Front door", start:"Start", edit_trip:"Edit trip", pick:"Pick a coin",
     swipe:"Swipe sideways or use the arrows. The coin in front opens.",
     test_media:"📷 Test camera and microphone", back:"Back to coins", add_folder:"Add your own folder",
@@ -647,7 +704,10 @@ const I18N = {
     invite_new:"New invite", invite_who_q:"Who are you inviting? (name or note)", status_invited:"Invited", status_joined:"Joined", invite_revoke:"Revoke", invites_none:"No invites yet.", invite_label_default:"Invite", invite_revoke_confirm:"Revoke this invite? The link stops working and the person loses access immediately.",
     invite_intro:"Invitees sign in with the same email. Let them know yourself via message/email.", trip_link:"Trip link", share_invited:"Invited", invite_email_label:"Invite email", invite_email_ph:"name@email.com", role_deltaker:"Participant", role_folger:"Follower", invite_add:"Invite", invite_bad_email:"Enter a valid email address.", join_not_invited:"You're not invited to this trip (or it has ended). Ask the owner to invite the email you sign in with.", strike_confirm:"Remove this person from the trip? They lose access immediately.",
     follow_btn:"📍 Follow", followme_title:"Follow me", followme_intro:"Share your position live. Family and friends follow you on a map — no sign-in, just the link.", followme_signin:"Sign in to share your position.", followme_start:"Start “Follow me”", followme_stop:"Stop sharing", followme_link:"Follow link (no sign-in)", followme_copylink:"Copy follow link", live_banner:"YOU'RE SHARING LIVE", watch_live:"Live now", watch_lastseen:"Last seen at", watch_ended:"Sharing has ended.", watch_notfound:"Trip not found, or not active.",
-    acc_label:"Accuracy", acc_poor:"(approximate)" },
+    acc_label:"Accuracy", acc_poor:"(approximate)",
+    trash_title:"Trash", trash_empty:"Trash is empty.", trash_moved:"Moved to trash", trash_undo:"Undo", trash_restore:"Restore", trash_days_left:"days left", trash_delete_confirm:"Delete permanently? This cannot be undone.",
+    save_saved:"Saved", save_saving:"Saving…", save_local_only:"Saved on this device only – sign in to save to the cloud",
+    ed_title:"Edit photo", ed_cancel:"Cancel", ed_save:"Save", ed_reset:"Reset", ed_brightness:"Brightness", ed_balance:"Light balance", ed_saturation:"Saturation", ed_hue:"Hue", ed_temp:"Temperature", ed_save_fail:"Could not save the image.", ed_load_fail:"Could not load the image for editing." },
   de:{ tagline:"Eingangstür", start:"Start", edit_trip:"Tour bearbeiten", pick:"Wähle eine Münze",
     swipe:"Wische seitwärts oder nutze die Pfeile. Die vordere Münze öffnet sich.",
     test_media:"📷 Kamera und Mikrofon testen", back:"Zurück zu den Münzen", add_folder:"Eigenen Ordner hinzufügen",
@@ -661,7 +721,10 @@ const I18N = {
     invite_new:"Neue Einladung", invite_who_q:"Wen lädst du ein? (Name oder Notiz)", status_invited:"Eingeladen", status_joined:"Beigetreten", invite_revoke:"Zurückziehen", invites_none:"Noch keine Einladungen.", invite_label_default:"Einladung", invite_revoke_confirm:"Diese Einladung zurückziehen? Der Link funktioniert nicht mehr und die Person verliert sofort den Zugriff.",
     invite_intro:"Eingeladene melden sich mit derselben E-Mail an. Informiere sie selbst per Nachricht/E-Mail.", trip_link:"Tour-Link", share_invited:"Eingeladen", invite_email_label:"E-Mail einladen", invite_email_ph:"name@email.de", role_deltaker:"Teilnehmer", role_folger:"Follower", invite_add:"Einladen", invite_bad_email:"Gib eine gültige E-Mail-Adresse ein.", join_not_invited:"Du bist nicht zu dieser Tour eingeladen (oder sie ist beendet). Bitte den Eigentümer, die E-Mail einzuladen, mit der du dich anmeldest.", strike_confirm:"Diese Person aus der Tour entfernen? Sie verliert sofort den Zugriff.",
     follow_btn:"📍 Folgen", followme_title:"Folge mir", followme_intro:"Teile deine Position live. Familie und Freunde folgen dir auf der Karte — ohne Anmeldung, nur mit dem Link.", followme_signin:"Melde dich an, um deine Position zu teilen.", followme_start:"„Folge mir“ starten", followme_stop:"Teilen beenden", followme_link:"Folge-Link (ohne Anmeldung)", followme_copylink:"Folge-Link kopieren", live_banner:"DU TEILST LIVE", watch_live:"Jetzt live", watch_lastseen:"Zuletzt gesehen um", watch_ended:"Die Freigabe wurde beendet.", watch_notfound:"Tour nicht gefunden oder nicht aktiv.",
-    acc_label:"Genauigkeit", acc_poor:"(ungefähr)" },
+    acc_label:"Genauigkeit", acc_poor:"(ungefähr)",
+    trash_title:"Papierkorb", trash_empty:"Der Papierkorb ist leer.", trash_moved:"In den Papierkorb verschoben", trash_undo:"Rückgängig", trash_restore:"Wiederherstellen", trash_days_left:"Tage übrig", trash_delete_confirm:"Endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
+    save_saved:"Gespeichert", save_saving:"Speichern…", save_local_only:"Nur auf diesem Gerät gespeichert – zum Cloud-Speichern anmelden",
+    ed_title:"Foto bearbeiten", ed_cancel:"Abbrechen", ed_save:"Speichern", ed_reset:"Zurücksetzen", ed_brightness:"Helligkeit", ed_balance:"Lichtbalance", ed_saturation:"Sättigung", ed_hue:"Farbton", ed_temp:"Farbtemp.", ed_save_fail:"Bild konnte nicht gespeichert werden.", ed_load_fail:"Bild konnte nicht zum Bearbeiten geladen werden." },
   fr:{ tagline:"Porte d'entrée", start:"Départ", edit_trip:"Modifier", pick:"Choisis une pièce",
     swipe:"Glissez sur le côté ou utilisez les flèches. La pièce devant s'ouvre.",
     test_media:"📷 Tester caméra et micro", back:"Retour aux pièces", add_folder:"Ajouter un dossier",
@@ -675,7 +738,10 @@ const I18N = {
     invite_new:"Nouvelle invitation", invite_who_q:"Qui invitez-vous ? (nom ou note)", status_invited:"Invité", status_joined:"A rejoint", invite_revoke:"Révoquer", invites_none:"Aucune invitation pour l'instant.", invite_label_default:"Invitation", invite_revoke_confirm:"Révoquer cette invitation ? Le lien cesse de fonctionner et la personne perd immédiatement l'accès.",
     invite_intro:"Les invités se connectent avec la même adresse e-mail. Prévenez-les vous-même par message/e-mail.", trip_link:"Lien de la sortie", share_invited:"Invités", invite_email_label:"Inviter par e-mail", invite_email_ph:"nom@email.fr", role_deltaker:"Participant", role_folger:"Abonné", invite_add:"Inviter", invite_bad_email:"Saisissez une adresse e-mail valide.", join_not_invited:"Vous n'êtes pas invité à cette sortie (ou elle est terminée). Demandez au propriétaire d'inviter l'e-mail avec lequel vous vous connectez.", strike_confirm:"Retirer cette personne de la sortie ? Elle perd immédiatement l'accès.",
     follow_btn:"📍 Suivre", followme_title:"Suivez-moi", followme_intro:"Partagez votre position en direct. Famille et amis vous suivent sur une carte — sans connexion, juste le lien.", followme_signin:"Connectez-vous pour partager votre position.", followme_start:"Démarrer « Suivez-moi »", followme_stop:"Arrêter le partage", followme_link:"Lien de suivi (sans connexion)", followme_copylink:"Copier le lien de suivi", live_banner:"VOUS PARTAGEZ EN DIRECT", watch_live:"En direct", watch_lastseen:"Vu pour la dernière fois à", watch_ended:"Le partage est terminé.", watch_notfound:"Sortie introuvable ou inactive.",
-    acc_label:"Précision", acc_poor:"(approximatif)" },
+    acc_label:"Précision", acc_poor:"(approximatif)",
+    trash_title:"Corbeille", trash_empty:"La corbeille est vide.", trash_moved:"Déplacé vers la corbeille", trash_undo:"Annuler", trash_restore:"Restaurer", trash_days_left:"jours restants", trash_delete_confirm:"Supprimer définitivement ? Action irréversible.",
+    save_saved:"Enregistré", save_saving:"Enregistrement…", save_local_only:"Enregistré sur cet appareil uniquement – connectez-vous pour la sauvegarde cloud",
+    ed_title:"Modifier la photo", ed_cancel:"Annuler", ed_save:"Enregistrer", ed_reset:"Réinitialiser", ed_brightness:"Luminosité", ed_balance:"Balance lumière", ed_saturation:"Saturation", ed_hue:"Teinte", ed_temp:"Température", ed_save_fail:"Impossible d'enregistrer l'image.", ed_load_fail:"Impossible de charger l'image à modifier." },
   es:{ tagline:"Puerta de entrada", start:"Inicio", edit_trip:"Editar viaje", pick:"Elige una moneda",
     swipe:"Desliza o usa las flechas. Se abre la moneda del frente.",
     test_media:"📷 Probar cámara y micrófono", back:"Volver a las monedas", add_folder:"Añadir carpeta",
@@ -689,7 +755,10 @@ const I18N = {
     invite_new:"Nueva invitación", invite_who_q:"¿A quién invitas? (nombre o nota)", status_invited:"Invitado", status_joined:"Se unió", invite_revoke:"Revocar", invites_none:"Aún no hay invitaciones.", invite_label_default:"Invitación", invite_revoke_confirm:"¿Revocar esta invitación? El enlace deja de funcionar y la persona pierde el acceso de inmediato.",
     invite_intro:"Los invitados inician sesión con el mismo correo. Avísales tú mismo por mensaje/correo.", trip_link:"Enlace del viaje", share_invited:"Invitados", invite_email_label:"Invitar por correo", invite_email_ph:"nombre@correo.es", role_deltaker:"Participante", role_folger:"Seguidor", invite_add:"Invitar", invite_bad_email:"Introduce un correo electrónico válido.", join_not_invited:"No estás invitado a este viaje (o ha finalizado). Pide al propietario que invite el correo con el que inicias sesión.", strike_confirm:"¿Quitar a esta persona del viaje? Pierde el acceso de inmediato.",
     follow_btn:"📍 Seguir", followme_title:"Sígueme", followme_intro:"Comparte tu posición en vivo. Familia y amigos te siguen en un mapa — sin iniciar sesión, solo con el enlace.", followme_signin:"Inicia sesión para compartir tu posición.", followme_start:"Iniciar «Sígueme»", followme_stop:"Detener uso compartido", followme_link:"Enlace de seguimiento (sin sesión)", followme_copylink:"Copiar enlace de seguimiento", live_banner:"ESTÁS COMPARTIENDO EN VIVO", watch_live:"En vivo ahora", watch_lastseen:"Visto por última vez a las", watch_ended:"El uso compartido ha finalizado.", watch_notfound:"Viaje no encontrado o inactivo.",
-    acc_label:"Precisión", acc_poor:"(aproximado)" },
+    acc_label:"Precisión", acc_poor:"(aproximado)",
+    trash_title:"Papelera", trash_empty:"La papelera está vacía.", trash_moved:"Movido a la papelera", trash_undo:"Deshacer", trash_restore:"Restaurar", trash_days_left:"días restantes", trash_delete_confirm:"¿Eliminar permanentemente? No se puede deshacer.",
+    save_saved:"Guardado", save_saving:"Guardando…", save_local_only:"Guardado solo en este dispositivo: inicia sesión para guardar en la nube",
+    ed_title:"Editar foto", ed_cancel:"Cancelar", ed_save:"Guardar", ed_reset:"Restablecer", ed_brightness:"Brillo", ed_balance:"Balance de luz", ed_saturation:"Saturación", ed_hue:"Tono", ed_temp:"Temperatura", ed_save_fail:"No se pudo guardar la imagen.", ed_load_fail:"No se pudo cargar la imagen para editar." },
   it:{ tagline:"Porta d'ingresso", start:"Partenza", edit_trip:"Modifica", pick:"Scegli una moneta",
     swipe:"Scorri o usa le frecce. Si apre la moneta davanti.",
     test_media:"📷 Prova fotocamera e microfono", back:"Torna alle monete", add_folder:"Aggiungi cartella",
@@ -703,7 +772,10 @@ const I18N = {
     invite_new:"Nuovo invito", invite_who_q:"Chi inviti? (nome o nota)", status_invited:"Invitato", status_joined:"Si è unito", invite_revoke:"Revoca", invites_none:"Ancora nessun invito.", invite_label_default:"Invito", invite_revoke_confirm:"Revocare questo invito? Il link smette di funzionare e la persona perde subito l'accesso.",
     invite_intro:"Gli invitati accedono con la stessa email. Avvisali tu tramite messaggio/email.", trip_link:"Link della gita", share_invited:"Invitati", invite_email_label:"Invita via email", invite_email_ph:"nome@email.it", role_deltaker:"Partecipante", role_folger:"Chi segue", invite_add:"Invita", invite_bad_email:"Inserisci un indirizzo email valido.", join_not_invited:"Non sei invitato a questa gita (o è terminata). Chiedi al proprietario di invitare l'email con cui accedi.", strike_confirm:"Rimuovere questa persona dalla gita? Perde subito l'accesso.",
     follow_btn:"📍 Segui", followme_title:"Seguimi", followme_intro:"Condividi la tua posizione in diretta. Familiari e amici ti seguono su una mappa — senza accesso, basta il link.", followme_signin:"Accedi per condividere la tua posizione.", followme_start:"Avvia «Seguimi»", followme_stop:"Ferma condivisione", followme_link:"Link di tracciamento (senza accesso)", followme_copylink:"Copia link di tracciamento", live_banner:"STAI CONDIVIDENDO IN DIRETTA", watch_live:"In diretta ora", watch_lastseen:"Visto l'ultima volta alle", watch_ended:"La condivisione è terminata.", watch_notfound:"Gita non trovata o non attiva.",
-    acc_label:"Precisione", acc_poor:"(approssimativo)" },
+    acc_label:"Precisione", acc_poor:"(approssimativo)",
+    trash_title:"Cestino", trash_empty:"Il cestino è vuoto.", trash_moved:"Spostato nel cestino", trash_undo:"Annulla", trash_restore:"Ripristina", trash_days_left:"giorni rimasti", trash_delete_confirm:"Eliminare definitivamente? Non annullabile.",
+    save_saved:"Salvato", save_saving:"Salvataggio…", save_local_only:"Salvato solo su questo dispositivo – accedi per salvare nel cloud",
+    ed_title:"Modifica foto", ed_cancel:"Annulla", ed_save:"Salva", ed_reset:"Ripristina", ed_brightness:"Luminosità", ed_balance:"Bilanc. luce", ed_saturation:"Saturazione", ed_hue:"Tonalità", ed_temp:"Temperatura", ed_save_fail:"Impossibile salvare l'immagine.", ed_load_fail:"Impossibile caricare l'immagine da modificare." },
   ru:{ tagline:"Входная дверь", start:"Старт", edit_trip:"Изменить", pick:"Выберите монету",
     swipe:"Проведите в сторону или используйте стрелки. Открывается передняя монета.",
     test_media:"📷 Проверить камеру и микрофон", back:"Назад к монетам", add_folder:"Добавить папку",
@@ -717,7 +789,10 @@ const I18N = {
     invite_new:"Новое приглашение", invite_who_q:"Кого вы приглашаете? (имя или заметка)", status_invited:"Приглашён", status_joined:"Присоединился", invite_revoke:"Отозвать", invites_none:"Пока нет приглашений.", invite_label_default:"Приглашение", invite_revoke_confirm:"Отозвать это приглашение? Ссылка перестанет работать, и человек сразу потеряет доступ.",
     invite_intro:"Приглашённые входят с той же почтой. Сообщите им сами через сообщение/почту.", trip_link:"Ссылка на поездку", share_invited:"Приглашённые", invite_email_label:"Пригласить по почте", invite_email_ph:"name@email.ru", role_deltaker:"Участник", role_folger:"Наблюдатель", invite_add:"Пригласить", invite_bad_email:"Введите корректный адрес эл. почты.", join_not_invited:"Вы не приглашены в эту поездку (или она завершена). Попросите владельца пригласить почту, с которой вы входите.", strike_confirm:"Удалить этого человека из поездки? Он сразу потеряет доступ.",
     follow_btn:"📍 Следить", followme_title:"Следите за мной", followme_intro:"Делитесь своим местоположением вживую. Близкие следят за вами на карте — без входа, только по ссылке.", followme_signin:"Войдите, чтобы делиться местоположением.", followme_start:"Включить «Следите за мной»", followme_stop:"Остановить трансляцию", followme_link:"Ссылка для слежения (без входа)", followme_copylink:"Копировать ссылку", live_banner:"ВЫ ВЕЩАЕТЕ ВЖИВУЮ", watch_live:"В эфире", watch_lastseen:"Последний раз в", watch_ended:"Трансляция завершена.", watch_notfound:"Поездка не найдена или не активна.",
-    acc_label:"Точность", acc_poor:"(приблизительно)" },
+    acc_label:"Точность", acc_poor:"(приблизительно)",
+    trash_title:"Корзина", trash_empty:"Корзина пуста.", trash_moved:"Перемещено в корзину", trash_undo:"Отменить", trash_restore:"Восстановить", trash_days_left:"дн. осталось", trash_delete_confirm:"Удалить навсегда? Это нельзя отменить.",
+    save_saved:"Сохранено", save_saving:"Сохранение…", save_local_only:"Сохранено только на этом устройстве — войдите для облака",
+    ed_title:"Редактировать фото", ed_cancel:"Отмена", ed_save:"Сохранить", ed_reset:"Сброс", ed_brightness:"Яркость", ed_balance:"Баланс света", ed_saturation:"Насыщенность", ed_hue:"Оттенок", ed_temp:"Температура", ed_save_fail:"Не удалось сохранить изображение.", ed_load_fail:"Не удалось загрузить изображение для редактирования." },
   ja:{ tagline:"入口", start:"出発地", edit_trip:"編集", pick:"コインを選ぶ",
     swipe:"横にスワイプするか矢印を使ってください。手前のコインが開きます。",
     test_media:"📷 カメラとマイクをテスト", back:"コイン一覧へ戻る", add_folder:"フォルダを追加",
@@ -731,7 +806,10 @@ const I18N = {
     invite_new:"新しい招待", invite_who_q:"誰を招待しますか？（名前やメモ）", status_invited:"招待済み", status_joined:"参加済み", invite_revoke:"取り消す", invites_none:"まだ招待はありません。", invite_label_default:"招待", invite_revoke_confirm:"この招待を取り消しますか？リンクは無効になり、その人はすぐにアクセスできなくなります。",
     invite_intro:"招待された人は同じメールでログインします。各自にメッセージ/メールで知らせてください。", trip_link:"トリップリンク", share_invited:"招待済み", invite_email_label:"メールで招待", invite_email_ph:"name@email.com", role_deltaker:"参加者", role_folger:"フォロワー", invite_add:"招待", invite_bad_email:"有効なメールアドレスを入力してください。", join_not_invited:"このトリップに招待されていません（または終了済み）。ログインに使うメールを招待するよう、オーナーに依頼してください。", strike_confirm:"この人をトリップから外しますか？すぐにアクセスできなくなります。",
     follow_btn:"📍 フォロー", followme_title:"フォローしてね", followme_intro:"位置をライブで共有。家族や友人は地図であなたをフォローできます — ログイン不要、リンクだけ。", followme_signin:"位置を共有するにはログインしてください。", followme_start:"「フォローしてね」を開始", followme_stop:"共有を停止", followme_link:"フォローリンク（ログイン不要）", followme_copylink:"フォローリンクをコピー", live_banner:"ライブ共有中", watch_live:"ライブ中", watch_lastseen:"最終確認", watch_ended:"共有は終了しました。", watch_notfound:"トリップが見つからないか、有効ではありません。",
-    acc_label:"精度", acc_poor:"(おおよそ)" },
+    acc_label:"精度", acc_poor:"(おおよそ)",
+    trash_title:"ゴミ箱", trash_empty:"ゴミ箱は空です。", trash_moved:"ゴミ箱に移動しました", trash_undo:"元に戻す", trash_restore:"復元", trash_days_left:"日残り", trash_delete_confirm:"完全に削除しますか？元に戻せません。",
+    save_saved:"保存しました", save_saving:"保存中…", save_local_only:"この端末にのみ保存 – クラウド保存にはログイン",
+    ed_title:"写真を編集", ed_cancel:"キャンセル", ed_save:"保存", ed_reset:"リセット", ed_brightness:"明るさ", ed_balance:"明暗バランス", ed_saturation:"彩度", ed_hue:"色相", ed_temp:"色温度", ed_save_fail:"画像を保存できませんでした。", ed_load_fail:"編集用の画像を読み込めませんでした。" },
   zh:{ tagline:"入口", start:"起点", edit_trip:"编辑", pick:"选择一枚硬币",
     swipe:"左右滑动或使用箭头。前方的硬币会打开。",
     test_media:"📷 测试摄像头和麦克风", back:"返回硬币", add_folder:"添加文件夹",
@@ -745,7 +823,10 @@ const I18N = {
     invite_new:"新建邀请", invite_who_q:"你要邀请谁？（姓名或备注）", status_invited:"已邀请", status_joined:"已加入", invite_revoke:"撤销", invites_none:"还没有邀请。", invite_label_default:"邀请", invite_revoke_confirm:"撤销此邀请？链接将失效，该人会立即失去访问权限。",
     invite_intro:"受邀者用同一邮箱登录。请自行通过消息/邮件通知他们。", trip_link:"行程链接", share_invited:"已邀请", invite_email_label:"邮箱邀请", invite_email_ph:"name@email.com", role_deltaker:"参与者", role_folger:"关注者", invite_add:"邀请", invite_bad_email:"请输入有效的电子邮箱地址。", join_not_invited:"你未被邀请加入此行程（或行程已结束）。请所有者邀请你登录所用的邮箱。", strike_confirm:"将此人移出行程？将立即失去访问权限。",
     follow_btn:"📍 关注", followme_title:"跟随我", followme_intro:"实时分享你的位置。家人和朋友在地图上跟随你 — 无需登录，只需链接。", followme_signin:"登录以分享你的位置。", followme_start:"开始“跟随我”", followme_stop:"停止共享", followme_link:"关注链接（无需登录）", followme_copylink:"复制关注链接", live_banner:"你正在实时共享", watch_live:"正在直播", watch_lastseen:"最后出现于", watch_ended:"共享已结束。", watch_notfound:"未找到行程，或行程未激活。",
-    acc_label:"精度", acc_poor:"(大致)" },
+    acc_label:"精度", acc_poor:"(大致)",
+    trash_title:"回收站", trash_empty:"回收站是空的。", trash_moved:"已移至回收站", trash_undo:"撤销", trash_restore:"恢复", trash_days_left:"天后删除", trash_delete_confirm:"永久删除？此操作无法撤销。",
+    save_saved:"已保存", save_saving:"保存中…", save_local_only:"仅保存在本设备 – 登录以保存到云端",
+    ed_title:"编辑照片", ed_cancel:"取消", ed_save:"保存", ed_reset:"重置", ed_brightness:"亮度", ed_balance:"光线平衡", ed_saturation:"饱和度", ed_hue:"色调", ed_temp:"色温", ed_save_fail:"无法保存图片。", ed_load_fail:"无法加载要编辑的图片。" },
   pl:{ tagline:"Drzwi wejściowe", start:"Start", edit_trip:"Edytuj", pick:"Wybierz monetę",
     swipe:"Przesuń w bok lub użyj strzałek. Otworzy się przednia moneta.",
     test_media:"📷 Test kamery i mikrofonu", back:"Powrót do monet", add_folder:"Dodaj folder",
@@ -759,7 +840,10 @@ const I18N = {
     invite_new:"Nowe zaproszenie", invite_who_q:"Kogo zapraszasz? (imię lub notatka)", status_invited:"Zaproszony", status_joined:"Dołączył", invite_revoke:"Cofnij", invites_none:"Brak zaproszeń.", invite_label_default:"Zaproszenie", invite_revoke_confirm:"Cofnąć to zaproszenie? Link przestanie działać, a osoba natychmiast straci dostęp.",
     invite_intro:"Zaproszeni logują się tym samym e-mailem. Powiadom ich sam przez wiadomość/e-mail.", trip_link:"Link wyprawy", share_invited:"Zaproszeni", invite_email_label:"Zaproś e-mailem", invite_email_ph:"imie@email.pl", role_deltaker:"Uczestnik", role_folger:"Obserwujący", invite_add:"Zaproś", invite_bad_email:"Wpisz prawidłowy adres e-mail.", join_not_invited:"Nie masz zaproszenia na tę wyprawę (lub została zakończona). Poproś właściciela, by zaprosił e-mail, którym się logujesz.", strike_confirm:"Usunąć tę osobę z wyprawy? Natychmiast straci dostęp.",
     follow_btn:"📍 Śledź", followme_title:"Śledź mnie", followme_intro:"Udostępniaj swoją pozycję na żywo. Rodzina i przyjaciele śledzą cię na mapie — bez logowania, tylko z linkiem.", followme_signin:"Zaloguj się, aby udostępnić swoją pozycję.", followme_start:"Uruchom „Śledź mnie”", followme_stop:"Zatrzymaj udostępnianie", followme_link:"Link śledzenia (bez logowania)", followme_copylink:"Kopiuj link śledzenia", live_banner:"UDOSTĘPNIASZ NA ŻYWO", watch_live:"Na żywo", watch_lastseen:"Ostatnio widziany o", watch_ended:"Udostępnianie zakończone.", watch_notfound:"Nie znaleziono wyprawy lub jest nieaktywna.",
-    acc_label:"Dokładność", acc_poor:"(przybliżone)" }
+    acc_label:"Dokładność", acc_poor:"(przybliżone)",
+    trash_title:"Kosz", trash_empty:"Kosz jest pusty.", trash_moved:"Przeniesiono do kosza", trash_undo:"Cofnij", trash_restore:"Przywróć", trash_days_left:"dni do usunięcia", trash_delete_confirm:"Usunąć trwale? Nie można cofnąć.",
+    save_saved:"Zapisano", save_saving:"Zapisywanie…", save_local_only:"Zapisano tylko na tym urządzeniu – zaloguj się, aby zapisać w chmurze",
+    ed_title:"Edytuj zdjęcie", ed_cancel:"Anuluj", ed_save:"Zapisz", ed_reset:"Resetuj", ed_brightness:"Jasność", ed_balance:"Balans światła", ed_saturation:"Nasycenie", ed_hue:"Odcień", ed_temp:"Temperatura", ed_save_fail:"Nie udało się zapisać obrazu.", ed_load_fail:"Nie udało się wczytać obrazu do edycji." }
 };
 function t(key){ return (I18N[LANG]&&I18N[LANG][key]) || I18N.en[key] || I18N.no[key] || key; }
 function tr(o){ return o ? (o[LANG]||o.en||o.no||'') : ''; }
@@ -816,6 +900,7 @@ function init(){
   setLang(I18N[nav] ? nav : "en");
   setTheme("deepspace");
   seedDefaultTrip();
+  restoreLocal();   // hent lokal sikkerhetskopi om den finnes (også uten innlogging)
   current = 0; // åpne på fremste mynt (Skattkammeret)
   renderCarousel();
   initFirebase();
@@ -1062,7 +1147,7 @@ function peakDetailHtml(f,pi){
        '<button class="tinybtn" aria-label="Slett tur" onclick="delTur('+pi+','+ti+')">🗑️</button></span></div>'+
        '<input class="fld" type="date" value="'+(t.date||'')+'" onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'date\',this.value)" aria-label="Dato">'+
        '<textarea class="fld" placeholder="'+t('sk_memo_ph')+'" '+
-         'oninput="autoGrow(this)" onfocus="lastTur={pi:'+pi+',ti:'+ti+'}" onchange="setTurField('+pi+','+ti+',\'note\',this.value)">'+escapeHtml(t.note||'')+'</textarea>'+
+         'oninput="autoGrow(this);setTurField('+pi+','+ti+',\'note\',this.value)" onfocus="lastTur={pi:'+pi+',ti:'+ti+'}">'+escapeHtml(t.note||'')+'</textarea>'+
        mediaGridHtml(t.media, pi, ti)+
        captureBtns("{kind:'tur',pi:"+pi+",ti:"+ti+"}")+
        '<button class="addmedia" onclick="addTurMedia('+pi+','+ti+')">🖼️ '+t('u_import_gallery')+'</button>'+
@@ -1091,7 +1176,7 @@ function delTur(pi,ti){
 }
 function setTurField(pi,ti,key,val){ curFolder().peaks[pi].turer[ti][key]=val; saveState(); }
 function addTurMedia(pi,ti){ pickFiles(arr=>{ curFolder().peaks[pi].turer[ti].media.push(...arr); renderFolderView(); }); }
-function delTurMedia(pi,ti,mi){ curFolder().peaks[pi].turer[ti].media.splice(mi,1); renderFolderView(); }
+/* delTurMedia: flyttet til SØPPELBØTTE-modulen */
 
 /* ---- GENERISK MEDIAMAPPE (Bilder, Pakkeliste, …) ---- */
 function mediaFolderHtml(f){
@@ -1101,7 +1186,7 @@ function mediaFolderHtml(f){
   h+='<div class="vtitle"><span class="e">'+(f.emoji||'📁')+'</span><div><h3>'+escapeHtml(tr(f.name))+'</h3>'+
      (f.sub?'<div class="sub">'+tr(f.sub)+'</div>':'')+'</div></div>';
   h+='<textarea class="fld" placeholder="'+t('sk_notes_ph')+'" '+
-     'oninput="autoGrow(this)" onchange="setFolderNote(this.value)">'+escapeHtml(f.note)+'</textarea>';
+     'oninput="autoGrow(this);setFolderNote(this.value)">'+escapeHtml(f.note)+'</textarea>';
   h+='<button class="addmedia" onclick="printFolder()">📄 '+t('u_print_pdf')+'</button>';
   h+='<div ondragover="event.preventDefault();this.classList.add(\'dz-over\')" ondragleave="this.classList.remove(\'dz-over\')" ondrop="dropFolder(event)">';
   h+=mediaGridHtml(f.media,null,null);
@@ -1137,7 +1222,7 @@ function printFolder(){
   doPrint(buildReport(tr(f.name), sub, f.note||'', f.media||[]));
 }
 function addFolderMedia(){ pickFiles(arr=>{ curFolder().media.push(...arr); renderFolderView(); }); }
-function delFolderMedia(mi){ curFolder().media.splice(mi,1); renderFolderView(); }
+/* delFolderMedia: flyttet til SØPPELBØTTE-modulen */
 
 /* ---- SNARVEIER / OPPSLAGSVERK (hardkodede lenker per app) ---- */
 function linksFolderHtml(f){
@@ -1212,6 +1297,37 @@ function renameTurMedia(pi,ti,mi){
 
 /* ---- FULLSKJERM-FREMVISER ---- */
 let viewerMedia=[], viewerIdx=0;
+/* ── Zoom i fremviseren: knip · dobbelttrykk · panorering ── */
+let vz={scale:1,tx:0,ty:0,img:null};
+let vzMouse={down:false,x:0,y:0,tx:0,ty:0};
+function vzApply(){ if(vz.img){ vz.img.style.transform='translate('+vz.tx+'px,'+vz.ty+'px) scale('+vz.scale+')'; } }
+function vzDist(tt){ return Math.hypot(tt[0].clientX-tt[1].clientX, tt[0].clientY-tt[1].clientY); }
+function vzClamp(){ if(!vz.img){return;} if(vz.scale<=1){vz.tx=0;vz.ty=0;return;} const mx=vz.img.clientWidth*(vz.scale-1)/2, my=vz.img.clientHeight*(vz.scale-1)/2; vz.tx=Math.max(-mx,Math.min(mx,vz.tx)); vz.ty=Math.max(-my,Math.min(my,vz.ty)); }
+function vzReset(anim){ vz.scale=1; vz.tx=0; vz.ty=0; if(vz.img){ if(anim){vz.img.style.transition='transform .2s';} vzApply(); if(anim){ setTimeout(()=>{ if(vz.img) vz.img.style.transition=''; },220);} } }
+function vzAttach(img){
+  vz.img=img; vz.scale=1; vz.tx=0; vz.ty=0;
+  img.style.transformOrigin='center center'; img.style.touchAction='none'; img.style.cursor='zoom-in'; vzApply();
+  let startDist=0,startScale=1,panning=false,px=0,py=0,stx=0,sty=0,lastTap=0;
+  img.addEventListener('touchstart',e=>{
+    if(e.touches.length===2){ startDist=vzDist(e.touches)||1; startScale=vz.scale; e.preventDefault(); }
+    else if(e.touches.length===1){
+      const now=Date.now();
+      if(now-lastTap<300){ e.preventDefault(); if(vz.scale>1) vzReset(true); else { vz.scale=2.5; vzClamp(); vzApply(); } lastTap=0; return; }
+      lastTap=now;
+      if(vz.scale>1){ panning=true; px=e.touches[0].clientX; py=e.touches[0].clientY; stx=vz.tx; sty=vz.ty; }
+    }
+  },{passive:false});
+  img.addEventListener('touchmove',e=>{
+    if(e.touches.length===2){ e.preventDefault(); const d=vzDist(e.touches); vz.scale=Math.max(1,Math.min(5,startScale*(d/startDist))); vzClamp(); vzApply(); }
+    else if(panning && e.touches.length===1){ e.preventDefault(); vz.tx=stx+(e.touches[0].clientX-px); vz.ty=sty+(e.touches[0].clientY-py); vzClamp(); vzApply(); }
+  },{passive:false});
+  img.addEventListener('touchend',e=>{ if(e.touches.length===0){ panning=false; if(vz.scale<1.02) vzReset(true); } });
+  img.addEventListener('dblclick',e=>{ e.preventDefault(); if(vz.scale>1) vzReset(true); else { vz.scale=2.5; vzApply(); } });
+  img.addEventListener('wheel',e=>{ e.preventDefault(); vz.scale=Math.max(1,Math.min(5,vz.scale*(e.deltaY<0?1.15:0.87))); vzClamp(); vzApply(); },{passive:false});
+  img.addEventListener('mousedown',e=>{ if(vz.scale<=1)return; vzMouse.down=true; vzMouse.x=e.clientX; vzMouse.y=e.clientY; vzMouse.tx=vz.tx; vzMouse.ty=vz.ty; e.preventDefault(); });
+}
+window.addEventListener('mousemove',e=>{ if(!vzMouse.down)return; vz.tx=vzMouse.tx+(e.clientX-vzMouse.x); vz.ty=vzMouse.ty+(e.clientY-vzMouse.y); vzClamp(); vzApply(); });
+window.addEventListener('mouseup',()=>{ vzMouse.down=false; });
 function openTurViewer(pi,ti,mi){ viewerMedia=curFolder().peaks[pi].turer[ti].media; viewerIdx=mi; showViewer(); }
 function openFolderViewer(mi){ viewerMedia=curFolder().media; viewerIdx=mi; showViewer(); }
 function showViewer(){
@@ -1222,14 +1338,17 @@ function showViewer(){
 }
 function renderViewer(){
   const m=viewerMedia[viewerIdx], stage=document.getElementById('viewerStage');
+  const cap=(m.title||m.name||'');
   stage.innerHTML = m.type==='video'
     ? '<video src="'+m.url+'" controls autoplay playsinline></video>'
-    : '<img src="'+m.url+'" alt="">';
-  const cap=(m.title||m.name||'');
+    : '<img src="'+m.url+'" alt="'+escapeHtml(cap)+'">';
+  vz.img=null;
+  if(m.type!=='video'){ const im=stage.querySelector('img'); if(im) vzAttach(im); }
   document.getElementById('viewerCount').textContent=(cap?cap+'  ·  ':'')+(viewerIdx+1)+' / '+viewerMedia.length;
   const multi=viewerMedia.length>1;
   document.querySelector('.vprev').style.display=multi?'':'none';
   document.querySelector('.vnext').style.display=multi?'':'none';
+  const ve=document.querySelector('.vedit'); if(ve) ve.style.display=(m.type==='video')?'none':'';
 }
 function viewerNav(d){
   if(!viewerMedia.length)return;
@@ -1237,6 +1356,7 @@ function viewerNav(d){
   renderViewer();
 }
 function closeViewer(){
+  vz.img=null;
   document.getElementById('viewer').classList.remove('show');
   document.getElementById('viewerStage').innerHTML='';
   document.body.style.overflow='';
@@ -1252,6 +1372,7 @@ document.addEventListener('keydown',e=>{
   const v=document.getElementById('viewer');
   v.addEventListener('touchstart',e=>vx=e.touches[0].clientX,{passive:true});
   v.addEventListener('touchend',e=>{
+    if(vz.scale>1) return;            // zoomet: panorering, ikke bla
     const dx=e.changedTouches[0].clientX-vx;
     if(Math.abs(dx)>45) viewerNav(dx<0?1:-1);
   });
@@ -1820,7 +1941,7 @@ function delTrip(id){
   const T=(no,en)=>LANG==='no'?no:en;
   if(TRIPS.length<=1){ alert(t('trip_need_one')); return; }
   if(!confirm(t('trip_del_all')))return;
-  TRIPS=TRIPS.filter(t=>t.id!==id); delete tripStates[id]; delete tripColors[id];
+  TRIPS=TRIPS.filter(t=>t.id!==id); delete tripStates[id]; delete tripColors[id]; delete tripTrash[id];
   if(activeTripId===id){ setActiveTrip(TRIPS[0].id); closeCoin(); renderCarousel(); }
   saveState(); renderTripsList();
 }
@@ -1885,12 +2006,14 @@ async function loadState(){
     const d=snap.exists?snap.data():null;
     if(d && d.trips && d.trips.length){
       suppressSave=true;
-      TRIPS=d.trips; tripStates=d.tripStates||{}; tripColors=d.tripColors||{};
+      TRIPS=d.trips; tripStates=d.tripStates||{}; tripColors=d.tripColors||{}; tripTrash=d.tripTrash||{};
       TRIPS.forEach(tp=>{ if(!tripStates[tp.id]) tripStates[tp.id]=freshFolders(); if(!tripColors[tp.id]) tripColors[tp.id]={}; });
       const want=(d.activeTripId && TRIPS.find(x=>x.id===d.activeTripId)) ? d.activeTripId : TRIPS[0].id;
       setActiveTrip(want);
       suppressSave=false;
       refreshAfterLoad();
+      purgeOldTrash();
+      saveLocal();
     }else if(d && d.folderState){
       // migrer gammel enkelt-tur til den aktive (seedede) turen
       suppressSave=true;
@@ -1905,8 +2028,32 @@ async function loadState(){
     }
   }catch(e){ console.warn('Kunne ikke laste lagret tilstand.',e); }
 }
+function saveLocal(){
+  try{ localStorage.setItem('esb_state', JSON.stringify({trips:TRIPS, activeTripId:activeTripId, tripStates:tripStates, tripColors:tripColors, tripTrash:tripTrash, savedAt:Date.now()})); }catch(e){}
+}
+function restoreLocal(){
+  try{
+    const raw=localStorage.getItem('esb_state'); if(!raw) return false;
+    const d=JSON.parse(raw); if(!d || !d.trips || !d.trips.length) return false;
+    TRIPS=d.trips; tripStates=d.tripStates||{}; tripColors=d.tripColors||{}; tripTrash=d.tripTrash||{};
+    TRIPS.forEach(tp=>{ if(!tripStates[tp.id]) tripStates[tp.id]=freshFolders(); if(!tripColors[tp.id]) tripColors[tp.id]={}; });
+    const want=(d.activeTripId && TRIPS.find(x=>x.id===d.activeTripId)) ? d.activeTripId : TRIPS[0].id;
+    setActiveTrip(want);
+    return true;
+  }catch(e){ return false; }
+}
+function setSaveStatus(state){
+  const e=document.getElementById('saveStatus'); if(!e) return;
+  clearTimeout(e._t);
+  if(state==='local'){ e.textContent='⚠ '+t('save_local_only'); e.className='savestat warn show'; }
+  else if(state==='saving'){ e.textContent=t('save_saving'); e.className='savestat show'; }
+  else if(state==='saved'){ e.textContent='✓ '+t('save_saved'); e.className='savestat ok show'; e._t=setTimeout(()=>e.classList.remove('show'),1800); }
+}
 function saveState(){
-  if(!db || !fbUser || suppressSave) return;
+  saveLocal();                                  // alltid lokal sikkerhetskopi
+  if(suppressSave) return;
+  if(!db || !fbUser){ setSaveStatus('local'); return; }   // ikke innlogget → kun lokalt
+  setSaveStatus('saving');
   clearTimeout(saveTimer);
   saveTimer=setTimeout(()=>{
     userDoc().set({
@@ -1914,8 +2061,9 @@ function saveState(){
       activeTripId: activeTripId,
       tripStates: tripStates,
       tripColors: tripColors,
+      tripTrash: tripTrash,
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    },{merge:true}).catch(e=>console.warn('Lagring feilet',e));
+    },{merge:true}).then(()=>setSaveStatus('saved')).catch(e=>console.warn('Lagring feilet',e));
   },900);
 }
 function toggleAuth(){
@@ -2280,6 +2428,196 @@ function renderSeen(ts,active,acc){
   el.textContent=t('watch_lastseen')+' '+clk+a;
 }
 
+
+/* ══════════════════════════════════════════════════════════════
+   SØPPELBØTTE (datatap-vern) — × flytter til papirkurv (angrelig
+   30 dager), ikke permanent sletting. Per tur, synkes med tripStates.
+══════════════════════════════════════════════════════════════ */
+let tripTrash = {}, lastTrashed = null, trashToastTimer = null;
+function curTrash(){ if(!tripTrash[activeTripId]) tripTrash[activeTripId]=[]; return tripTrash[activeTripId]; }
+
+function trashMedia(scope,pi,ti,mi){
+  const f=curFolder(); if(!f) return;
+  const arr = scope==='folder' ? f.media : (f.peaks[pi].turer[ti].media);
+  const m = arr && arr[mi]; if(!m) return;
+  const coin = APP_CONFIG.coins[current].id;
+  let label = tr(f.name)||'';
+  if(scope==='tur'){ const tt=f.peaks[pi].turer[ti]; const tn=tt.name||tt.title||''; if(tn) label += ' · '+tn; }
+  const entry = { item:m, deletedAt:Date.now(), where:{ coin, fi:openFolderIdx, scope, pi, ti, label } };
+  curTrash().push(entry);
+  arr.splice(mi,1);
+  lastTrashed = entry;
+  saveState(); renderFolderView(); showTrashToast();
+}
+function delFolderMedia(mi){ trashMedia('folder',null,null,mi); }
+function delTurMedia(pi,ti,mi){ trashMedia('tur',pi,ti,mi); }
+
+function showTrashToast(){
+  const e=document.getElementById('trashToast'); if(!e) return;
+  const tx=e.querySelector('.tt-text'); if(tx) tx.textContent=t('trash_moved');
+  e.classList.add('show');
+  clearTimeout(trashToastTimer);
+  trashToastTimer=setTimeout(()=>e.classList.remove('show'), 6000);
+}
+function undoTrash(){
+  const e=document.getElementById('trashToast'); if(e) e.classList.remove('show');
+  if(!lastTrashed) return;
+  const idx=curTrash().indexOf(lastTrashed); lastTrashed=null;
+  if(idx>=0) restoreTrash(idx);
+}
+
+function restoreTrash(idx){
+  const tr_=curTrash(); const entry=tr_[idx]; if(!entry) return;
+  const w=entry.where||{}; let arr=null;
+  try{
+    const folder = folderState[w.coin] && folderState[w.coin][w.fi];
+    if(folder){
+      if(w.scope==='folder'){ if(!folder.media)folder.media=[]; arr=folder.media; }
+      else if(folder.peaks && folder.peaks[w.pi] && folder.peaks[w.pi].turer && folder.peaks[w.pi].turer[w.ti]){
+        const tt=folder.peaks[w.pi].turer[w.ti]; if(!tt.media)tt.media=[]; arr=tt.media;
+      }
+    }
+  }catch(e){}
+  if(!arr){ const f=curFolder(); if(f){ if(!f.media)f.media=[]; arr=f.media; } }   // reservemål
+  if(arr) arr.push(entry.item);
+  tr_.splice(idx,1);
+  saveState(); renderTrash(); renderFolderView();
+}
+function purgeStorage(item){
+  try{ if(typeof storage!=='undefined' && storage && item && item.path){ return storage.ref(item.path).delete().catch(()=>{}); } }catch(e){}
+  return Promise.resolve();
+}
+async function deleteTrashPerm(idx){
+  if(!confirm(t('trash_delete_confirm'))) return;
+  const tr_=curTrash(); const entry=tr_[idx]; if(!entry) return;
+  await purgeStorage(entry.item);
+  tr_.splice(idx,1);
+  saveState(); renderTrash();
+}
+function purgeOldTrash(){
+  const cutoff=Date.now()-30*864e5; let changed=false;
+  Object.keys(tripTrash).forEach(id=>{
+    const arr=tripTrash[id]; if(!arr) return;
+    for(let i=arr.length-1;i>=0;i--){ if((arr[i].deletedAt||0)<cutoff){ purgeStorage(arr[i].item); arr.splice(i,1); changed=true; } }
+  });
+  if(changed) saveState();
+}
+
+function openTrash(){
+  purgeOldTrash();
+  document.getElementById('trashModal').classList.add('show');
+  renderTrash();
+}
+function closeTrash(){ document.getElementById('trashModal').classList.remove('show'); }
+function renderTrash(){
+  const body=document.getElementById('trashBody'); const arr=curTrash();
+  if(!arr.length){ body.innerHTML='<p class="sh-intro">'+t('trash_empty')+'</p>'; return; }
+  let h='';
+  arr.map((e,i)=>({e,i})).sort((a,b)=>(b.e.deletedAt||0)-(a.e.deletedAt||0)).forEach(function(o){
+    const e=o.e, i=o.i, m=e.item;
+    const daysLeft=Math.max(0, 30-Math.floor((Date.now()-(e.deletedAt||0))/864e5));
+    const thumb = m.type==='video' ? '<video src="'+m.url+'" muted playsinline></video>' : '<img src="'+m.url+'" alt="">';
+    h+='<div class="trash-row"><div class="trash-thumb">'+thumb+'</div>'+
+       '<div class="trash-meta"><div class="trash-name">'+escapeHtml(m.title||m.name||'—')+'</div>'+
+       '<div class="trash-sub">'+escapeHtml((e.where&&e.where.label)||'')+' · '+daysLeft+' '+t('trash_days_left')+'</div></div>'+
+       '<div class="trash-act"><button class="sh-rm" onclick="restoreTrash('+i+')">↩︎ '+t('trash_restore')+'</button>'+
+       '<button class="sh-rm trash-perm" onclick="deleteTrashPerm('+i+')" aria-label="Slett permanent">🗑️</button></div></div>';
+  });
+  body.innerHTML=h;
+}
+
+/* ══════════════════════════════════════════════════════════════
+   BILDEBEHANDLING — 5 justeringer (lysstyrke, lysbalanse, metning,
+   fargetone, fargetemp) + lagring tilbake til bildet.
+   Laster via imgproxy så lerretet ikke blir CORS-blokkert.
+══════════════════════════════════════════════════════════════ */
+let edit={ m:null, img:null, natW:0, natH:0, b:100, c:100, s:100, h:0, temp:0 };
+
+function openEditor(m){
+  if(!m || m.type==='video') return;
+  edit={ m:m, img:null, natW:0, natH:0, b:100, c:100, s:100, h:0, temp:0 };
+  ['ed_b','ed_c','ed_s'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=100; });
+  const eh=document.getElementById('ed_h'); if(eh) eh.value=0;
+  const et=document.getElementById('ed_temp'); if(et) et.value=0;
+  document.getElementById('imgEditor').classList.add('show');
+  const direct = m.url.startsWith('blob:')||m.url.startsWith('data:');
+  const src = direct ? m.url : ('/.netlify/functions/imgproxy?url='+encodeURIComponent(m.url));
+  const im=new Image();
+  im.onload=()=>{ edit.img=im; edit.natW=im.naturalWidth; edit.natH=im.naturalHeight; edDraw(); };
+  im.onerror=()=>{   // proxy feilet → forsøk direkte (kan tainte, men viser i det minste)
+    const im2=new Image(); im2.crossOrigin='anonymous';
+    im2.onload=()=>{ edit.img=im2; edit.natW=im2.naturalWidth; edit.natH=im2.naturalHeight; edDraw(); };
+    im2.onerror=()=>{ alert(t('ed_load_fail')); closeEditor(); };
+    im2.src=m.url;
+  };
+  im.src=src;
+}
+function openEditorFromViewer(){ openEditor(viewerMedia[viewerIdx]); }
+function edSet(k,v){ edit[k]=+v; edDraw(); }
+function edReset(){
+  edit.b=100; edit.c=100; edit.s=100; edit.h=0; edit.temp=0;
+  ['ed_b','ed_c','ed_s'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=100; });
+  const eh=document.getElementById('ed_h'); if(eh) eh.value=0;
+  const et=document.getElementById('ed_temp'); if(et) et.value=0;
+  edDraw();
+}
+function closeEditor(){ document.getElementById('imgEditor').classList.remove('show'); edit.img=null; }
+function edFilter(){ return 'brightness('+(edit.b/100)+') contrast('+(edit.c/100)+') saturate('+(edit.s/100)+') hue-rotate('+edit.h+'deg)'; }
+function edTempOverlay(ctx,w,h){
+  if(!edit.temp) return;
+  const a=Math.min(0.45, Math.abs(edit.temp)/100*0.45);
+  ctx.save();
+  ctx.globalCompositeOperation='soft-light';
+  ctx.fillStyle = edit.temp>0 ? 'rgb(255,150,40)' : 'rgb(40,140,255)';
+  ctx.globalAlpha=a;
+  ctx.fillRect(0,0,w,h);
+  ctx.restore();
+}
+function edDraw(){
+  if(!edit.img) return;
+  const cv=document.getElementById('edCanvas'); const stage=document.querySelector('.imed-stage');
+  const maxW=Math.max(60,stage.clientWidth-20), maxH=Math.max(60,stage.clientHeight-20);
+  const r=Math.min(maxW/edit.natW, maxH/edit.natH, 1);
+  const w=Math.max(1,Math.round(edit.natW*r)), h=Math.max(1,Math.round(edit.natH*r));
+  cv.width=w; cv.height=h;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,w,h);
+  ctx.filter=edFilter();
+  ctx.drawImage(edit.img,0,0,w,h);
+  ctx.filter='none';
+  edTempOverlay(ctx,w,h);
+}
+function edRenderFull(){
+  const cv=document.createElement('canvas');
+  cv.width=edit.natW; cv.height=edit.natH;
+  const ctx=cv.getContext('2d');
+  ctx.filter=edFilter();
+  ctx.drawImage(edit.img,0,0,edit.natW,edit.natH);
+  ctx.filter='none';
+  edTempOverlay(ctx,edit.natW,edit.natH);
+  return cv;
+}
+async function saveEditor(){
+  if(!edit.img||!edit.m){ closeEditor(); return; }
+  const cv=edRenderFull();
+  let blob;
+  try{ blob=await new Promise((res,rej)=>{ try{ cv.toBlob(b=>b?res(b):rej(new Error('toBlob')),'image/jpeg',0.92); }catch(e){ rej(e); } }); }
+  catch(e){ alert(t('ed_save_fail')); return; }
+  const m=edit.m;
+  if(!m.origUrl){ m.origUrl=m.url; if(m.path) m.origPath=m.path; }   // bevar originalen
+  if(typeof storage!=='undefined' && storage && auth && auth.currentUser){
+    try{
+      const path=APP_CONFIG.id+'/'+auth.currentUser.uid+'/'+Date.now()+'_edit.jpg';
+      const ref=storage.ref().child(path); await ref.put(blob);
+      m.url=await ref.getDownloadURL(); m.path=path;
+    }catch(e){ m.url=URL.createObjectURL(blob); }
+  } else {
+    m.url=URL.createObjectURL(blob);   // ikke innlogget: kun denne økten
+  }
+  saveState(); closeEditor(); renderFolderView();
+  if(document.getElementById('viewer').classList.contains('show')) renderViewer();
+}
+window.addEventListener('resize',()=>{ if(document.getElementById('imgEditor') && document.getElementById('imgEditor').classList.contains('show')) edDraw(); });
 
 /* ── stjernebakgrunn (mørke romtemaer) ── */
 let _starsBound=false;
