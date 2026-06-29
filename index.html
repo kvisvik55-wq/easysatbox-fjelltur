@@ -2108,11 +2108,9 @@ function openAuthModal(){
 }
 function closeAuthModal(){
   document.getElementById('authModal').classList.remove('show');
-  try{ if(_recaptcha){ _recaptcha.clear(); _recaptcha=null; } }catch(e){}
+  clearRecaptcha();
   _smsConfirm=null;
-  const rc=document.getElementById('recaptcha-container'); if(rc) rc.innerHTML='';
-}
-function renderAuthChoose(){
+}function renderAuthChoose(){
   document.getElementById('authBody').innerHTML=
     '<button class="addbtn" onclick="signInGoogle()">🅖 '+t('auth_google')+'</button>'+
     '<button class="addbtn" style="margin-top:10px" onclick="renderAuthPhone()">📱 '+t('auth_phone')+'</button>';
@@ -2149,8 +2147,22 @@ function normPhone(v){
   }
   return v;
 }
+function resetRecaptchaHost(){
+  // Ferskt container-element hver gang → grecaptcha ser aldri «already rendered»
+  const old=document.getElementById('recaptcha-container');
+  if(old && old.parentNode){
+    const fresh=document.createElement('div');
+    fresh.id='recaptcha-container';
+    old.parentNode.replaceChild(fresh, old);
+  }
+}
+function clearRecaptcha(){
+  try{ if(_recaptcha) _recaptcha.clear(); }catch(e){}
+  _recaptcha=null;
+  resetRecaptchaHost();
+}
 function ensureRecaptcha(){
-  if(_recaptcha) return _recaptcha;
+  clearRecaptcha();                 // alltid fersk verifier — en brukt verifier kan ikke gjenbrukes
   _recaptcha=new firebase.auth.RecaptchaVerifier('recaptcha-container',{size:'invisible'});
   return _recaptcha;
 }
@@ -2166,7 +2178,7 @@ async function sendSmsCode(){
     const ci=document.getElementById('authCodeInput'); if(ci) ci.focus();
   }catch(e){
     console.warn('signInWithPhoneNumber feilet',e);
-    try{ if(_recaptcha){ _recaptcha.clear(); _recaptcha=null; } }catch(_){}
+    clearRecaptcha();               // rydd så neste forsøk starter rent
     alert(t('auth_sms_fail')+(e&&e.message?('\n\n'+e.message):''));
   }
 }
