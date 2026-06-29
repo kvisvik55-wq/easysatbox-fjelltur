@@ -229,7 +229,7 @@
   .imed-save{color:#7ddf9a;font-weight:600}
   .imed-stage{flex:1;display:flex;align-items:center;justify-content:center;overflow:hidden;min-height:0;padding:10px}
   .imed-stage canvas{max-width:100%;max-height:100%;border-radius:8px;box-shadow:0 4px 24px rgba(0,0,0,.4)}
-  .imed-tools{flex:0 0 auto;padding:12px 16px 18px;border-top:1px solid var(--line);background:rgba(0,0,0,.2)}
+  .imed-tools{flex:0 0 auto;padding:12px 16px 18px;border-top:1px solid var(--line);background:rgba(0,0,0,.2);max-height:52vh;overflow-y:auto}
   .imed-slider{display:flex;align-items:center;gap:12px;margin:8px 0}
   .imed-slider label{color:var(--txt-2);font-size:13px;width:104px;flex:0 0 auto}
   .imed-slider input[type=range]{flex:1;accent-color:var(--accent)}
@@ -1300,13 +1300,25 @@ let viewerMedia=[], viewerIdx=0;
 /* ── Zoom i fremviseren: knip · dobbelttrykk · panorering ── */
 let vz={scale:1,tx:0,ty:0,img:null};
 let vzMouse={down:false,x:0,y:0,tx:0,ty:0};
-function vzApply(){ if(vz.img){ vz.img.style.transform='translate('+vz.tx+'px,'+vz.ty+'px) scale('+vz.scale+')'; } }
+function vzApply(){
+  if(!vz.img) return;
+  if(vz.scale>1.001){
+    vz.img.style.transformOrigin='center center';
+    vz.img.style.touchAction='none';
+    vz.img.style.cursor='grab';
+    vz.img.style.transform='translate('+vz.tx+'px,'+vz.ty+'px) scale('+vz.scale+')';
+  } else {
+    vz.img.style.touchAction='';
+    vz.img.style.cursor='';
+    vz.img.style.transform='';      // hvile: bildet vises nøyaktig som før
+  }
+}
 function vzDist(tt){ return Math.hypot(tt[0].clientX-tt[1].clientX, tt[0].clientY-tt[1].clientY); }
 function vzClamp(){ if(!vz.img){return;} if(vz.scale<=1){vz.tx=0;vz.ty=0;return;} const mx=vz.img.clientWidth*(vz.scale-1)/2, my=vz.img.clientHeight*(vz.scale-1)/2; vz.tx=Math.max(-mx,Math.min(mx,vz.tx)); vz.ty=Math.max(-my,Math.min(my,vz.ty)); }
 function vzReset(anim){ vz.scale=1; vz.tx=0; vz.ty=0; if(vz.img){ if(anim){vz.img.style.transition='transform .2s';} vzApply(); if(anim){ setTimeout(()=>{ if(vz.img) vz.img.style.transition=''; },220);} } }
 function vzAttach(img){
   vz.img=img; vz.scale=1; vz.tx=0; vz.ty=0;
-  img.style.transformOrigin='center center'; img.style.touchAction='none'; img.style.cursor='zoom-in'; vzApply();
+  vzApply();   // hvile: ingen transform/markør — bildet vises som før
   let startDist=0,startScale=1,panning=false,px=0,py=0,stx=0,sty=0,lastTap=0;
   img.addEventListener('touchstart',e=>{
     if(e.touches.length===2){ startDist=vzDist(e.touches)||1; startScale=vz.scale; e.preventDefault(); }
@@ -2540,10 +2552,11 @@ function openEditor(m){
   const eh=document.getElementById('ed_h'); if(eh) eh.value=0;
   const et=document.getElementById('ed_temp'); if(et) et.value=0;
   document.getElementById('imgEditor').classList.add('show');
+  closeViewer();                 // rent lag: skjul fremviseren bak editoren
   const direct = m.url.startsWith('blob:')||m.url.startsWith('data:');
   const src = direct ? m.url : ('/.netlify/functions/imgproxy?url='+encodeURIComponent(m.url));
   const im=new Image();
-  im.onload=()=>{ edit.img=im; edit.natW=im.naturalWidth; edit.natH=im.naturalHeight; edDraw(); };
+  im.onload=()=>{ edit.img=im; edit.natW=im.naturalWidth; edit.natH=im.naturalHeight; requestAnimationFrame(()=>{ edDraw(); setTimeout(edDraw,90); }); };
   im.onerror=()=>{   // proxy feilet → forsøk direkte (kan tainte, men viser i det minste)
     const im2=new Image(); im2.crossOrigin='anonymous';
     im2.onload=()=>{ edit.img=im2; edit.natW=im2.naturalWidth; edit.natH=im2.naturalHeight; edDraw(); };
