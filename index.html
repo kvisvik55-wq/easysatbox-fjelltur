@@ -216,12 +216,13 @@
   /* fullskjerm-fremviser */
   .viewer{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.94);display:none;align-items:center;justify-content:center;touch-action:pan-y}
   .viewer.show{display:flex}
-  .vstage{max-width:96vw;max-height:86vh;display:flex;align-items:center;justify-content:center}
-  .vstage img,.vstage video{max-width:96vw;max-height:86vh;border-radius:8px;display:block;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+  .vstage{max-width:96vw;max-height:86vh;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .vstage img,.vstage video{max-width:96vw;max-height:86vh;object-fit:contain;border-radius:8px;display:block;touch-action:none;-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
   .vclose{position:absolute;top:14px;right:16px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:20px;cursor:pointer;z-index:6;touch-action:manipulation}
   .vnav{position:absolute;top:50%;transform:translateY(-50%);width:50px;height:50px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:28px;line-height:1;cursor:pointer;z-index:6;touch-action:manipulation}
   .vprev{left:12px} .vnext{right:12px}
   .vedit{position:absolute;top:14px;right:70px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:19px;cursor:pointer;z-index:6;touch-action:manipulation}
+  .vcrop{position:absolute;top:14px;right:126px;width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;border:0;font-size:19px;cursor:pointer;z-index:6;touch-action:manipulation}
   .imed{position:fixed;inset:0;z-index:1100;background:#0b0f1a;display:none;flex-direction:column}
   .imed.show{display:flex}
   .imed-top{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line);flex:0 0 auto}
@@ -318,6 +319,32 @@
   .tl-when{font-size:12px;color:var(--txt-3)}
   .tl-title{font-size:14px;color:var(--txt);margin-top:2px;font-weight:600}
   .tl-note{font-size:13px;color:var(--txt-2);margin-top:3px;white-space:pre-wrap;word-break:break-word}
+  .cropm{position:fixed;inset:0;background:rgba(4,8,16,.97);z-index:1300;display:none;align-items:center;justify-content:center}
+  .cropm.show{display:flex}
+  .cropm-card{display:flex;flex-direction:column;width:100%;max-width:560px;height:100%;max-height:100vh}
+  .cropm-head{display:flex;align-items:center;gap:8px;padding:14px 16px;flex-shrink:0}
+  .cropm-head h3{flex:1;font-size:16px;color:var(--txt);font-weight:600;margin:0}
+  .cropm-stage{flex:1;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;background:#040810;touch-action:none;min-height:0}
+  #cropCanvas{max-width:100%;max-height:100%;object-fit:contain;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+  .crop-rect{position:absolute;border:2px solid #fff;box-shadow:0 0 0 9999px rgba(0,0,0,.45);box-sizing:border-box;touch-action:none;cursor:move}
+  .crop-h{position:absolute;width:22px;height:22px;background:rgba(255,255,255,.001);touch-action:none}
+  .crop-h::after{content:"";position:absolute;width:13px;height:13px;border:2.5px solid #fff;border-radius:2px}
+  .crop-tl{top:-11px;left:-11px}.crop-tl::after{top:9px;left:9px;border-right:none;border-bottom:none}
+  .crop-tr{top:-11px;right:-11px}.crop-tr::after{top:9px;right:9px;border-left:none;border-bottom:none}
+  .crop-bl{bottom:-11px;left:-11px}.crop-bl::after{bottom:9px;left:9px;border-right:none;border-top:none}
+  .crop-br{bottom:-11px;right:-11px}.crop-br::after{bottom:9px;right:9px;border-left:none;border-top:none}
+  .cropm-tools{flex-shrink:0;padding:8px 16px;background:var(--card)}
+  .crop-rotbar{display:flex;gap:8px;justify-content:center;margin-bottom:8px}
+  .crop-rbtn{background:var(--card2);border:1px solid var(--line);border-radius:20px;padding:8px 16px;color:var(--txt);font-size:14px;cursor:pointer;touch-action:manipulation}
+  .crop-rbtn:active{background:var(--accent);color:#fff}
+  .crop-slider{display:flex;align-items:center;gap:12px}
+  .crop-slider label{font-size:13px;color:var(--txt-2);width:64px;flex-shrink:0}
+  .crop-slider input[type=range]{flex:1;accent-color:var(--accent);height:4px}
+  .crop-slider span{font-size:13px;color:var(--txt-2);width:42px;text-align:right}
+  .cropm-foot{display:flex;gap:10px;padding:14px 16px;flex-shrink:0;background:var(--card)}
+  .crop-cancel{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:14px;color:var(--txt);font-size:15px;cursor:pointer;touch-action:manipulation}
+  .crop-confirm{flex:2;background:var(--accent);border:none;border-radius:12px;padding:14px;color:#fff;font-size:15px;font-weight:600;cursor:pointer;touch-action:manipulation}
+  .crop-confirm:disabled{opacity:.5}
   .sh-inv{padding:11px 0;border-bottom:1px solid var(--line)}
   .sh-inv-top{display:flex;align-items:center;gap:8px;margin-bottom:7px}
   .sh-inv-act{display:flex;gap:8px;flex-wrap:wrap}
@@ -444,6 +471,7 @@
 <div id="viewer" class="viewer" role="dialog" aria-modal="true" aria-label="Bildevisning" onclick="if(event.target===this)closeViewer()">
   <button class="vclose" aria-label="Lukk" onclick="closeViewer()">✕</button>
   <button class="vedit" aria-label="Rediger" onclick="openEditorFromViewer()">🎨</button>
+  <button class="vcrop" aria-label="Beskjær" onclick="openCropFromViewer()">✂️</button>
   <button class="vnav vprev" aria-label="Forrige" onclick="viewerNav(-1)">‹</button>
   <div id="viewerStage" class="vstage"></div>
   <button class="vnav vnext" aria-label="Neste" onclick="viewerNav(1)">›</button>
@@ -495,6 +523,34 @@
   <div class="tm-card">
     <div class="tm-head"><h3 data-i18n="followme_title">Følg meg</h3><button class="tm-x" aria-label="Lukk" onclick="closeFollow()">✕</button></div>
     <div id="followBody"></div>
+  </div>
+</div>
+<div id="cropModal" class="cropm" onclick="if(event.target===this)closeCrop()">
+  <div class="cropm-card">
+    <div class="cropm-head"><h3 id="cropTitle" data-i18n="crop_title">Beskjær & rett opp</h3><button class="tm-x" aria-label="Lukk" onclick="closeCrop()">✕</button></div>
+    <div class="cropm-stage" id="cropStage">
+      <canvas id="cropCanvas"></canvas>
+      <div id="cropRect" class="crop-rect">
+        <span class="crop-h crop-tl"></span><span class="crop-h crop-tr"></span>
+        <span class="crop-h crop-bl"></span><span class="crop-h crop-br"></span>
+      </div>
+    </div>
+    <div class="cropm-tools">
+      <div class="crop-rotbar">
+        <button class="crop-rbtn" onclick="cropRot90(-90)">↺ <span data-i18n="crop_left">Venstre</span></button>
+        <button class="crop-rbtn" onclick="cropRot90(90)">↻ <span data-i18n="crop_right">Høyre</span></button>
+        <button class="crop-rbtn" onclick="cropResetAll()" data-i18n="crop_reset">Nullstill</button>
+      </div>
+      <div class="crop-slider">
+        <label data-i18n="crop_straighten">Rett opp</label>
+        <input type="range" id="cropAngle" min="-15" max="15" step="0.5" value="0" oninput="cropSetAngle(this.value)">
+        <span id="cropAngleVal">0°</span>
+      </div>
+    </div>
+    <div class="cropm-foot">
+      <button class="crop-cancel" onclick="closeCrop()" data-i18n="ed_cancel">Avbryt</button>
+      <button class="crop-confirm" onclick="cropConfirmSave()" data-i18n="crop_save_new">✓ Lagre som nytt bilde</button>
+    </div>
   </div>
 </div>
 <div id="timelineModal" class="tmodal" onclick="if(event.target===this)closeTimeline()">
@@ -714,7 +770,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ Kamera krever HTTPS eller localhost. Du har trolig åpnet fila direkte (file://).\n\nKjør den fra en server i stedet:\n1) Åpne mappa i terminal\n2) python3 -m http.server 8000\n3) Gå til http://localhost:8000 i Chrome\n\nEller deploy til Netlify/Railway (HTTPS).", cam_notallowed:"⚠️ Tilgang blokkert. Trykk lås-/innstillingsikonet til venstre i adressefeltet → Tillatelser → tillat kamera og mikrofon, og last siden på nytt.", auth_not_config:"Firebase ikke konfigurert ennå. Lim inn web-config i APP_CONFIG.firebase, og legg appens URL under Authentication → Authorized Domains.",
     share_btn:"👥 Del", share_title:"Del turen", share_intro:"Inviter familie og venner til å følge denne turen. Bare de du inviterer får tilgang.", share_signin_first:"Logg inn for å dele turen.", share_create:"Lag delingslenke", share_link_label:"Delingslenke", share_copy:"Kopier lenke", share_copied:"Lenke kopiert!", share_followers:"Følgere", role_owner:"Leder", role_view:"Følger", role_contrib:"Bidrar", share_remove:"Fjern", share_end:"Avslutt deling", share_end_confirm:"Avslutte turen? Live-deling slås av, men ingen kastes ut – innholdet består.", share_reopen:"Gjenåpne deling", share_ended:"Delingen er avsluttet.", join_signin:"Logg inn for å bli med på turen.", join_ok:"Du er nå deltaker på turen! 🏔️", join_fail:"Kunne ikke bli med — sjekk lenken, eller om turen fortsatt er aktiv.", share_follower_note:"Du følger denne turen.",
     invite_new:"Ny invitasjon", invite_who_q:"Hvem inviterer du? (navn eller notat)", status_invited:"Invitert", status_joined:"Ble med", invite_revoke:"Trekk tilbake", invites_none:"Ingen invitasjoner ennå.", invite_label_default:"Invitasjon", invite_revoke_confirm:"Trekke tilbake invitasjonen? Lenken slutter å virke, og personen mister tilgang umiddelbart.",
-    invite_intro:"Inviterte logger inn med samme e-post eller mobilnr. Gi dem beskjed selv.", trip_link:"Turlenke", share_invited:"Inviterte", invite_email_label:"Inviter (e-post eller mobil)", invite_email_ph:"navn@epost.no eller +47 …", role_deltaker:"Deltaker", role_folger:"Følger", invite_add:"Inviter", invite_bad_email:"Skriv en gyldig e-postadresse.", join_not_invited:"Du er ikke invitert til denne turen (eller den er avsluttet). Be eier invitere e-posten du logger inn med.", strike_confirm:"Fjerne denne personen fra turen? De mister tilgang umiddelbart.", trip_start:"Start turen", trip_stop:"Avslutt turen", trip_active_note:"🟢 Turen er i gang – deltakerne ser hverandre live på kartet.", trip_ended_note:"Turen er avsluttet (live av). Alt innholdet består for alle deltakere.", trip_start_again:"Start turen igjen", role_help:"Alle inviterte er deltakere og ser det samme – forberedelse, bilder, video og hverandres posisjon. De logger inn med samme e-post eller mobilnr.", timeline_btn:"🕐 Tidslinje", timeline_empty:"Ingen bilder med tidspunkt ennå. Ta eller last opp bilder, så dukker de opp her i rekkefølge.",
+    invite_intro:"Inviterte logger inn med samme e-post eller mobilnr. Gi dem beskjed selv.", trip_link:"Turlenke", share_invited:"Inviterte", invite_email_label:"Inviter (e-post eller mobil)", invite_email_ph:"navn@epost.no eller +47 …", role_deltaker:"Deltaker", role_folger:"Følger", invite_add:"Inviter", invite_bad_email:"Skriv en gyldig e-postadresse.", join_not_invited:"Du er ikke invitert til denne turen (eller den er avsluttet). Be eier invitere e-posten du logger inn med.", strike_confirm:"Fjerne denne personen fra turen? De mister tilgang umiddelbart.", trip_start:"Start turen", trip_stop:"Avslutt turen", trip_active_note:"🟢 Turen er i gang – deltakerne ser hverandre live på kartet.", trip_ended_note:"Turen er avsluttet (live av). Alt innholdet består for alle deltakere.", trip_start_again:"Start turen igjen", role_help:"Alle inviterte er deltakere og ser det samme – forberedelse, bilder, video og hverandres posisjon. De logger inn med samme e-post eller mobilnr.", timeline_btn:"🕐 Tidslinje", timeline_empty:"Ingen bilder med tidspunkt ennå. Ta eller last opp bilder, så dukker de opp her i rekkefølge.", crop_title:"Beskjær & rett opp", crop_straighten:"Rett opp", crop_left:"Venstre", crop_right:"Høyre", crop_reset:"Nullstill", crop_save_new:"✓ Lagre som nytt bilde",
     follow_btn:"📍 Følg", followme_title:"Følg meg", followme_intro:"Del posisjonen din live. Familie og venner følger deg på kart — uten innlogging, bare med lenka.", followme_signin:"Logg inn for å dele posisjonen din.", followme_start:"Start «Følg meg»", followme_stop:"Stopp deling", followme_link:"Følg-lenke (ingen innlogging)", followme_copylink:"Kopier følg-lenke", live_banner:"DU DELER LIVE", watch_live:"Live nå", watch_lastseen:"Sist sett kl.", watch_ended:"Delingen er avsluttet.", watch_notfound:"Fant ikke turen, eller den er ikke aktiv.",
     acc_label:"Nøyaktighet", acc_poor:"(omtrentlig)",
     trash_title:"Søppelbøtte", trash_empty:"Søppelbøtta er tom.", trash_moved:"Flyttet til søppelbøtta", trash_undo:"Angre", trash_restore:"Gjenopprett", trash_days_left:"dager igjen", trash_delete_confirm:"Slette permanent? Dette kan ikke angres.",
@@ -731,7 +787,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ Camera requires HTTPS or localhost. You likely opened the file via file://.\nServe it: python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ Permission blocked. Click the lock icon → allow camera and microphone, then reload.", auth_not_config:"Firebase not configured yet.",
     share_btn:"👥 Share", share_title:"Share trip", share_intro:"Invite family and friends to follow this trip. Only people you invite get access.", share_signin_first:"Sign in to share the trip.", share_create:"Create share link", share_link_label:"Share link", share_copy:"Copy link", share_copied:"Link copied!", share_followers:"Followers", role_owner:"Leader", role_view:"Follower", role_contrib:"Contributor", share_remove:"Remove", share_end:"End sharing", share_end_confirm:"End the trip? Live sharing turns off, but nobody is removed — content stays.", share_reopen:"Reopen sharing", share_ended:"Sharing has ended.", join_signin:"Sign in to join the trip.", join_ok:"You're now a participant on the trip! 🏔️", join_fail:"Couldn't join — check the link, or whether the trip is still active.", share_follower_note:"You're following this trip.",
     invite_new:"New invite", invite_who_q:"Who are you inviting? (name or note)", status_invited:"Invited", status_joined:"Joined", invite_revoke:"Revoke", invites_none:"No invites yet.", invite_label_default:"Invite", invite_revoke_confirm:"Revoke this invite? The link stops working and the person loses access immediately.",
-    invite_intro:"Invitees sign in with the same email or phone number. Let them know yourself.", trip_link:"Trip link", share_invited:"Invited", invite_email_label:"Invite (email or phone)", invite_email_ph:"name@email.com or +47 …", role_deltaker:"Participant", role_folger:"Follower", invite_add:"Invite", invite_bad_email:"Enter a valid email address.", join_not_invited:"You're not invited to this trip (or it has ended). Ask the owner to invite the email you sign in with.", strike_confirm:"Remove this person from the trip? They lose access immediately.", trip_start:"Start trip", trip_stop:"End trip", trip_active_note:"🟢 Trip is live – participants see each other on the map.", trip_ended_note:"Trip ended (live off). All content stays for every participant.", trip_start_again:"Start trip again", role_help:"Everyone invited is a participant and sees the same — preparation, photos, video and each other's position. They sign in with the same email or phone.", timeline_btn:"🕐 Timeline", timeline_empty:"No timestamped photos yet. Take or upload photos and they'll appear here in order.",
+    invite_intro:"Invitees sign in with the same email or phone number. Let them know yourself.", trip_link:"Trip link", share_invited:"Invited", invite_email_label:"Invite (email or phone)", invite_email_ph:"name@email.com or +47 …", role_deltaker:"Participant", role_folger:"Follower", invite_add:"Invite", invite_bad_email:"Enter a valid email address.", join_not_invited:"You're not invited to this trip (or it has ended). Ask the owner to invite the email you sign in with.", strike_confirm:"Remove this person from the trip? They lose access immediately.", trip_start:"Start trip", trip_stop:"End trip", trip_active_note:"🟢 Trip is live – participants see each other on the map.", trip_ended_note:"Trip ended (live off). All content stays for every participant.", trip_start_again:"Start trip again", role_help:"Everyone invited is a participant and sees the same — preparation, photos, video and each other's position. They sign in with the same email or phone.", timeline_btn:"🕐 Timeline", timeline_empty:"No timestamped photos yet. Take or upload photos and they'll appear here in order.", crop_title:"Crop & straighten", crop_straighten:"Straighten", crop_left:"Left", crop_right:"Right", crop_reset:"Reset", crop_save_new:"✓ Save as new photo",
     follow_btn:"📍 Follow", followme_title:"Follow me", followme_intro:"Share your position live. Family and friends follow you on a map — no sign-in, just the link.", followme_signin:"Sign in to share your position.", followme_start:"Start “Follow me”", followme_stop:"Stop sharing", followme_link:"Follow link (no sign-in)", followme_copylink:"Copy follow link", live_banner:"YOU'RE SHARING LIVE", watch_live:"Live now", watch_lastseen:"Last seen at", watch_ended:"Sharing has ended.", watch_notfound:"Trip not found, or not active.",
     acc_label:"Accuracy", acc_poor:"(approximate)",
     trash_title:"Trash", trash_empty:"Trash is empty.", trash_moved:"Moved to trash", trash_undo:"Undo", trash_restore:"Restore", trash_days_left:"days left", trash_delete_confirm:"Delete permanently? This cannot be undone.",
@@ -748,7 +804,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ Kamera erfordert HTTPS oder localhost. Du hast die Datei wohl direkt (file://) geöffnet.\nÜber einen Server starten: python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ Zugriff blockiert. Tippe auf das Schloss-Symbol in der Adressleiste → Berechtigungen → Kamera und Mikrofon erlauben und Seite neu laden.", auth_not_config:"Firebase noch nicht konfiguriert. Füge die Web-Config in APP_CONFIG.firebase ein und trage die App-URL unter Authentication → Authorized Domains ein.",
     share_btn:"👥 Teilen", share_title:"Tour teilen", share_intro:"Lade Familie und Freunde ein, dieser Tour zu folgen. Nur eingeladene Personen erhalten Zugriff.", share_signin_first:"Melde dich an, um die Tour zu teilen.", share_create:"Freigabelink erstellen", share_link_label:"Freigabelink", share_copy:"Link kopieren", share_copied:"Link kopiert!", share_followers:"Follower", role_owner:"Leiter", role_view:"Follower", role_contrib:"Mitwirkend", share_remove:"Entfernen", share_end:"Freigabe beenden", share_end_confirm:"Tour beenden? Live-Teilen wird ausgeschaltet, aber niemand wird entfernt — Inhalte bleiben.", share_reopen:"Freigabe wieder öffnen", share_ended:"Die Freigabe wurde beendet.", join_signin:"Melde dich an, um der Tour beizutreten.", join_ok:"Du bist jetzt Teilnehmer der Tour! 🏔️", join_fail:"Beitritt fehlgeschlagen — prüfe den Link oder ob die Tour noch aktiv ist.", share_follower_note:"Du folgst dieser Tour.",
     invite_new:"Neue Einladung", invite_who_q:"Wen lädst du ein? (Name oder Notiz)", status_invited:"Eingeladen", status_joined:"Beigetreten", invite_revoke:"Zurückziehen", invites_none:"Noch keine Einladungen.", invite_label_default:"Einladung", invite_revoke_confirm:"Diese Einladung zurückziehen? Der Link funktioniert nicht mehr und die Person verliert sofort den Zugriff.",
-    invite_intro:"Eingeladene melden sich mit derselben E-Mail oder Handynummer an. Informiere sie selbst.", trip_link:"Tour-Link", share_invited:"Eingeladen", invite_email_label:"Einladen (E-Mail oder Handy)", invite_email_ph:"name@email.de oder +47 …", role_deltaker:"Teilnehmer", role_folger:"Follower", invite_add:"Einladen", invite_bad_email:"Gib eine gültige E-Mail-Adresse ein.", join_not_invited:"Du bist nicht zu dieser Tour eingeladen (oder sie ist beendet). Bitte den Eigentümer, die E-Mail einzuladen, mit der du dich anmeldest.", strike_confirm:"Diese Person aus der Tour entfernen? Sie verliert sofort den Zugriff.", trip_start:"Tour starten", trip_stop:"Tour beenden", trip_active_note:"🟢 Tour läuft – Teilnehmer sehen sich auf der Karte.", trip_ended_note:"Tour beendet (Live aus). Alle Inhalte bleiben für jeden Teilnehmer erhalten.", trip_start_again:"Tour erneut starten", role_help:"Alle Eingeladenen sind Teilnehmer und sehen dasselbe — Vorbereitung, Fotos, Video und die Position der anderen. Sie melden sich mit derselben E-Mail oder Handynummer an.", timeline_btn:"🕐 Zeitleiste", timeline_empty:"Noch keine Fotos mit Zeitstempel. Nimm oder lade Fotos hoch, dann erscheinen sie hier der Reihe nach.",
+    invite_intro:"Eingeladene melden sich mit derselben E-Mail oder Handynummer an. Informiere sie selbst.", trip_link:"Tour-Link", share_invited:"Eingeladen", invite_email_label:"Einladen (E-Mail oder Handy)", invite_email_ph:"name@email.de oder +47 …", role_deltaker:"Teilnehmer", role_folger:"Follower", invite_add:"Einladen", invite_bad_email:"Gib eine gültige E-Mail-Adresse ein.", join_not_invited:"Du bist nicht zu dieser Tour eingeladen (oder sie ist beendet). Bitte den Eigentümer, die E-Mail einzuladen, mit der du dich anmeldest.", strike_confirm:"Diese Person aus der Tour entfernen? Sie verliert sofort den Zugriff.", trip_start:"Tour starten", trip_stop:"Tour beenden", trip_active_note:"🟢 Tour läuft – Teilnehmer sehen sich auf der Karte.", trip_ended_note:"Tour beendet (Live aus). Alle Inhalte bleiben für jeden Teilnehmer erhalten.", trip_start_again:"Tour erneut starten", role_help:"Alle Eingeladenen sind Teilnehmer und sehen dasselbe — Vorbereitung, Fotos, Video und die Position der anderen. Sie melden sich mit derselben E-Mail oder Handynummer an.", timeline_btn:"🕐 Zeitleiste", timeline_empty:"Noch keine Fotos mit Zeitstempel. Nimm oder lade Fotos hoch, dann erscheinen sie hier der Reihe nach.", crop_title:"Zuschneiden & ausrichten", crop_straighten:"Ausrichten", crop_left:"Links", crop_right:"Rechts", crop_reset:"Zurücksetzen", crop_save_new:"✓ Als neues Foto speichern",
     follow_btn:"📍 Folgen", followme_title:"Folge mir", followme_intro:"Teile deine Position live. Familie und Freunde folgen dir auf der Karte — ohne Anmeldung, nur mit dem Link.", followme_signin:"Melde dich an, um deine Position zu teilen.", followme_start:"„Folge mir“ starten", followme_stop:"Teilen beenden", followme_link:"Folge-Link (ohne Anmeldung)", followme_copylink:"Folge-Link kopieren", live_banner:"DU TEILST LIVE", watch_live:"Jetzt live", watch_lastseen:"Zuletzt gesehen um", watch_ended:"Die Freigabe wurde beendet.", watch_notfound:"Tour nicht gefunden oder nicht aktiv.",
     acc_label:"Genauigkeit", acc_poor:"(ungefähr)",
     trash_title:"Papierkorb", trash_empty:"Der Papierkorb ist leer.", trash_moved:"In den Papierkorb verschoben", trash_undo:"Rückgängig", trash_restore:"Wiederherstellen", trash_days_left:"Tage übrig", trash_delete_confirm:"Endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
@@ -765,7 +821,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ La caméra nécessite HTTPS ou localhost. Vous avez sans doute ouvert le fichier en file://.\nServez-le : python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ Accès bloqué. Touchez l'icône de cadenas dans la barre d'adresse → Autorisations → autorisez la caméra et le micro, puis rechargez la page.", auth_not_config:"Firebase pas encore configuré. Collez la config web dans APP_CONFIG.firebase et ajoutez l'URL de l'app sous Authentication → Authorized Domains.",
     share_btn:"👥 Partager", share_title:"Partager la sortie", share_intro:"Invitez famille et amis à suivre cette sortie. Seules les personnes invitées y ont accès.", share_signin_first:"Connectez-vous pour partager la sortie.", share_create:"Créer un lien de partage", share_link_label:"Lien de partage", share_copy:"Copier le lien", share_copied:"Lien copié !", share_followers:"Abonnés", role_owner:"Chef", role_view:"Abonné", role_contrib:"Contributeur", share_remove:"Retirer", share_end:"Terminer le partage", share_end_confirm:"Terminer la sortie ? Le partage en direct s'arrête, mais personne n'est retiré — le contenu reste.", share_reopen:"Rouvrir le partage", share_ended:"Le partage est terminé.", join_signin:"Connectez-vous pour rejoindre la sortie.", join_ok:"Vous êtes maintenant participant à la sortie ! 🏔️", join_fail:"Impossible de rejoindre — vérifiez le lien ou si la sortie est encore active.", share_follower_note:"Vous suivez cette sortie.",
     invite_new:"Nouvelle invitation", invite_who_q:"Qui invitez-vous ? (nom ou note)", status_invited:"Invité", status_joined:"A rejoint", invite_revoke:"Révoquer", invites_none:"Aucune invitation pour l'instant.", invite_label_default:"Invitation", invite_revoke_confirm:"Révoquer cette invitation ? Le lien cesse de fonctionner et la personne perd immédiatement l'accès.",
-    invite_intro:"Les invités se connectent avec le même e-mail ou numéro de mobile. Prévenez-les vous-même.", trip_link:"Lien de la sortie", share_invited:"Invités", invite_email_label:"Inviter (e-mail ou mobile)", invite_email_ph:"nom@email.fr ou +47 …", role_deltaker:"Participant", role_folger:"Abonné", invite_add:"Inviter", invite_bad_email:"Saisissez une adresse e-mail valide.", join_not_invited:"Vous n'êtes pas invité à cette sortie (ou elle est terminée). Demandez au propriétaire d'inviter l'e-mail avec lequel vous vous connectez.", strike_confirm:"Retirer cette personne de la sortie ? Elle perd immédiatement l'accès.", trip_start:"Démarrer la sortie", trip_stop:"Terminer la sortie", trip_active_note:"🟢 Sortie en cours – les participants se voient sur la carte.", trip_ended_note:"Sortie terminée (direct coupé). Tout le contenu reste pour chaque participant.", trip_start_again:"Redémarrer la sortie", role_help:"Toutes les personnes invitées sont des participants et voient la même chose — préparation, photos, vidéo et la position des autres. Elles se connectent avec le même e-mail ou numéro de mobile.", timeline_btn:"🕐 Chronologie", timeline_empty:"Aucune photo horodatée pour l'instant. Prenez ou importez des photos, elles apparaîtront ici dans l'ordre.",
+    invite_intro:"Les invités se connectent avec le même e-mail ou numéro de mobile. Prévenez-les vous-même.", trip_link:"Lien de la sortie", share_invited:"Invités", invite_email_label:"Inviter (e-mail ou mobile)", invite_email_ph:"nom@email.fr ou +47 …", role_deltaker:"Participant", role_folger:"Abonné", invite_add:"Inviter", invite_bad_email:"Saisissez une adresse e-mail valide.", join_not_invited:"Vous n'êtes pas invité à cette sortie (ou elle est terminée). Demandez au propriétaire d'inviter l'e-mail avec lequel vous vous connectez.", strike_confirm:"Retirer cette personne de la sortie ? Elle perd immédiatement l'accès.", trip_start:"Démarrer la sortie", trip_stop:"Terminer la sortie", trip_active_note:"🟢 Sortie en cours – les participants se voient sur la carte.", trip_ended_note:"Sortie terminée (direct coupé). Tout le contenu reste pour chaque participant.", trip_start_again:"Redémarrer la sortie", role_help:"Toutes les personnes invitées sont des participants et voient la même chose — préparation, photos, vidéo et la position des autres. Elles se connectent avec le même e-mail ou numéro de mobile.", timeline_btn:"🕐 Chronologie", timeline_empty:"Aucune photo horodatée pour l'instant. Prenez ou importez des photos, elles apparaîtront ici dans l'ordre.", crop_title:"Recadrer & redresser", crop_straighten:"Redresser", crop_left:"Gauche", crop_right:"Droite", crop_reset:"Réinitialiser", crop_save_new:"✓ Enregistrer comme nouvelle photo",
     follow_btn:"📍 Suivre", followme_title:"Suivez-moi", followme_intro:"Partagez votre position en direct. Famille et amis vous suivent sur une carte — sans connexion, juste le lien.", followme_signin:"Connectez-vous pour partager votre position.", followme_start:"Démarrer « Suivez-moi »", followme_stop:"Arrêter le partage", followme_link:"Lien de suivi (sans connexion)", followme_copylink:"Copier le lien de suivi", live_banner:"VOUS PARTAGEZ EN DIRECT", watch_live:"En direct", watch_lastseen:"Vu pour la dernière fois à", watch_ended:"Le partage est terminé.", watch_notfound:"Sortie introuvable ou inactive.",
     acc_label:"Précision", acc_poor:"(approximatif)",
     trash_title:"Corbeille", trash_empty:"La corbeille est vide.", trash_moved:"Déplacé vers la corbeille", trash_undo:"Annuler", trash_restore:"Restaurer", trash_days_left:"jours restants", trash_delete_confirm:"Supprimer définitivement ? Action irréversible.",
@@ -782,7 +838,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ La cámara requiere HTTPS o localhost. Probablemente abriste el archivo con file://.\nSírvelo: python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ Acceso bloqueado. Toca el icono de candado en la barra de direcciones → Permisos → permite cámara y micrófono y recarga la página.", auth_not_config:"Firebase aún no está configurado. Pega la config web en APP_CONFIG.firebase y añade la URL de la app en Authentication → Authorized Domains.",
     share_btn:"👥 Compartir", share_title:"Compartir viaje", share_intro:"Invita a familiares y amigos a seguir este viaje. Solo quienes invites tendrán acceso.", share_signin_first:"Inicia sesión para compartir el viaje.", share_create:"Crear enlace para compartir", share_link_label:"Enlace para compartir", share_copy:"Copiar enlace", share_copied:"¡Enlace copiado!", share_followers:"Seguidores", role_owner:"Líder", role_view:"Seguidor", role_contrib:"Colaborador", share_remove:"Quitar", share_end:"Finalizar uso compartido", share_end_confirm:"¿Finalizar el viaje? El uso compartido en vivo se apaga, pero no se quita a nadie — el contenido permanece.", share_reopen:"Reabrir uso compartido", share_ended:"El uso compartido ha finalizado.", join_signin:"Inicia sesión para unirte al viaje.", join_ok:"¡Ahora eres participante del viaje! 🏔️", join_fail:"No se pudo unir — revisa el enlace o si el viaje sigue activo.", share_follower_note:"Estás siguiendo este viaje.",
     invite_new:"Nueva invitación", invite_who_q:"¿A quién invitas? (nombre o nota)", status_invited:"Invitado", status_joined:"Se unió", invite_revoke:"Revocar", invites_none:"Aún no hay invitaciones.", invite_label_default:"Invitación", invite_revoke_confirm:"¿Revocar esta invitación? El enlace deja de funcionar y la persona pierde el acceso de inmediato.",
-    invite_intro:"Los invitados inician sesión con el mismo correo o móvil. Avísales tú mismo.", trip_link:"Enlace del viaje", share_invited:"Invitados", invite_email_label:"Invitar (correo o móvil)", invite_email_ph:"nombre@correo.es o +47 …", role_deltaker:"Participante", role_folger:"Seguidor", invite_add:"Invitar", invite_bad_email:"Introduce un correo electrónico válido.", join_not_invited:"No estás invitado a este viaje (o ha finalizado). Pide al propietario que invite el correo con el que inicias sesión.", strike_confirm:"¿Quitar a esta persona del viaje? Pierde el acceso de inmediato.", trip_start:"Iniciar viaje", trip_stop:"Finalizar viaje", trip_active_note:"🟢 Viaje en curso – los participantes se ven en el mapa.", trip_ended_note:"Viaje finalizado (en vivo apagado). Todo el contenido permanece para cada participante.", trip_start_again:"Iniciar viaje de nuevo", role_help:"Todos los invitados son participantes y ven lo mismo — preparación, fotos, vídeo y la posición de los demás. Inician sesión con el mismo correo o móvil.", timeline_btn:"🕐 Cronología", timeline_empty:"Aún no hay fotos con hora. Toma o sube fotos y aparecerán aquí en orden.",
+    invite_intro:"Los invitados inician sesión con el mismo correo o móvil. Avísales tú mismo.", trip_link:"Enlace del viaje", share_invited:"Invitados", invite_email_label:"Invitar (correo o móvil)", invite_email_ph:"nombre@correo.es o +47 …", role_deltaker:"Participante", role_folger:"Seguidor", invite_add:"Invitar", invite_bad_email:"Introduce un correo electrónico válido.", join_not_invited:"No estás invitado a este viaje (o ha finalizado). Pide al propietario que invite el correo con el que inicias sesión.", strike_confirm:"¿Quitar a esta persona del viaje? Pierde el acceso de inmediato.", trip_start:"Iniciar viaje", trip_stop:"Finalizar viaje", trip_active_note:"🟢 Viaje en curso – los participantes se ven en el mapa.", trip_ended_note:"Viaje finalizado (en vivo apagado). Todo el contenido permanece para cada participante.", trip_start_again:"Iniciar viaje de nuevo", role_help:"Todos los invitados son participantes y ven lo mismo — preparación, fotos, vídeo y la posición de los demás. Inician sesión con el mismo correo o móvil.", timeline_btn:"🕐 Cronología", timeline_empty:"Aún no hay fotos con hora. Toma o sube fotos y aparecerán aquí en orden.", crop_title:"Recortar y enderezar", crop_straighten:"Enderezar", crop_left:"Izquierda", crop_right:"Derecha", crop_reset:"Restablecer", crop_save_new:"✓ Guardar como foto nueva",
     follow_btn:"📍 Seguir", followme_title:"Sígueme", followme_intro:"Comparte tu posición en vivo. Familia y amigos te siguen en un mapa — sin iniciar sesión, solo con el enlace.", followme_signin:"Inicia sesión para compartir tu posición.", followme_start:"Iniciar «Sígueme»", followme_stop:"Detener uso compartido", followme_link:"Enlace de seguimiento (sin sesión)", followme_copylink:"Copiar enlace de seguimiento", live_banner:"ESTÁS COMPARTIENDO EN VIVO", watch_live:"En vivo ahora", watch_lastseen:"Visto por última vez a las", watch_ended:"El uso compartido ha finalizado.", watch_notfound:"Viaje no encontrado o inactivo.",
     acc_label:"Precisión", acc_poor:"(aproximado)",
     trash_title:"Papelera", trash_empty:"La papelera está vacía.", trash_moved:"Movido a la papelera", trash_undo:"Deshacer", trash_restore:"Restaurar", trash_days_left:"días restantes", trash_delete_confirm:"¿Eliminar permanentemente? No se puede deshacer.",
@@ -799,7 +855,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ La fotocamera richiede HTTPS o localhost. Probabilmente hai aperto il file con file://.\nServilo: python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ Accesso bloccato. Tocca l'icona del lucchetto nella barra degli indirizzi → Autorizzazioni → consenti fotocamera e microfono e ricarica la pagina.", auth_not_config:"Firebase non ancora configurato. Incolla la web-config in APP_CONFIG.firebase e aggiungi l'URL dell'app in Authentication → Authorized Domains.",
     share_btn:"👥 Condividi", share_title:"Condividi la gita", share_intro:"Invita familiari e amici a seguire questa gita. Solo le persone che inviti avranno accesso.", share_signin_first:"Accedi per condividere la gita.", share_create:"Crea link di condivisione", share_link_label:"Link di condivisione", share_copy:"Copia link", share_copied:"Link copiato!", share_followers:"Chi segue", role_owner:"Capo", role_view:"Segue", role_contrib:"Collaboratore", share_remove:"Rimuovi", share_end:"Termina condivisione", share_end_confirm:"Terminare la gita? La condivisione live si spegne, ma nessuno viene rimosso — i contenuti restano.", share_reopen:"Riapri condivisione", share_ended:"La condivisione è terminata.", join_signin:"Accedi per unirti alla gita.", join_ok:"Ora sei partecipante della gita! 🏔️", join_fail:"Impossibile unirsi — controlla il link o se la gita è ancora attiva.", share_follower_note:"Stai seguendo questa gita.",
     invite_new:"Nuovo invito", invite_who_q:"Chi inviti? (nome o nota)", status_invited:"Invitato", status_joined:"Si è unito", invite_revoke:"Revoca", invites_none:"Ancora nessun invito.", invite_label_default:"Invito", invite_revoke_confirm:"Revocare questo invito? Il link smette di funzionare e la persona perde subito l'accesso.",
-    invite_intro:"Gli invitati accedono con la stessa email o numero di cellulare. Avvisali tu.", trip_link:"Link della gita", share_invited:"Invitati", invite_email_label:"Invita (email o cellulare)", invite_email_ph:"nome@email.it o +47 …", role_deltaker:"Partecipante", role_folger:"Chi segue", invite_add:"Invita", invite_bad_email:"Inserisci un indirizzo email valido.", join_not_invited:"Non sei invitato a questa gita (o è terminata). Chiedi al proprietario di invitare l'email con cui accedi.", strike_confirm:"Rimuovere questa persona dalla gita? Perde subito l'accesso.", trip_start:"Avvia la gita", trip_stop:"Termina la gita", trip_active_note:"🟢 Gita in corso – i partecipanti si vedono sulla mappa.", trip_ended_note:"Gita terminata (live spento). Tutti i contenuti restano per ogni partecipante.", trip_start_again:"Riavvia la gita", role_help:"Tutti gli invitati sono partecipanti e vedono lo stesso — preparazione, foto, video e la posizione degli altri. Accedono con la stessa email o cellulare.", timeline_btn:"🕐 Cronologia", timeline_empty:"Ancora nessuna foto con orario. Scatta o carica foto e appariranno qui in ordine.",
+    invite_intro:"Gli invitati accedono con la stessa email o numero di cellulare. Avvisali tu.", trip_link:"Link della gita", share_invited:"Invitati", invite_email_label:"Invita (email o cellulare)", invite_email_ph:"nome@email.it o +47 …", role_deltaker:"Partecipante", role_folger:"Chi segue", invite_add:"Invita", invite_bad_email:"Inserisci un indirizzo email valido.", join_not_invited:"Non sei invitato a questa gita (o è terminata). Chiedi al proprietario di invitare l'email con cui accedi.", strike_confirm:"Rimuovere questa persona dalla gita? Perde subito l'accesso.", trip_start:"Avvia la gita", trip_stop:"Termina la gita", trip_active_note:"🟢 Gita in corso – i partecipanti si vedono sulla mappa.", trip_ended_note:"Gita terminata (live spento). Tutti i contenuti restano per ogni partecipante.", trip_start_again:"Riavvia la gita", role_help:"Tutti gli invitati sono partecipanti e vedono lo stesso — preparazione, foto, video e la posizione degli altri. Accedono con la stessa email o cellulare.", timeline_btn:"🕐 Cronologia", timeline_empty:"Ancora nessuna foto con orario. Scatta o carica foto e appariranno qui in ordine.", crop_title:"Ritaglia & raddrizza", crop_straighten:"Raddrizza", crop_left:"Sinistra", crop_right:"Destra", crop_reset:"Ripristina", crop_save_new:"✓ Salva come nuova foto",
     follow_btn:"📍 Segui", followme_title:"Seguimi", followme_intro:"Condividi la tua posizione in diretta. Familiari e amici ti seguono su una mappa — senza accesso, basta il link.", followme_signin:"Accedi per condividere la tua posizione.", followme_start:"Avvia «Seguimi»", followme_stop:"Ferma condivisione", followme_link:"Link di tracciamento (senza accesso)", followme_copylink:"Copia link di tracciamento", live_banner:"STAI CONDIVIDENDO IN DIRETTA", watch_live:"In diretta ora", watch_lastseen:"Visto l'ultima volta alle", watch_ended:"La condivisione è terminata.", watch_notfound:"Gita non trovata o non attiva.",
     acc_label:"Precisione", acc_poor:"(approssimativo)",
     trash_title:"Cestino", trash_empty:"Il cestino è vuoto.", trash_moved:"Spostato nel cestino", trash_undo:"Annulla", trash_restore:"Ripristina", trash_days_left:"giorni rimasti", trash_delete_confirm:"Eliminare definitivamente? Non annullabile.",
@@ -816,7 +872,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ Камере нужен HTTPS или localhost. Вероятно, вы открыли файл через file://.\nЗапустите через сервер: python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ Доступ заблокирован. Нажмите значок замка в адресной строке → Разрешения → разрешите камеру и микрофон и перезагрузите страницу.", auth_not_config:"Firebase ещё не настроен. Вставьте веб-конфиг в APP_CONFIG.firebase и добавьте URL приложения в Authentication → Authorized Domains.",
     share_btn:"👥 Поделиться", share_title:"Поделиться поездкой", share_intro:"Пригласите близких следить за этой поездкой. Доступ только у тех, кого вы пригласили.", share_signin_first:"Войдите, чтобы поделиться поездкой.", share_create:"Создать ссылку", share_link_label:"Ссылка", share_copy:"Копировать ссылку", share_copied:"Ссылка скопирована!", share_followers:"Подписчики", role_owner:"Ведущий", role_view:"Наблюдатель", role_contrib:"Участник", share_remove:"Удалить", share_end:"Завершить доступ", share_end_confirm:"Завершить поездку? Трансляция выключится, но никого не удалят — контент сохранится.", share_reopen:"Возобновить доступ", share_ended:"Доступ завершён.", join_signin:"Войдите, чтобы присоединиться к поездке.", join_ok:"Теперь вы участник поездки! 🏔️", join_fail:"Не удалось присоединиться — проверьте ссылку или активна ли поездка.", share_follower_note:"Вы следите за этой поездкой.",
     invite_new:"Новое приглашение", invite_who_q:"Кого вы приглашаете? (имя или заметка)", status_invited:"Приглашён", status_joined:"Присоединился", invite_revoke:"Отозвать", invites_none:"Пока нет приглашений.", invite_label_default:"Приглашение", invite_revoke_confirm:"Отозвать это приглашение? Ссылка перестанет работать, и человек сразу потеряет доступ.",
-    invite_intro:"Приглашённые входят с той же почтой или номером телефона. Сообщите им сами.", trip_link:"Ссылка на поездку", share_invited:"Приглашённые", invite_email_label:"Пригласить (почта или телефон)", invite_email_ph:"name@email.ru или +47 …", role_deltaker:"Участник", role_folger:"Наблюдатель", invite_add:"Пригласить", invite_bad_email:"Введите корректный адрес эл. почты.", join_not_invited:"Вы не приглашены в эту поездку (или она завершена). Попросите владельца пригласить почту, с которой вы входите.", strike_confirm:"Удалить этого человека из поездки? Он сразу потеряет доступ.", trip_start:"Начать поездку", trip_stop:"Завершить поездку", trip_active_note:"🟢 Поездка идёт — участники видят друг друга на карте.", trip_ended_note:"Поездка завершена (трансляция выключена). Весь контент сохраняется для каждого участника.", trip_start_again:"Начать поездку снова", role_help:"Все приглашённые — участники и видят одно и то же: подготовку, фото, видео и положение друг друга. Они входят с той же почтой или номером телефона.", timeline_btn:"🕐 Хронология", timeline_empty:"Пока нет фото с отметкой времени. Снимайте или загружайте фото — они появятся здесь по порядку.",
+    invite_intro:"Приглашённые входят с той же почтой или номером телефона. Сообщите им сами.", trip_link:"Ссылка на поездку", share_invited:"Приглашённые", invite_email_label:"Пригласить (почта или телефон)", invite_email_ph:"name@email.ru или +47 …", role_deltaker:"Участник", role_folger:"Наблюдатель", invite_add:"Пригласить", invite_bad_email:"Введите корректный адрес эл. почты.", join_not_invited:"Вы не приглашены в эту поездку (или она завершена). Попросите владельца пригласить почту, с которой вы входите.", strike_confirm:"Удалить этого человека из поездки? Он сразу потеряет доступ.", trip_start:"Начать поездку", trip_stop:"Завершить поездку", trip_active_note:"🟢 Поездка идёт — участники видят друг друга на карте.", trip_ended_note:"Поездка завершена (трансляция выключена). Весь контент сохраняется для каждого участника.", trip_start_again:"Начать поездку снова", role_help:"Все приглашённые — участники и видят одно и то же: подготовку, фото, видео и положение друг друга. Они входят с той же почтой или номером телефона.", timeline_btn:"🕐 Хронология", timeline_empty:"Пока нет фото с отметкой времени. Снимайте или загружайте фото — они появятся здесь по порядку.", crop_title:"Обрезка и выравнивание", crop_straighten:"Выровнять", crop_left:"Влево", crop_right:"Вправо", crop_reset:"Сброс", crop_save_new:"✓ Сохранить как новое фото",
     follow_btn:"📍 Следить", followme_title:"Следите за мной", followme_intro:"Делитесь своим местоположением вживую. Близкие следят за вами на карте — без входа, только по ссылке.", followme_signin:"Войдите, чтобы делиться местоположением.", followme_start:"Включить «Следите за мной»", followme_stop:"Остановить трансляцию", followme_link:"Ссылка для слежения (без входа)", followme_copylink:"Копировать ссылку", live_banner:"ВЫ ВЕЩАЕТЕ ВЖИВУЮ", watch_live:"В эфире", watch_lastseen:"Последний раз в", watch_ended:"Трансляция завершена.", watch_notfound:"Поездка не найдена или не активна.",
     acc_label:"Точность", acc_poor:"(приблизительно)",
     trash_title:"Корзина", trash_empty:"Корзина пуста.", trash_moved:"Перемещено в корзину", trash_undo:"Отменить", trash_restore:"Восстановить", trash_days_left:"дн. осталось", trash_delete_confirm:"Удалить навсегда? Это нельзя отменить.",
@@ -833,7 +889,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ カメラにはHTTPSまたはlocalhostが必要です。file:// で直接開いた可能性があります。\nサーバーで起動: python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ アクセスがブロックされています。アドレスバーの鍵アイコン → 権限 → カメラとマイクを許可し、ページを再読み込みしてください。", auth_not_config:"Firebase はまだ設定されていません。APP_CONFIG.firebase にウェブ設定を貼り付け、Authentication → Authorized Domains にアプリの URL を追加してください。",
     share_btn:"👥 共有", share_title:"トリップを共有", share_intro:"家族や友人をこのトリップのフォローに招待します。招待した人だけがアクセスできます。", share_signin_first:"トリップを共有するにはログインしてください。", share_create:"共有リンクを作成", share_link_label:"共有リンク", share_copy:"リンクをコピー", share_copied:"リンクをコピーしました！", share_followers:"フォロワー", role_owner:"リーダー", role_view:"フォロー", role_contrib:"投稿者", share_remove:"削除", share_end:"共有を終了", share_end_confirm:"トリップを終了しますか？ライブ共有はオフになりますが、誰も削除されません — 内容は残ります。", share_reopen:"共有を再開", share_ended:"共有は終了しました。", join_signin:"トリップに参加するにはログインしてください。", join_ok:"トリップの参加者になりました！🏔️", join_fail:"参加できませんでした — リンク、またはトリップがまだ有効か確認してください。", share_follower_note:"このトリップをフォロー中です。",
     invite_new:"新しい招待", invite_who_q:"誰を招待しますか？（名前やメモ）", status_invited:"招待済み", status_joined:"参加済み", invite_revoke:"取り消す", invites_none:"まだ招待はありません。", invite_label_default:"招待", invite_revoke_confirm:"この招待を取り消しますか？リンクは無効になり、その人はすぐにアクセスできなくなります。",
-    invite_intro:"招待された人は同じメールまたは携帯番号でログインします。各自に知らせてください。", trip_link:"トリップリンク", share_invited:"招待済み", invite_email_label:"招待（メールまたは携帯）", invite_email_ph:"name@email.com または +47 …", role_deltaker:"参加者", role_folger:"フォロワー", invite_add:"招待", invite_bad_email:"有効なメールアドレスを入力してください。", join_not_invited:"このトリップに招待されていません（または終了済み）。ログインに使うメールを招待するよう、オーナーに依頼してください。", strike_confirm:"この人をトリップから外しますか？すぐにアクセスできなくなります。", trip_start:"トリップを開始", trip_stop:"トリップを終了", trip_active_note:"🟢 トリップ進行中 – 参加者がお互いを地図で確認できます。", trip_ended_note:"トリップ終了（ライブ オフ）。すべての内容は全参加者に残ります。", trip_start_again:"トリップを再開", role_help:"招待された全員が参加者で、同じものを見られます — 準備、写真、動画、お互いの位置。同じメールまたは携帯番号でログインします。", timeline_btn:"🕐 タイムライン", timeline_empty:"タイムスタンプ付きの写真はまだありません。撮影またはアップロードすると順番に表示されます。",
+    invite_intro:"招待された人は同じメールまたは携帯番号でログインします。各自に知らせてください。", trip_link:"トリップリンク", share_invited:"招待済み", invite_email_label:"招待（メールまたは携帯）", invite_email_ph:"name@email.com または +47 …", role_deltaker:"参加者", role_folger:"フォロワー", invite_add:"招待", invite_bad_email:"有効なメールアドレスを入力してください。", join_not_invited:"このトリップに招待されていません（または終了済み）。ログインに使うメールを招待するよう、オーナーに依頼してください。", strike_confirm:"この人をトリップから外しますか？すぐにアクセスできなくなります。", trip_start:"トリップを開始", trip_stop:"トリップを終了", trip_active_note:"🟢 トリップ進行中 – 参加者がお互いを地図で確認できます。", trip_ended_note:"トリップ終了（ライブ オフ）。すべての内容は全参加者に残ります。", trip_start_again:"トリップを再開", role_help:"招待された全員が参加者で、同じものを見られます — 準備、写真、動画、お互いの位置。同じメールまたは携帯番号でログインします。", timeline_btn:"🕐 タイムライン", timeline_empty:"タイムスタンプ付きの写真はまだありません。撮影またはアップロードすると順番に表示されます。", crop_title:"切り抜き・水平調整", crop_straighten:"水平調整", crop_left:"左", crop_right:"右", crop_reset:"リセット", crop_save_new:"✓ 新しい写真として保存",
     follow_btn:"📍 フォロー", followme_title:"フォローしてね", followme_intro:"位置をライブで共有。家族や友人は地図であなたをフォローできます — ログイン不要、リンクだけ。", followme_signin:"位置を共有するにはログインしてください。", followme_start:"「フォローしてね」を開始", followme_stop:"共有を停止", followme_link:"フォローリンク（ログイン不要）", followme_copylink:"フォローリンクをコピー", live_banner:"ライブ共有中", watch_live:"ライブ中", watch_lastseen:"最終確認", watch_ended:"共有は終了しました。", watch_notfound:"トリップが見つからないか、有効ではありません。",
     acc_label:"精度", acc_poor:"(おおよそ)",
     trash_title:"ゴミ箱", trash_empty:"ゴミ箱は空です。", trash_moved:"ゴミ箱に移動しました", trash_undo:"元に戻す", trash_restore:"復元", trash_days_left:"日残り", trash_delete_confirm:"完全に削除しますか？元に戻せません。",
@@ -850,7 +906,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ 摄像头需要 HTTPS 或 localhost。你可能通过 file:// 直接打开了文件。\n用服务器运行：python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ 访问被阻止。点击地址栏的锁形图标 → 权限 → 允许摄像头和麦克风，然后重新加载页面。", auth_not_config:"Firebase 尚未配置。请将网页配置粘贴到 APP_CONFIG.firebase，并在 Authentication → Authorized Domains 中添加应用网址。",
     share_btn:"👥 共享", share_title:"共享行程", share_intro:"邀请家人和朋友关注此行程。只有受邀者才能访问。", share_signin_first:"登录以共享行程。", share_create:"生成共享链接", share_link_label:"共享链接", share_copy:"复制链接", share_copied:"链接已复制！", share_followers:"关注者", role_owner:"领队", role_view:"关注", role_contrib:"贡献者", share_remove:"移除", share_end:"结束共享", share_end_confirm:"结束行程？实时共享将关闭，但不会移除任何人——内容保留。", share_reopen:"重新开启共享", share_ended:"共享已结束。", join_signin:"登录以加入行程。", join_ok:"你现在是行程的参与者！🏔️", join_fail:"无法加入 — 请检查链接，或行程是否仍在进行。", share_follower_note:"你正在关注此行程。",
     invite_new:"新建邀请", invite_who_q:"你要邀请谁？（姓名或备注）", status_invited:"已邀请", status_joined:"已加入", invite_revoke:"撤销", invites_none:"还没有邀请。", invite_label_default:"邀请", invite_revoke_confirm:"撤销此邀请？链接将失效，该人会立即失去访问权限。",
-    invite_intro:"受邀者用同一邮箱或手机号登录。请自行通知他们。", trip_link:"行程链接", share_invited:"已邀请", invite_email_label:"邀请（邮箱或手机号）", invite_email_ph:"name@email.com 或 +47 …", role_deltaker:"参与者", role_folger:"关注者", invite_add:"邀请", invite_bad_email:"请输入有效的电子邮箱地址。", join_not_invited:"你未被邀请加入此行程（或行程已结束）。请所有者邀请你登录所用的邮箱。", strike_confirm:"将此人移出行程？将立即失去访问权限。", trip_start:"开始行程", trip_stop:"结束行程", trip_active_note:"🟢 行程进行中 – 参与者可在地图上看到彼此。", trip_ended_note:"行程已结束（实时关闭）。所有内容为每位参与者保留。", trip_start_again:"重新开始行程", role_help:"所有受邀者都是参与者，看到相同的内容——准备、照片、视频和彼此的位置。用同一邮箱或手机号登录。", timeline_btn:"🕐 时间线", timeline_empty:"还没有带时间的照片。拍摄或上传照片后会按顺序显示在这里。",
+    invite_intro:"受邀者用同一邮箱或手机号登录。请自行通知他们。", trip_link:"行程链接", share_invited:"已邀请", invite_email_label:"邀请（邮箱或手机号）", invite_email_ph:"name@email.com 或 +47 …", role_deltaker:"参与者", role_folger:"关注者", invite_add:"邀请", invite_bad_email:"请输入有效的电子邮箱地址。", join_not_invited:"你未被邀请加入此行程（或行程已结束）。请所有者邀请你登录所用的邮箱。", strike_confirm:"将此人移出行程？将立即失去访问权限。", trip_start:"开始行程", trip_stop:"结束行程", trip_active_note:"🟢 行程进行中 – 参与者可在地图上看到彼此。", trip_ended_note:"行程已结束（实时关闭）。所有内容为每位参与者保留。", trip_start_again:"重新开始行程", role_help:"所有受邀者都是参与者，看到相同的内容——准备、照片、视频和彼此的位置。用同一邮箱或手机号登录。", timeline_btn:"🕐 时间线", timeline_empty:"还没有带时间的照片。拍摄或上传照片后会按顺序显示在这里。", crop_title:"裁剪与拉直", crop_straighten:"拉直", crop_left:"左", crop_right:"右", crop_reset:"重置", crop_save_new:"✓ 另存为新照片",
     follow_btn:"📍 关注", followme_title:"跟随我", followme_intro:"实时分享你的位置。家人和朋友在地图上跟随你 — 无需登录，只需链接。", followme_signin:"登录以分享你的位置。", followme_start:"开始“跟随我”", followme_stop:"停止共享", followme_link:"关注链接（无需登录）", followme_copylink:"复制关注链接", live_banner:"你正在实时共享", watch_live:"正在直播", watch_lastseen:"最后出现于", watch_ended:"共享已结束。", watch_notfound:"未找到行程，或行程未激活。",
     acc_label:"精度", acc_poor:"(大致)",
     trash_title:"回收站", trash_empty:"回收站是空的。", trash_moved:"已移至回收站", trash_undo:"撤销", trash_restore:"恢复", trash_days_left:"天后删除", trash_delete_confirm:"永久删除？此操作无法撤销。",
@@ -867,7 +923,7 @@ const I18N = {
     cam_secure_ctx:"⚠️ Kamera wymaga HTTPS lub localhost. Prawdopodobnie otworzyłeś plik przez file://.\nUruchom przez serwer: python3 -m http.server 8000 → http://localhost:8000", cam_notallowed:"⚠️ Dostęp zablokowany. Kliknij ikonę kłódki w pasku adresu → Uprawnienia → zezwól na kamerę i mikrofon i przeładuj stronę.", auth_not_config:"Firebase nie jest jeszcze skonfigurowany. Wklej web-config do APP_CONFIG.firebase i dodaj URL aplikacji w Authentication → Authorized Domains.",
     share_btn:"👥 Udostępnij", share_title:"Udostępnij wyprawę", share_intro:"Zaproś rodzinę i przyjaciół, by śledzili tę wyprawę. Dostęp mają tylko zaproszone osoby.", share_signin_first:"Zaloguj się, aby udostępnić wyprawę.", share_create:"Utwórz link do udostępniania", share_link_label:"Link do udostępniania", share_copy:"Kopiuj link", share_copied:"Link skopiowany!", share_followers:"Obserwujący", role_owner:"Lider", role_view:"Obserwuje", role_contrib:"Współtwórca", share_remove:"Usuń", share_end:"Zakończ udostępnianie", share_end_confirm:"Zakończyć wyprawę? Udostępnianie na żywo wyłączy się, ale nikt nie zostaje usunięty — zawartość pozostaje.", share_reopen:"Wznów udostępnianie", share_ended:"Udostępnianie zakończone.", join_signin:"Zaloguj się, aby dołączyć do wyprawy.", join_ok:"Jesteś teraz uczestnikiem wyprawy! 🏔️", join_fail:"Nie udało się dołączyć — sprawdź link lub czy wyprawa jest nadal aktywna.", share_follower_note:"Obserwujesz tę wyprawę.",
     invite_new:"Nowe zaproszenie", invite_who_q:"Kogo zapraszasz? (imię lub notatka)", status_invited:"Zaproszony", status_joined:"Dołączył", invite_revoke:"Cofnij", invites_none:"Brak zaproszeń.", invite_label_default:"Zaproszenie", invite_revoke_confirm:"Cofnąć to zaproszenie? Link przestanie działać, a osoba natychmiast straci dostęp.",
-    invite_intro:"Zaproszeni logują się tym samym e-mailem lub numerem telefonu. Powiadom ich sam.", trip_link:"Link wyprawy", share_invited:"Zaproszeni", invite_email_label:"Zaproś (e-mail lub telefon)", invite_email_ph:"imie@email.pl lub +47 …", role_deltaker:"Uczestnik", role_folger:"Obserwujący", invite_add:"Zaproś", invite_bad_email:"Wpisz prawidłowy adres e-mail.", join_not_invited:"Nie masz zaproszenia na tę wyprawę (lub została zakończona). Poproś właściciela, by zaprosił e-mail, którym się logujesz.", strike_confirm:"Usunąć tę osobę z wyprawy? Natychmiast straci dostęp.", trip_start:"Rozpocznij wyprawę", trip_stop:"Zakończ wyprawę", trip_active_note:"🟢 Wyprawa trwa – uczestnicy widzą się na mapie.", trip_ended_note:"Wyprawa zakończona (na żywo wyłączone). Cała zawartość pozostaje dla każdego uczestnika.", trip_start_again:"Rozpocznij wyprawę ponownie", role_help:"Wszyscy zaproszeni są uczestnikami i widzą to samo — przygotowania, zdjęcia, wideo i pozycję innych. Logują się tym samym e-mailem lub numerem telefonu.", timeline_btn:"🕐 Oś czasu", timeline_empty:"Brak zdjęć ze znacznikiem czasu. Zrób lub prześlij zdjęcia, a pojawią się tu w kolejności.",
+    invite_intro:"Zaproszeni logują się tym samym e-mailem lub numerem telefonu. Powiadom ich sam.", trip_link:"Link wyprawy", share_invited:"Zaproszeni", invite_email_label:"Zaproś (e-mail lub telefon)", invite_email_ph:"imie@email.pl lub +47 …", role_deltaker:"Uczestnik", role_folger:"Obserwujący", invite_add:"Zaproś", invite_bad_email:"Wpisz prawidłowy adres e-mail.", join_not_invited:"Nie masz zaproszenia na tę wyprawę (lub została zakończona). Poproś właściciela, by zaprosił e-mail, którym się logujesz.", strike_confirm:"Usunąć tę osobę z wyprawy? Natychmiast straci dostęp.", trip_start:"Rozpocznij wyprawę", trip_stop:"Zakończ wyprawę", trip_active_note:"🟢 Wyprawa trwa – uczestnicy widzą się na mapie.", trip_ended_note:"Wyprawa zakończona (na żywo wyłączone). Cała zawartość pozostaje dla każdego uczestnika.", trip_start_again:"Rozpocznij wyprawę ponownie", role_help:"Wszyscy zaproszeni są uczestnikami i widzą to samo — przygotowania, zdjęcia, wideo i pozycję innych. Logują się tym samym e-mailem lub numerem telefonu.", timeline_btn:"🕐 Oś czasu", timeline_empty:"Brak zdjęć ze znacznikiem czasu. Zrób lub prześlij zdjęcia, a pojawią się tu w kolejności.", crop_title:"Przytnij i wyprostuj", crop_straighten:"Wyprostuj", crop_left:"W lewo", crop_right:"W prawo", crop_reset:"Resetuj", crop_save_new:"✓ Zapisz jako nowe zdjęcie",
     follow_btn:"📍 Śledź", followme_title:"Śledź mnie", followme_intro:"Udostępniaj swoją pozycję na żywo. Rodzina i przyjaciele śledzą cię na mapie — bez logowania, tylko z linkiem.", followme_signin:"Zaloguj się, aby udostępnić swoją pozycję.", followme_start:"Uruchom „Śledź mnie”", followme_stop:"Zatrzymaj udostępnianie", followme_link:"Link śledzenia (bez logowania)", followme_copylink:"Kopiuj link śledzenia", live_banner:"UDOSTĘPNIASZ NA ŻYWO", watch_live:"Na żywo", watch_lastseen:"Ostatnio widziany o", watch_ended:"Udostępnianie zakończone.", watch_notfound:"Nie znaleziono wyprawy lub jest nieaktywna.",
     acc_label:"Dokładność", acc_poor:"(przybliżone)",
     trash_title:"Kosz", trash_empty:"Kosz jest pusty.", trash_moved:"Przeniesiono do kosza", trash_undo:"Cofnij", trash_restore:"Przywróć", trash_days_left:"dni do usunięcia", trash_delete_confirm:"Usunąć trwale? Nie można cofnąć.",
@@ -1327,49 +1383,43 @@ function renameTurMedia(pi,ti,mi){
 /* ---- FULLSKJERM-FREMVISER ---- */
 let viewerMedia=[], viewerIdx=0;
 /* ── Zoom i fremviseren: knip · dobbelttrykk · panorering ── */
-let vz={scale:1,tx:0,ty:0,img:null};
-let vzMouse={down:false,x:0,y:0,tx:0,ty:0};
+let vz={scale:1,img:null};
 function vzApply(){
   if(!vz.img) return;
-  vz.img.style.touchAction='none';   // alltid: aldri la nettleseren pinch-zoome
-  if(vz.scale>1.001){
-    vz.img.style.transformOrigin='center center';
-    vz.img.style.cursor='grab';
-    vz.img.style.transform='translate('+vz.tx+'px,'+vz.ty+'px) scale('+vz.scale+')';
-  } else {
-    vz.img.style.cursor='';
-    vz.img.style.transform='';      // hvile: bildet vises nøyaktig som før
-  }
+  vz.img.style.touchAction='none';            // nettleseren skal aldri pinch-zoome
+  vz.img.style.transformOrigin='center center';
+  vz.img.style.transform = vz.scale>1.001 ? ('scale('+vz.scale+')') : '';  // ren skalering — aldri forskyvning
 }
 function vzDist(tt){ return Math.hypot(tt[0].clientX-tt[1].clientX, tt[0].clientY-tt[1].clientY); }
-function vzClamp(){ if(!vz.img){return;} if(vz.scale<=1){vz.tx=0;vz.ty=0;return;} const mx=vz.img.clientWidth*(vz.scale-1)/2, my=vz.img.clientHeight*(vz.scale-1)/2; vz.tx=Math.max(-mx,Math.min(mx,vz.tx)); vz.ty=Math.max(-my,Math.min(my,vz.ty)); }
-function vzReset(anim){ vz.scale=1; vz.tx=0; vz.ty=0; if(vz.img){ if(anim){vz.img.style.transition='transform .2s';} vzApply(); if(anim){ setTimeout(()=>{ if(vz.img) vz.img.style.transition=''; },220);} } }
+function vzReset(anim){
+  vz.scale=1;
+  if(vz.img){ if(anim){ vz.img.style.transition='transform .2s'; } vzApply(); if(anim){ setTimeout(()=>{ if(vz.img) vz.img.style.transition=''; },220); } }
+}
+function vzToggle(){
+  vz.scale = (vz.scale>1) ? 1 : 2.5;
+  if(vz.img){ vz.img.style.transition='transform .18s'; vzApply(); setTimeout(()=>{ if(vz.img) vz.img.style.transition=''; },200); }
+}
 function vzAttach(img){
-  vz.img=img; vz.scale=1; vz.tx=0; vz.ty=0;
-  img.style.touchAction='none';   // fra start: nettleseren skal aldri pinch-zoome bildet
-  vzApply();   // hvile: ingen transform/markør — bildet vises som før
-  let startDist=0,startScale=1,panning=false,px=0,py=0,stx=0,sty=0,lastTap=0,lastTouch=0;
+  vz.img=img; vz.scale=1;
+  img.style.touchAction='none';
+  vzApply();
+  let startDist=0,startScale=1,lastTap=0,lastTouch=0;
   img.addEventListener('touchstart',e=>{
     lastTouch=Date.now();
     if(e.touches.length===2){ startDist=vzDist(e.touches)||1; startScale=vz.scale; e.preventDefault(); }
     else if(e.touches.length===1){
       const now=Date.now();
-      if(now-lastTap<300){ e.preventDefault(); if(vz.scale>1) vzReset(true); else { vz.scale=2.5; vzClamp(); vzApply(); } lastTap=0; return; }
+      if(now-lastTap<300){ e.preventDefault(); vzToggle(); lastTap=0; return; }  // dobbelttrykk = inn/ut
       lastTap=now;
-      if(vz.scale>1){ panning=true; px=e.touches[0].clientX; py=e.touches[0].clientY; stx=vz.tx; sty=vz.ty; }
     }
   },{passive:false});
   img.addEventListener('touchmove',e=>{
-    if(e.touches.length===2){ e.preventDefault(); const d=vzDist(e.touches); vz.scale=Math.max(1,Math.min(5,startScale*(d/startDist))); vzClamp(); vzApply(); }
-    else if(panning && e.touches.length===1){ e.preventDefault(); vz.tx=stx+(e.touches[0].clientX-px); vz.ty=sty+(e.touches[0].clientY-py); vzClamp(); vzApply(); }
+    if(e.touches.length===2){ e.preventDefault(); const d=vzDist(e.touches); vz.scale=Math.max(1,Math.min(5,startScale*(d/startDist))); vzApply(); }
   },{passive:false});
-  img.addEventListener('touchend',e=>{ if(e.touches.length===0){ panning=false; if(vz.scale<1.02) vzReset(true); } });
-  img.addEventListener('dblclick',e=>{ if(Date.now()-lastTouch<500) return; e.preventDefault(); if(vz.scale>1) vzReset(true); else { vz.scale=2.5; vzClamp(); vzApply(); } });
-  img.addEventListener('wheel',e=>{ e.preventDefault(); vz.scale=Math.max(1,Math.min(5,vz.scale*(e.deltaY<0?1.15:0.87))); vzClamp(); vzApply(); },{passive:false});
-  img.addEventListener('mousedown',e=>{ if(vz.scale<=1)return; vzMouse.down=true; vzMouse.x=e.clientX; vzMouse.y=e.clientY; vzMouse.tx=vz.tx; vzMouse.ty=vz.ty; e.preventDefault(); });
+  img.addEventListener('touchend',e=>{ if(e.touches.length===0 && vz.scale<1.02) vzReset(true); });
+  img.addEventListener('dblclick',e=>{ if(Date.now()-lastTouch<500) return; e.preventDefault(); vzToggle(); });
+  img.addEventListener('wheel',e=>{ e.preventDefault(); vz.scale=Math.max(1,Math.min(5,vz.scale*(e.deltaY<0?1.15:0.87))); vzApply(); },{passive:false});
 }
-window.addEventListener('mousemove',e=>{ if(!vzMouse.down)return; vz.tx=vzMouse.tx+(e.clientX-vzMouse.x); vz.ty=vzMouse.ty+(e.clientY-vzMouse.y); vzClamp(); vzApply(); });
-window.addEventListener('mouseup',()=>{ vzMouse.down=false; });
 function openTurViewer(pi,ti,mi){ viewerMedia=curFolder().peaks[pi].turer[ti].media; viewerIdx=mi; showViewer(); }
 function openFolderViewer(mi){ viewerMedia=curFolder().media; viewerIdx=mi; showViewer(); }
 function showViewer(){
@@ -1391,6 +1441,7 @@ function renderViewer(){
   document.querySelector('.vprev').style.display=multi?'':'none';
   document.querySelector('.vnext').style.display=multi?'':'none';
   const ve=document.querySelector('.vedit'); if(ve) ve.style.display=(m.type==='video')?'none':'';
+  const vc=document.querySelector('.vcrop'); if(vc) vc.style.display=(m.type==='video')?'none':'';
 }
 function viewerNav(d){
   if(!viewerMedia.length)return;
@@ -2796,6 +2847,139 @@ function openEditor(m){
   im.src=src;
 }
 function openEditorFromViewer(){ openEditor(viewerMedia[viewerIdx]); }
+
+/* ── ✂️ Beskjær / rett opp / roter — lagrer ALLTID som nytt bilde (original urørt) ── */
+let crop={src:null,rot90:0,angle:0,rect:null,media:null,dragging:null};
+function openCropFromViewer(){
+  const m=viewerMedia[viewerIdx];
+  if(!m || m.type==='video') return;
+  crop.media=m; crop.rot90=0; crop.angle=0; crop.rect=null;
+  document.getElementById('cropAngle').value=0;
+  document.getElementById('cropAngleVal').textContent='0°';
+  const img=new Image();
+  img.crossOrigin='anonymous';                  // nødvendig for canvas-eksport
+  img.onload=()=>{ crop.src=img; document.getElementById('cropModal').classList.add('show'); document.body.style.overflow='hidden'; cropBuildBase(); };
+  img.onerror=()=>{ alert(t('ed_load_fail')); };
+  img.src=m.url;
+}
+function closeCrop(){
+  document.getElementById('cropModal').classList.remove('show');
+  document.body.style.overflow='';
+  crop.src=null; crop.rect=null;
+}
+function cropBuildBase(){
+  if(!crop.src) return;
+  const cv=document.getElementById('cropCanvas');
+  const w=crop.src.naturalWidth, h=crop.src.naturalHeight;
+  const rad=(crop.rot90+crop.angle)*Math.PI/180;
+  const cos=Math.abs(Math.cos(rad)), sin=Math.abs(Math.sin(rad));
+  const bw=Math.max(1,Math.round(w*cos+h*sin)), bh=Math.max(1,Math.round(w*sin+h*cos));
+  cv.width=bw; cv.height=bh;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,bw,bh);
+  ctx.save(); ctx.translate(bw/2,bh/2); ctx.rotate(rad); ctx.drawImage(crop.src,-w/2,-h/2); ctx.restore();
+  // vent på layout, så plasser crop-rektangelet i forhold til vist canvas
+  requestAnimationFrame(()=>cropInitRect());
+}
+function cropCanvasBox(){
+  const stage=document.getElementById('cropStage'), cv=document.getElementById('cropCanvas');
+  const sb=stage.getBoundingClientRect(), cb=cv.getBoundingClientRect();
+  return {left:cb.left-sb.left, top:cb.top-sb.top, width:cb.width, height:cb.height};
+}
+function cropInitRect(){
+  const box=cropCanvasBox();
+  const inset=0.06;
+  crop.rect={ x:box.left+box.width*inset, y:box.top+box.height*inset, w:box.width*(1-inset*2), h:box.height*(1-inset*2) };
+  cropDrawRect();
+}
+function cropDrawRect(){
+  const r=crop.rect, el=document.getElementById('cropRect');
+  if(!r){ el.style.display='none'; return; }
+  el.style.display=''; el.style.left=r.x+'px'; el.style.top=r.y+'px'; el.style.width=r.w+'px'; el.style.height=r.h+'px';
+}
+function cropSetAngle(v){
+  crop.angle=parseFloat(v)||0;
+  document.getElementById('cropAngleVal').textContent=(crop.angle>0?'+':'')+crop.angle+'°';
+  cropBuildBase();
+}
+function cropRot90(d){ crop.rot90=((crop.rot90+d)%360+360)%360; cropBuildBase(); }
+function cropResetAll(){
+  crop.rot90=0; crop.angle=0;
+  document.getElementById('cropAngle').value=0; document.getElementById('cropAngleVal').textContent='0°';
+  cropBuildBase();
+}
+/* dra/endre crop-rektangelet (peker-hendelser, mobil + PC) */
+(function(){
+  const el=()=>document.getElementById('cropRect');
+  let mode=null,sx=0,sy=0,or=null;
+  function start(e,m){ e.preventDefault(); e.stopPropagation(); const p=e.touches?e.touches[0]:e; mode=m; sx=p.clientX; sy=p.clientY; or={...crop.rect}; }
+  function move(e){
+    if(!mode||!crop.rect) return;
+    const p=e.touches?e.touches[0]:e; const dx=p.clientX-sx, dy=p.clientY-sy; const box=cropCanvasBox();
+    let r={...or};
+    if(mode==='move'){ r.x=or.x+dx; r.y=or.y+dy; }
+    else{ if(mode.includes('l')){ r.x=or.x+dx; r.w=or.w-dx; } if(mode.includes('r')){ r.w=or.w+dx; } if(mode.includes('t')){ r.y=or.y+dy; r.h=or.h-dy; } if(mode.includes('b')){ r.h=or.h+dy; } }
+    const min=40;
+    if(r.w<min){ r.w=min; } if(r.h<min){ r.h=min; }
+    // hold innenfor vist bilde
+    r.x=Math.max(box.left,Math.min(r.x,box.left+box.width-r.w));
+    r.y=Math.max(box.top,Math.min(r.y,box.top+box.height-r.h));
+    if(r.x+r.w>box.left+box.width) r.w=box.left+box.width-r.x;
+    if(r.y+r.h>box.top+box.height) r.h=box.top+box.height-r.y;
+    crop.rect=r; cropDrawRect();
+  }
+  function end(){ mode=null; }
+  function wire(){
+    const rect=el(); if(!rect) return;
+    rect.addEventListener('mousedown',e=>{ if(e.target===rect) start(e,'move'); });
+    rect.addEventListener('touchstart',e=>{ if(e.target===rect) start(e,'move'); },{passive:false});
+    rect.querySelectorAll('.crop-h').forEach(h=>{
+      const m=h.classList.contains('crop-tl')?'tl':h.classList.contains('crop-tr')?'tr':h.classList.contains('crop-bl')?'bl':'br';
+      h.addEventListener('mousedown',e=>start(e,m));
+      h.addEventListener('touchstart',e=>start(e,m),{passive:false});
+    });
+    window.addEventListener('mousemove',move);
+    window.addEventListener('touchmove',move,{passive:false});
+    window.addEventListener('mouseup',end);
+    window.addEventListener('touchend',end);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',wire); else wire();
+})();
+async function cropConfirmSave(){
+  if(!crop.src || !crop.rect) return;
+  const cv=document.getElementById('cropCanvas'), box=cropCanvasBox();
+  const sclX=cv.width/box.width, sclY=cv.height/box.height;
+  const sx=Math.max(0,(crop.rect.x-box.left)*sclX), sy=Math.max(0,(crop.rect.y-box.top)*sclY);
+  const sw=Math.min(cv.width-sx,crop.rect.w*sclX), sh=Math.min(cv.height-sy,crop.rect.h*sclY);
+  if(sw<1||sh<1) return;
+  const out=document.createElement('canvas'); out.width=Math.round(sw); out.height=Math.round(sh);
+  out.getContext('2d').drawImage(cv,sx,sy,sw,sh,0,0,out.width,out.height);
+  const btn=document.querySelector('.crop-confirm'); if(btn){ btn.disabled=true; }
+  try{
+    const blob=await new Promise((res,rej)=>out.toBlob(b=>b?res(b):rej(new Error('toBlob')),'image/jpeg',0.92));
+    const baseName=((crop.media&&crop.media.name)||'bilde').replace(/\.[^.]+$/,'')+'_red.jpg';
+    const newMedia=await cropUploadBlob(blob, baseName);
+    const ti=(crop.media&&crop.media.title)?crop.media.title+' ✂️':suggestMediaName('image');
+    newMedia.title=ti; newMedia.takenAt=(crop.media&&crop.media.takenAt)||Date.now();
+    viewerMedia.splice(viewerIdx+1,0,newMedia);   // nytt bilde rett etter originalen
+    viewerIdx=viewerIdx+1;
+    saveState();
+    closeCrop(); renderViewer();
+    const tp=shTrip(); if(tp&&tp.shareId) syncTripContent(tp.id);
+  }catch(e){
+    console.warn('crop save',e);
+    alert(t('ed_save_fail')+(String(e).includes('tainted')||e.name==='SecurityError'?'\n\n(CORS: bildelageret må tillate '+location.origin+')':''));
+  }finally{ if(btn){ btn.disabled=false; } }
+}
+async function cropUploadBlob(blob, baseName){
+  if(storage && auth && auth.currentUser){
+    const path=APP_CONFIG.id+'/'+auth.currentUser.uid+'/'+Date.now()+'_'+baseName.replace(/[^\w.\-]/g,'_');
+    const ref=storage.ref().child(path);
+    await ref.put(blob);
+    return {url:await ref.getDownloadURL(), type:'image', name:baseName, path};
+  }
+  return {url:URL.createObjectURL(blob), type:'image', name:baseName};
+}
 function edSet(k,v){ edit[k]=+v; edDraw(); }
 function edReset(){
   edit.b=100; edit.c=100; edit.s=100; edit.h=0; edit.temp=0;
