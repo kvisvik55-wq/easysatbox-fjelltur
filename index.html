@@ -1990,7 +1990,12 @@ function blogListHtml(f){
       const url='https://www.google.com/maps/search/?api=1&query='+Number(e.lat).toFixed(5)+','+Number(e.lon).toFixed(5);
       h+='<a class="blogitem-pos" href="'+url+'" target="_blank" rel="noopener">📍 '+Number(e.lat).toFixed(4)+', '+Number(e.lon).toFixed(4)+'</a>';
     }
-    h+='<button class="blogitem-btn" onclick="blogCapture('+i+')" title="'+t('cam_take_photo')+'">📷</button>';
+    if(isMobileDevice()){
+      h+='<button class="blogitem-btn" onclick="blogCap('+i+',\'image\')" title="'+t('cam_take_photo')+'">📷</button>';
+      h+='<button class="blogitem-btn" onclick="blogCap('+i+',\'video\')" title="'+t('cam_take_video')+'">🎥</button>';
+    }else{
+      h+='<button class="blogitem-btn" onclick="blogCapture('+i+')" title="'+t('cam_take_pv')+'">📷</button>';
+    }
     h+='<button class="blogitem-btn" onclick="addBlogMedia('+i+')" title="'+t('u_import_gallery')+'">🖼️</button>';
     h+='<button class="blogitem-del" onclick="delBlogEntry('+i+')" title="'+t('u_delete')+'">🗑️</button>';
     h+='</div><textarea class="fld blogitem-text" placeholder="'+t('blog_ph')+'" oninput="autoGrow(this);setBlogEntryText('+i+',this.value)">'+escapeHtml(e.text||'')+'</textarea>';
@@ -2034,6 +2039,7 @@ function blogMediaGridHtml(e, i){
   return g+'</div>';
 }
 function blogCapture(i){ const f=curFolder(); if(f&&f._blog&&f.entries[i]){ openCam({kind:'blogentry',i:i}); } }
+function blogCap(i,mode){ const f=curFolder(); if(f&&f._blog&&f.entries[i]){ nativeCapture({kind:'blogentry',i:i}, mode); } }
 function addBlogMedia(i){
   const f=curFolder(); if(!f||!f._blog||!f.entries[i]) return;
   pickFiles(arr=>{ const en=curFolder().entries[i]; if(!en) return; if(!Array.isArray(en.media)) en.media=[]; en.media.push(...arr); saveState(); if(typeof syncTripContent==='function'&&activeTripId){try{syncTripContent();}catch(e){}} renderFolderView(); });
