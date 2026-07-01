@@ -1084,6 +1084,7 @@ function goToBlog(){
   if(fi>=0) openFolder(fi);
 }
 let TRIPS=[], activeTripId=null, tripStates={}, tripColors={};
+let booting=true;   // hindrer at oppstart/seeding overskriver ekte lagret data
 let folderState={}, coinColor={};
 let aiHistory=[];
 function setActiveTrip(id){
@@ -1124,6 +1125,7 @@ function init(){
   setTheme("deepspace");
   seedDefaultTrip();
   restoreLocal();   // hent lokal sikkerhetskopi om den finnes (også uten innlogging)
+  booting=false;    // fra nå av er det trygt å lagre (oppstart+lokal innlasting ferdig)
   current = 0; // åpne på fremste mynt (Skattkammeret)
   renderCarousel();
   initFirebase();
@@ -2489,12 +2491,14 @@ async function loadState(){
       suppressSave=false;
       refreshAfterLoad();
       saveState();
-    }else{
-      saveState(); // første innlogging: lagre seed-data
+    }else if(!snap.exists){
+      saveState(); // kun aller første innlogging (dokument finnes ikke) → lagre seed-data
     }
+    // dokument finnes men uten trips → IKKE overskriv (kan være delvis/feilet lesning)
   }catch(e){ console.warn('Kunne ikke laste lagret tilstand.',e); }
 }
 function saveLocal(){
+  if(booting) return;   // ikke overskriv lokal sikkerhetskopi før oppstart+innlasting er ferdig
   try{ localStorage.setItem('esb_state', JSON.stringify({trips:TRIPS, activeTripId:activeTripId, tripStates:tripStates, tripColors:tripColors, tripTrash:tripTrash, savedAt:Date.now()})); }catch(e){}
 }
 function restoreLocal(){
