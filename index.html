@@ -821,6 +821,12 @@ const APP_CONFIG = {
         {emoji:"✨",name:{no:"Lag postkort / slideshow",en:"Make postcard"},sub:{no:"Private pins strippes bort",en:"Private pins removed"}},
         {emoji:"📺",name:{no:"Cast til storskjerm",en:"Cast to TV"}},
       ]},
+    { id:"mitteget", emoji:"🗂️",
+      name:{no:"Mitt eget",en:"My own",de:"Mein Eigenes",fr:"Mes dossiers",es:"Lo mío",it:"I miei",ru:"Моё",ja:"マイフォルダ",zh:"我的",pl:"Moje"},
+      sub:{no:"Dine egne mapper – lag så mange du vil",en:"Your own folders – make as many as you like",de:"Deine eigenen Ordner – so viele du willst",fr:"Vos propres dossiers – autant que vous voulez",es:"Tus propias carpetas – crea las que quieras",it:"Le tue cartelle – quante ne vuoi",ru:"Ваши папки – сколько угодно",ja:"自分のフォルダ – いくつでも",zh:"你自己的文件夹 – 想建多少都行",pl:"Twoje foldery – ile chcesz"},
+      folders:[
+        {emoji:"📁",name:{no:"Ledig",en:"Free",de:"Frei",fr:"Libre",es:"Libre",it:"Libero",ru:"Свободно",ja:"自由",zh:"自由",pl:"Wolne"},sub:{no:"Gi den nytt navn og fyll den som du vil",en:"Rename and fill it your way"}},
+      ]},
   ]
 };
 /* ════════════════════════════════════════════════════════════
@@ -830,7 +836,7 @@ const APP_CONFIG = {
 /* Rekkefølge på myntene (fremst → bakerst).
    Forlengs: Planlegging 1–4 → Gjennomføring 1–2 → Minner 1–2.
    Snarvei til Turblogg (Minner 1) ligger øverst for foredragsholder. */
-const COIN_ORDER=['ekspeditor','orakel','rustning','basen','vokter','turfolget','skattkammer','postkort'];
+const COIN_ORDER=['ekspeditor','orakel','rustning','basen','vokter','turfolget','skattkammer','postkort','mitteget'];
 APP_CONFIG.coins.sort((a,b)=>{
   let ia=COIN_ORDER.indexOf(a.id), ib=COIN_ORDER.indexOf(b.id);
   if(ia<0)ia=99; if(ib<0)ib=99; return ia-ib;
@@ -1043,11 +1049,30 @@ function ensureFolders(){
       if(!has){ const clone=JSON.parse(JSON.stringify(def)); if(def._blog||def._readme) folderState[c.id].unshift(clone); else folderState[c.id].push(clone); changed=true; }
     });
   });
-  // Fyll README-mappa med velkomsttekst (én gang, på valgt språk)
-  APP_CONFIG.coins.forEach(c=>{ (folderState[c.id]||[]).forEach(f=>{
-    if(f._readme && !f._seeded){ f.note=t('readme_body'); f._seeded=true; changed=true; }
-  }); });
+  // Fjern gammel demo-«Mine topper» hvis den er urørt (ingen egne data)
+  APP_CONFIG.coins.forEach(c=>{ const arr=folderState[c.id]; if(!arr) return;
+    for(let i=arr.length-1;i>=0;i--){ const f=arr[i];
+      if(f.type==='peaks' && f.name && f.name.no==='Mine topper'){
+        const hasData=(f.peaks||[]).some(p=> (p.turer||[]).some(tu=> (tu.media&&tu.media.length) || (tu.note&&String(tu.note).trim()) || (tu.date&&String(tu.date).trim())) );
+        if(!hasData){ arr.splice(i,1); changed=true; }
+      }
+    }
+  });
   if(changed && typeof saveState==='function'){ try{ saveState(); }catch(e){} }
+  syncReadme();
+}
+function isDefaultReadme(note){
+  if(!note || !String(note).trim()) return true;
+  const n=String(note).trim();
+  return LANGS.some(l=> (I18N[l.c]&&I18N[l.c].readme_body) && String(I18N[l.c].readme_body).trim()===n);
+}
+function syncReadme(){
+  if(!folderState) return; let changed=false;
+  APP_CONFIG.coins.forEach(c=>{ (folderState[c.id]||[]).forEach(f=>{
+    if(f._readme && isDefaultReadme(f.note)){ const nv=t('readme_body'); if(f.note!==nv){ f.note=nv; changed=true; } }
+  }); });
+  if(changed){ if(typeof saveState==='function'){ try{ saveState(); }catch(e){} }
+    const fv=document.getElementById('folderview'); if(fv && fv.classList.contains('show')){ try{ renderFolderView(); }catch(e){} } }
 }
 /* Snarvei rett til Turblogg (Minner 1) — for foredragsholder */
 function goToBlog(){
@@ -1126,6 +1151,7 @@ function setLang(l){
   { const e=document.getElementById('mapGmaps'); if(e) e.textContent=t('map_open_gmaps'); }
   { const e=document.getElementById('mapShowBtn'); if(e) e.textContent=t('map_show'); }
   { const e=document.getElementById('uploadToast'); if(e) e.textContent=t('uploading'); }
+  syncReadme();
   renderCarousel();
   if(document.getElementById('folderview').classList.contains('show')) renderFolderView();
   else if(document.getElementById('detail').classList.contains('show')) renderFolders();
