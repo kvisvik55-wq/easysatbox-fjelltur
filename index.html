@@ -308,7 +308,7 @@
   .blogitem-pos:hover{background:var(--accent);color:var(--accent-ink)}
   .blogitem-del{margin-left:auto;background:transparent;border:none;cursor:pointer;font-size:16px;opacity:.7}
   .blogitem-del:hover{opacity:1}
-  .blogitem-text{margin-bottom:0;min-height:52px}
+  textarea.blogitem-text{margin-bottom:0;min-height:52px}
   .tripcard{display:flex;align-items:center;gap:11px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:9px;cursor:pointer}
   .tripcard.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
   .tripcard .tc-main{flex:1;min-width:0}
@@ -1896,15 +1896,16 @@ async function askAI(){
     const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || t('ai_empty');
     // Turblogg: fang opp lagre-markør(er) fra AI-en
     const saveRe=/\[\[LAGRE:(\d+)\]\]([\s\S]*?)\[\[\/LAGRE\]\]/g;
-    let sm, savedLabels=[], seenSaves=new Set(); const toSave=[];
+    let sm, seenSaves=new Set(); const toSave=[];
     while((sm=saveRe.exec(txt))){
       const n=parseInt(sm[1],10), body=(sm[2]||'').trim(), key=n+'|'+body;
       if(!body || seenSaves.has(key)) continue;
       seenSaves.add(key);
       const tgt=blogTargets.find(x=>x.n===n);
-      if(tgt){ toSave.push({tgt,body}); if(!savedLabels.includes(tgt.label)) savedLabels.push(tgt.label); }
+      if(tgt) toSave.push({tgt,body});
     }
-    for(const it of toSave){ await appendBlogEntry(it.tgt, it.body); }
+    let savedLabels=[];
+    for(const it of toSave){ const ok=await appendBlogEntry(it.tgt, it.body); if(ok && !savedLabels.includes(it.tgt.label)) savedLabels.push(it.tgt.label); }
     const displayTxt=txt.replace(saveRe,'').trim();
     aiHistory.push({role:'assistant',content: displayTxt || '(lagret i turloggen)'});
     const clean=cleanAI(displayTxt);
@@ -1948,21 +1949,26 @@ function ensureBlogEntries(f){
   }
 }
 async function appendBlogEntry(tgt, body){
-  const arr=folderState[tgt.coinId]; if(!arr||!arr[tgt.folderIdx]) return;
+  const arr=folderState[tgt.coinId]; if(!arr||!arr[tgt.folderIdx]) return false;
   const f=arr[tgt.folderIdx];
   const now=new Date();
   const stamp=now.toLocaleString(LANG,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
   if(f._blog){
     ensureBlogEntries(f);
+    const last=f.entries[f.entries.length-1];
+    if(last && String(last.text||'').trim().toLowerCase()===body.trim().toLowerCase()) return false; // hopp over dublett
     let pos=null; try{ pos=await new Promise(res=>blogGeo(res)); }catch(e){}
     f.entries.push({id:blogId(), ts:now.getTime(), stamp, text:body, lat:pos?pos.lat:null, lon:pos?pos.lon:null});
   }else{
+    const cur=String(f.note||'');
+    if(cur.trim().toLowerCase().endsWith(body.trim().toLowerCase()) && body) return false; // hopp over dublett
     const line='🕒 '+stamp+' — '+body;
-    f.note=(f.note&&String(f.note).trim())?(String(f.note).trim()+'\n'+line):line;
+    f.note=(cur&&cur.trim())?(cur.trim()+'\n'+line):line;
   }
   saveState();
   if(typeof syncTripContent==='function'&&activeTripId){ try{ syncTripContent(); }catch(e){} }
   if(openFolderIdx!==null && APP_CONFIG.coins[current] && APP_CONFIG.coins[current].id===tgt.coinId && openFolderIdx===tgt.folderIdx){ try{ renderFolderView(); }catch(e){} }
+  return true;
 }
 /* ── Turblogg-liste: rediger, slett, legg til eget innlegg ── */
 function blogListHtml(f){
