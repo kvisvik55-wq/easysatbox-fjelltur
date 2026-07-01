@@ -451,7 +451,7 @@
   <div class="tripbar">
     <div class="ico" id="tripIco">⛰️</div>
     <div style="flex:1;min-width:0">
-      <div class="t1" id="tripName">Tur 014 — Børgefjell</div>
+      <div class="t1" id="tripName">000 — Børgefjell · Demotur</div>
       <div class="t2" id="tripMeta"></div>
     </div>
     <button onclick="openMap()" data-i18n="map_btn" aria-label="Kart">🗺️ Kart</button>
@@ -739,7 +739,7 @@ const APP_CONFIG = {
   aiProxyUrl: "/.netlify/functions/claude",
 
   // Eksempeltur (kan endres av bruker i appen)
-  trip: { no:"Tur 014 — Børgefjell", en:"Trip 014 — Børgefjell", start:"Viermdalen" },
+  trip: { no:"000 — Børgefjell · Demotur", en:"000 — Børgefjell · Demo", start:"Viermdalen" },
 
   // ── MYNTENE og deres MAPPER ──
   // flag:true  = uthevet (langtur-tillegg). sub = liten undertekst.
@@ -2353,11 +2353,18 @@ function renderTripsList(){
     box.appendChild(card);
   });
 }
+function nextTripNum(){
+  let max=0;
+  TRIPS.forEach(tp=>{ const m=(tp.name||'').match(/^\s*(\d{1,4})\b/); if(m){ const n=parseInt(m[1],10); if(n>max) max=n; } });
+  return max+1; // demoturen er 000 → første ekte tur blir 001
+}
 function newTripPrompt(){
-  const T=(no,en)=>LANG==='no'?no:en;
   const name=prompt(t('trip_name_q'),''); if(name===null)return;
   const v=prompt(t('trip_dur_q1'),'');
-  newTrip(name.trim(), v===null?'':v.trim(), '');
+  const num=String(nextTripNum()).padStart(3,'0');
+  const nm=name.trim();
+  const full=num+(nm?(' — '+nm):'');
+  newTrip(full, v===null?'':v.trim(), '');
   closeCoin(); renderCarousel(); renderTripsList();
 }
 function editTripById(id){
@@ -2586,7 +2593,7 @@ async function sendSmsCode(){
   }catch(e){
     console.warn('signInWithPhoneNumber feilet',e);
     clearRecaptcha();               // rydd så neste forsøk starter rent
-    alert(t('auth_sms_fail')+(e&&e.message?('\n\n'+e.message):''));
+    alert(t('auth_sms_fail')+(e&&e.code?('\n\n['+e.code+']'):'')+(e&&e.message?('\n'+e.message):''));
   }
 }
 async function verifySmsCode(){
