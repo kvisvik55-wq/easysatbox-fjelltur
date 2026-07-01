@@ -1803,6 +1803,15 @@ async function askAI(){
     const n=blogTargets.length+1, label=tr(c.name)+' › '+tr(f.name);
     blogTargets.push({n,coinId:c.id,folderIdx:fi,label}); blogList+=n+') '+label+'\n';
   }); });
+  // Samle eksisterende turlogg-innlegg (med tidsstempel) som kontekst til AI-en
+  let blogLog='';
+  APP_CONFIG.coins.forEach(c=>{ (folderState[c.id]||[]).forEach(f=>{
+    if(f.type==='peaks'||f.type==='links') return;
+    if(f.note && String(f.note).trim()){ blogLog += '\n['+tr(c.name)+' › '+tr(f.name)+']\n'+String(f.note).trim()+'\n'; }
+  }); });
+  if(blogLog.length>2500) blogLog=blogLog.slice(-2500);
+  const blogCtx = blogLog ? ('\n\n── SÅ LANGT I TURLOGGEN (med dato og klokkeslett) ──\n'+
+    'Under er logg-innlegg brukeren allerede har lagret. Bruk disse når brukeren spør om tid, varighet, rekkefølge eller vil ha et sammendrag av dagen (f.eks. regne ut tid mellom start og et senere punkt).\n'+blogLog) : '';
   let sys='Du er EasySatBox-assistenten i appen «'+L()+'» — en vennlig følgesvenn, samtalepartner og turblogg-sekretær. '+
           'Aktiv tur: «'+(tp?tp.name:'')+'»'+(tp&&tp.varighet?(' ('+tp.varighet+')'):'')+'. '+
           'Du hjelper med ALT brukeren spør om: vær, rute, sikkerhet, utstyr, pakking, overnatting, transport, proviant og lokale butikker — '+
@@ -1826,10 +1835,11 @@ async function askAI(){
           'F.eks. «Dette passer i Minner 1 › Turblogg. Skal jeg legge det der?». '+
           '2) Brukeren svarer «ja» eller foreslår en annen mappe. '+
           '3) FØRST når brukeren har bekreftet, avslutt svaret med NØYAKTIG denne linjen på egen linje: [[LAGRE:n]]loggteksten her[[/LAGRE]] '+
+          'Skriv KUN ÉN slik linje per svar — aldri samme innlegg to ganger. '+
           '— der n er mappenummeret og teksten er selve innlegget (IKKE skriv klokkeslett; appen legger det på automatisk). '+
           'Skriv aldri [[LAGRE]]-linjen før brukeren har bekreftet mappe. Ikke nevn eller forklar markøren; appen fjerner den og leser bekreftelsen høyt. '+
           'Ber brukeren om å ta bilde/video: forklar vennlig at de kan bruke 📷-knappen (kamera via smartbriller kommer). '+
-          '\nTilgjengelige mapper for turloggen (nummer › mappe):\n'+blogList;
+          '\nTilgjengelige mapper for turloggen (nummer › mappe):\n'+blogList + blogCtx;
   if(geo) sys+=' Brukerens nåværende posisjon: lat '+geo.lat.toFixed(4)+', lon '+geo.lon.toFixed(4)+' — bruk denne når brukeren mener «her».';
   const tools=[
     {
@@ -1863,10 +1873,13 @@ async function askAI(){
     const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || t('ai_empty');
     // Turblogg: fang opp lagre-markør(er) fra AI-en
     const saveRe=/\[\[LAGRE:(\d+)\]\]([\s\S]*?)\[\[\/LAGRE\]\]/g;
-    let sm, savedLabels=[];
+    let sm, savedLabels=[], seenSaves=new Set();
     while((sm=saveRe.exec(txt))){
-      const tgt=blogTargets.find(x=>x.n===parseInt(sm[1],10)), body=(sm[2]||'').trim();
-      if(tgt&&body){ appendBlogEntry(tgt,body); savedLabels.push(tgt.label); }
+      const n=parseInt(sm[1],10), body=(sm[2]||'').trim(), key=n+'|'+body;
+      if(!body || seenSaves.has(key)) continue;
+      seenSaves.add(key);
+      const tgt=blogTargets.find(x=>x.n===n);
+      if(tgt){ appendBlogEntry(tgt,body); if(!savedLabels.includes(tgt.label)) savedLabels.push(tgt.label); }
     }
     const displayTxt=txt.replace(saveRe,'').trim();
     aiHistory.push({role:'assistant',content: displayTxt || '(lagret i turloggen)'});
