@@ -293,6 +293,9 @@
   .bg-list{display:flex;flex-direction:column;gap:8px;padding:2px 0}
   .bg-opt{text-align:left;background:var(--card2);border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:12px 14px;font:inherit;font-size:15px;cursor:pointer}
   .bg-opt.active{border-color:var(--accent);color:var(--accent);font-weight:600}
+  .blog-ok{margin-top:10px;padding:8px 12px;border-radius:10px;background:var(--card2);border:1px solid var(--accent);color:var(--accent);font-size:14px}
+  .blogjump{margin-top:12px;background:var(--card2);border:1px solid var(--accent);color:var(--accent);border-radius:999px;padding:9px 18px;font:inherit;font-size:14px;cursor:pointer}
+  .blogjump:hover{background:var(--accent);color:var(--accent-ink)}
   .tripcard{display:flex;align-items:center;gap:11px;background:var(--bg2);border:1px solid var(--line);border-radius:12px;padding:13px;margin-bottom:9px;cursor:pointer}
   .tripcard.active{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
   .tripcard .tc-main{flex:1;min-width:0}
@@ -447,8 +450,9 @@
 
   <!-- ===== CAROUSEL (sliding door) ===== -->
   <div class="stage" id="stage">
-    <h2 data-i18n="pick">Velg en mynt</h2>
-    <p data-i18n="swipe">Sveip sidelengs eller bruk pilene. Mynten foran deg åpnes.</p>
+    <h2 data-i18n="pick">Velg et trinn</h2>
+    <p data-i18n="swipe">Sveip sidelengs eller bruk pilene. Trinnet foran deg åpnes.</p>
+    <button class="blogjump" onclick="goToBlog()" data-i18n="blog_jump">📔 Hopp til Turblogg</button>
   </div>
   <div class="carousel" id="carousel" aria-label="Mynter">
     <button class="arrow prev" aria-label="Forrige" onclick="move(-1)">‹</button>
@@ -725,8 +729,8 @@ const APP_CONFIG = {
   // flag:true  = uthevet (langtur-tillegg). sub = liten undertekst.
   coins: [
     { id:"ekspeditor", emoji:"🧭",
-      name:{no:"Ekspeditøren",en:"The Planner",de:"Der Planer",fr:"Le Planificateur",es:"El Planificador",it:"Il Pianificatore",ru:"Планировщик",ja:"プランナー",zh:"策划者",pl:"Planista"},
-      sub:{no:"Plan, lokasjon og reise",en:"Plan, location and travel",de:"Plan, Ort und Anreise",fr:"Plan, lieu et trajet",es:"Plan, lugar y viaje",it:"Piano, luogo e viaggio",ru:"План, место и дорога",ja:"計画・場所・移動",zh:"计划、地点与出行",pl:"Plan, miejsce i dojazd"},
+      name:{no:"Planlegging 1",en:"Planning 1",de:"Planung 1",fr:"Planification 1",es:"Planificación 1",it:"Pianificazione 1",ru:"Планирование 1",ja:"計画 1",zh:"计划 1",pl:"Planowanie 1"},
+      sub:{no:"Plan og sted",en:"Plan & location",de:"Plan & Ort",fr:"Plan et lieu",es:"Plan y lugar",it:"Piano e luogo",ru:"План и место",ja:"計画と場所",zh:"计划与地点",pl:"Plan i miejsce"},
       folders:[
         {emoji:"📍",name:{no:"Turinfo",en:"Trip info"}},
         {emoji:"🚗",name:{no:"Transport",en:"Transport"},sub:{no:"Bil · buss · tog · fly",en:"Car · bus · train · flight"}},
@@ -734,8 +738,8 @@ const APP_CONFIG = {
         {emoji:"📢",name:{no:"Si fra hvor du går",en:"Tell someone"}},
       ]},
     { id:"orakel", emoji:"🗺️",
-      name:{no:"Orakelet og kartet",en:"Oracle & Map",de:"Orakel & Karte",fr:"Oracle et Carte",es:"Oráculo y Mapa",it:"Oracolo e Mappa",ru:"Оракул и карта",ja:"オラクルと地図",zh:"神谕与地图",pl:"Wyrocznia i mapa"},
-      sub:{no:"Digitale verktøy",en:"Digital tools",de:"Digitale Werkzeuge",fr:"Outils numériques",es:"Herramientas digitales",it:"Strumenti digitali",ru:"Цифровые инструменты",ja:"デジタルツール",zh:"数字工具",pl:"Narzędzia cyfrowe"},
+      name:{no:"Planlegging 2",en:"Planning 2",de:"Planung 2",fr:"Planification 2",es:"Planificación 2",it:"Pianificazione 2",ru:"Планирование 2",ja:"計画 2",zh:"计划 2",pl:"Planowanie 2"},
+      sub:{no:"Kart og verktøy",en:"Map & tools",de:"Karte & Werkzeuge",fr:"Carte et outils",es:"Mapa y herramientas",it:"Mappa e strumenti",ru:"Карта и инструменты",ja:"地図とツール",zh:"地图与工具",pl:"Mapa i narzędzia"},
       folders:[
         {emoji:"🧭",name:{no:"Offline-kart",en:"Offline map"}},
         {emoji:"🥾",name:{no:"Spor og etapper",en:"Track & legs"}},
@@ -750,7 +754,7 @@ const APP_CONFIG = {
           ]},
       ]},
     { id:"vokter", emoji:"🛡️",
-      name:{no:"Vokteren",en:"The Guardian",de:"Der Wächter",fr:"Le Gardien",es:"El Guardián",it:"Il Guardiano",ru:"Хранитель",ja:"守護者",zh:"守护者",pl:"Strażnik"},
+      name:{no:"Gjennomføring 1",en:"On the trip 1",de:"Unterwegs 1",fr:"Sur le terrain 1",es:"En ruta 1",it:"Durante 1",ru:"В пути 1",ja:"実行 1",zh:"途中 1",pl:"W trakcie 1"},
       sub:{no:"Sikkerhet og helse",en:"Safety & health",de:"Sicherheit & Gesundheit",fr:"Sécurité et santé",es:"Seguridad y salud",it:"Sicurezza e salute",ru:"Безопасность и здоровье",ja:"安全と健康",zh:"安全与健康",pl:"Bezpieczeństwo i zdrowie"},
       folders:[
         {emoji:"⚠️",name:{no:"Fjellvett og skred",en:"Mountain safety"}},
@@ -759,8 +763,8 @@ const APP_CONFIG = {
         {emoji:"🆘",name:{no:"Nød — 112 / satellitt",en:"Emergency"}},
       ]},
     { id:"rustning", emoji:"🎒",
-      name:{no:"Rustningen",en:"The Armor",de:"Die Rüstung",fr:"L'Armure",es:"La Armadura",it:"L'Armatura",ru:"Снаряжение",ja:"装備",zh:"装备",pl:"Ekwipunek"},
-      sub:{no:"Utstyr, klær, strøm og lagring",en:"Gear, clothes, power, storage",de:"Ausrüstung, Kleidung, Strom, Speicher",fr:"Équipement, vêtements, énergie, stockage",es:"Equipo, ropa, energía, almacenamiento",it:"Attrezzatura, abbigliamento, energia, archivio",ru:"Снаряжение, одежда, энергия, хранение",ja:"装備・衣類・電源・保存",zh:"装备、衣物、电源、存储",pl:"Sprzęt, odzież, zasilanie, pamięć"},
+      name:{no:"Planlegging 3",en:"Planning 3",de:"Planung 3",fr:"Planification 3",es:"Planificación 3",it:"Pianificazione 3",ru:"Планирование 3",ja:"計画 3",zh:"计划 3",pl:"Planowanie 3"},
+      sub:{no:"Utstyr og pakking",en:"Gear & packing",de:"Ausrüstung & Packen",fr:"Équipement et bagages",es:"Equipo y equipaje",it:"Attrezzatura e bagagli",ru:"Снаряжение и сборы",ja:"装備と荷造り",zh:"装备与打包",pl:"Sprzęt i pakowanie"},
       folders:[
         {emoji:"✅",name:{no:"Pakkeliste",en:"Packing list"}},
         {emoji:"👕",name:{no:"Klær og renhold",en:"Clothes & hygiene"}},
@@ -768,9 +772,10 @@ const APP_CONFIG = {
         {emoji:"☁️",name:{no:"Lagring og mobil",en:"Storage & phone"},sub:{no:"Auto-opplasting til Firebase",en:"Auto-upload to Firebase"},flag:true},
       ]},
     { id:"skattkammer", emoji:"💎",
-      name:{no:"Skattkammeret",en:"The Treasury",de:"Die Schatzkammer",fr:"Le Trésor",es:"El Tesoro",it:"Il Tesoro",ru:"Сокровищница",ja:"宝物庫",zh:"宝库",pl:"Skarbiec"},
-      sub:{no:"Logg, media og statistikk",en:"Log, media, stats",de:"Logbuch, Medien, Statistik",fr:"Journal, médias, stats",es:"Registro, medios, estadísticas",it:"Diario, media, statistiche",ru:"Журнал, медиа, статистика",ja:"記録・メディア・統計",zh:"日志、媒体、统计",pl:"Dziennik, media, statystyki"},
+      name:{no:"Minner 1",en:"Memories 1",de:"Erinnerungen 1",fr:"Souvenirs 1",es:"Recuerdos 1",it:"Ricordi 1",ru:"Воспоминания 1",ja:"思い出 1",zh:"回忆 1",pl:"Wspomnienia 1"},
+      sub:{no:"Turblogg, bilder og video",en:"Trip blog, photos & video",de:"Tourblog, Fotos & Video",fr:"Journal, photos et vidéo",es:"Diario, fotos y vídeo",it:"Diario, foto e video",ru:"Блог, фото и видео",ja:"ブログ・写真・動画",zh:"行程博客、照片与视频",pl:"Blog, zdjęcia i wideo"},
       folders:[
+        {emoji:"📔",_blog:true,name:{no:"Turblogg",en:"Trip blog",de:"Tourblog",fr:"Journal de sortie",es:"Diario de ruta",it:"Diario di gita",ru:"Журнал похода",ja:"山行ブログ",zh:"行程日志",pl:"Dziennik wyprawy"},sub:{no:"AI skriver innleggene dine – bilder, video og tekst",en:"AI writes your entries – photos, video and text"}},
         {emoji:"📷",name:{no:"Bilder",en:"Photos"}},
         {emoji:"🎬",name:{no:"Video",en:"Video"}},
         {emoji:"🏔️",type:"peaks",name:{no:"Mine topper",en:"My peaks"},
@@ -783,23 +788,23 @@ const APP_CONFIG = {
         {emoji:"📊",name:{no:"Statistikk",en:"Statistics"},sub:{no:"km · høydemeter · tid",en:"km · ascent · time"}},
       ]},
     { id:"basen", emoji:"🏕️",
-      name:{no:"Basen",en:"Base camp",de:"Basislager",fr:"Camp de base",es:"Campamento base",it:"Campo base",ru:"База",ja:"ベースキャンプ",zh:"大本营",pl:"Baza"},
-      sub:{no:"Overnatting og proviant",en:"Lodging & provisions",de:"Unterkunft & Verpflegung",fr:"Hébergement et provisions",es:"Alojamiento y provisiones",it:"Alloggio e provviste",ru:"Ночлег и провизия",ja:"宿泊と食料",zh:"住宿与补给",pl:"Nocleg i prowiant"},
+      name:{no:"Planlegging 4",en:"Planning 4",de:"Planung 4",fr:"Planification 4",es:"Planificación 4",it:"Pianificazione 4",ru:"Планирование 4",ja:"計画 4",zh:"计划 4",pl:"Planowanie 4"},
+      sub:{no:"Overnatting og proviant",en:"Lodging & food",de:"Unterkunft & Verpflegung",fr:"Hébergement et provisions",es:"Alojamiento y provisiones",it:"Alloggio e provviste",ru:"Ночлег и провизия",ja:"宿泊と食料",zh:"住宿与补给",pl:"Nocleg i prowiant"},
       folders:[
         {emoji:"🛖",name:{no:"Overnatting",en:"Lodging"},sub:{no:"DNT-hytte · telt",en:"Cabin · tent"}},
         {emoji:"🍲",name:{no:"Meny og proviant",en:"Menu & food"}},
         {emoji:"🛒",name:{no:"Innkjøp",en:"Shopping"},sub:{no:"Landhandelen før turen",en:"Last shop before"}},
       ]},
     { id:"turfolget", emoji:"👥",
-      name:{no:"Turfølget",en:"The Party",de:"Die Gruppe",fr:"Le Groupe",es:"El Grupo",it:"Il Gruppo",ru:"Компания",ja:"同行者",zh:"同行队伍",pl:"Grupa"},
-      sub:{no:"Fellesskap og deling",en:"Group & sharing",de:"Gemeinschaft & Teilen",fr:"Groupe et partage",es:"Grupo y compartir",it:"Gruppo e condivisione",ru:"Группа и обмен",ja:"仲間と共有",zh:"团队与分享",pl:"Wspólnota i udostępnianie"},
+      name:{no:"Gjennomføring 2",en:"On the trip 2",de:"Unterwegs 2",fr:"Sur le terrain 2",es:"En ruta 2",it:"Durante 2",ru:"В пути 2",ja:"実行 2",zh:"途中 2",pl:"W trakcie 2"},
+      sub:{no:"Turfølget",en:"The party",de:"Die Gruppe",fr:"Le groupe",es:"El grupo",it:"Il gruppo",ru:"Компания",ja:"同行者",zh:"同行队伍",pl:"Grupa"},
       folders:[
         {emoji:"🔗",name:{no:"Felles tur-ID",en:"Shared trip ID"}},
         {emoji:"🖼️",name:{no:"Felles galleri",en:"Shared gallery"}},
       ]},
     { id:"postkort", emoji:"📮",
-      name:{no:"Postkortet",en:"The Postcard",de:"Die Postkarte",fr:"La Carte postale",es:"La Postal",it:"La Cartolina",ru:"Открытка",ja:"ポストカード",zh:"明信片",pl:"Pocztówka"},
-      sub:{no:"Eksport og fremvisning",en:"Export & casting",de:"Export & Anzeige",fr:"Export et diffusion",es:"Exportar y proyectar",it:"Esporta e proietta",ru:"Экспорт и показ",ja:"書き出しと表示",zh:"导出与投屏",pl:"Eksport i wyświetlanie"},
+      name:{no:"Minner 2",en:"Memories 2",de:"Erinnerungen 2",fr:"Souvenirs 2",es:"Recuerdos 2",it:"Ricordi 2",ru:"Воспоминания 2",ja:"思い出 2",zh:"回忆 2",pl:"Wspomnienia 2"},
+      sub:{no:"Del minnene",en:"Share memories",de:"Erinnerungen teilen",fr:"Partager les souvenirs",es:"Compartir recuerdos",it:"Condividi i ricordi",ru:"Поделиться",ja:"思い出を共有",zh:"分享回忆",pl:"Udostępnij wspomnienia"},
       folders:[
         {emoji:"✨",name:{no:"Lag postkort / slideshow",en:"Make postcard"},sub:{no:"Private pins strippes bort",en:"Private pins removed"}},
         {emoji:"📺",name:{no:"Cast til storskjerm",en:"Cast to TV"}},
@@ -811,9 +816,9 @@ const APP_CONFIG = {
    ════════════════════════════════════════════════════════════ */
 
 /* Rekkefølge på myntene (fremst → bakerst).
-   Tidslinje snudd: fremvisning/minner fremst, gjennomføring i midten,
-   planlegging bakerst. Endre lista for å flytte en mynt. */
-const COIN_ORDER=['skattkammer','postkort','vokter','orakel','turfolget','rustning','basen','ekspeditor'];
+   Forlengs: Planlegging 1–4 → Gjennomføring 1–2 → Minner 1–2.
+   Snarvei til Turblogg (Minner 1) ligger øverst for foredragsholder. */
+const COIN_ORDER=['ekspeditor','orakel','rustning','basen','vokter','turfolget','skattkammer','postkort'];
 APP_CONFIG.coins.sort((a,b)=>{
   let ia=COIN_ORDER.indexOf(a.id), ib=COIN_ORDER.indexOf(b.id);
   if(ia<0)ia=99; if(ib<0)ib=99; return ia-ib;
@@ -829,8 +834,8 @@ const LANGS = [
   {c:"ru",label:"Русский"},{c:"ja",label:"日本語"},{c:"zh",label:"中文"},{c:"pl",label:"Polski"}
 ];
 const I18N = {
-  no:{ tagline:"Inngangsdøren", start:"Start", edit_trip:"Endre tur", pick:"Velg en mynt",
-    swipe:"Sveip sidelengs eller bruk pilene. Mynten foran deg åpnes.",
+  no:{ tagline:"Inngangsdøren", start:"Start", edit_trip:"Endre tur", pick:"Velg et trinn",
+    swipe:"Sveip sidelengs eller bruk pilene. Trinnet foran deg åpnes.",
     test_media:"📷 Test kamera og mikrofon", back:"Tilbake til mynter", add_folder:"Legg til egen mappe",
     ask:"Spør", ai_hint:"AI er med deg på hele turen — spør om vær, rute, sikkerhet eller utstyr.",
     ai_placeholder:"Spør AI om noe på turen…", open:"Åpne", auth_demo:"Lokal demo — ikke innlogget",
@@ -845,9 +850,9 @@ const I18N = {
     acc_label:"Nøyaktighet", acc_poor:"(omtrentlig)",
     trash_title:"Søppelbøtte", trash_empty:"Søppelbøtta er tom.", trash_moved:"Flyttet til søppelbøtta", trash_undo:"Angre", trash_restore:"Gjenopprett", trash_days_left:"dager igjen", trash_delete_confirm:"Slette permanent? Dette kan ikke angres.",
     save_saved:"Lagret", save_saving:"Lagrer…", save_local_only:"Lagres kun her – logg inn for å lagre i skyen",
-    ed_title:"Rediger bilde", ed_cancel:"Avbryt", ed_save:"Lagre", ed_reset:"Tilbakestill", ed_brightness:"Lysstyrke", ed_balance:"Lysbalanse", ed_saturation:"Metning", ed_hue:"Fargetone", ed_temp:"Fargetemp", ed_save_fail:"Kunne ikke lagre bildet.", ed_load_fail:"Kunne ikke laste bildet for redigering.", ed_contrast:"Kontrast", va_title:"Juster video", bg_title:"Velg bakgrunn", bg_auto:"Auto (følg fargetema)", bg_none:"Ingen bakgrunn" },
-  en:{ tagline:"Front door", start:"Start", edit_trip:"Edit trip", pick:"Pick a coin",
-    swipe:"Swipe sideways or use the arrows. The coin in front opens.",
+    ed_title:"Rediger bilde", ed_cancel:"Avbryt", ed_save:"Lagre", ed_reset:"Tilbakestill", ed_brightness:"Lysstyrke", ed_balance:"Lysbalanse", ed_saturation:"Metning", ed_hue:"Fargetone", ed_temp:"Fargetemp", ed_save_fail:"Kunne ikke lagre bildet.", ed_load_fail:"Kunne ikke laste bildet for redigering.", ed_contrast:"Kontrast", va_title:"Juster video", blog_jump:"📔 Hopp til Turblogg", blog_saved:"Lagt i turloggen kl. {time} under {folder}.", bg_title:"Velg bakgrunn", bg_auto:"Auto (følg fargetema)", bg_none:"Ingen bakgrunn" },
+  en:{ tagline:"Front door", start:"Start", edit_trip:"Edit trip", pick:"Choose a step",
+    swipe:"Swipe sideways or use the arrows. The step in front opens.",
     test_media:"📷 Test camera and microphone", back:"Back to coins", add_folder:"Add your own folder",
     ask:"Ask", ai_hint:"AI is with you the whole trip — ask about weather, route, safety or gear.",
     ai_placeholder:"Ask AI anything on the trip…", open:"Open", auth_demo:"Local demo — not signed in",
@@ -862,9 +867,9 @@ const I18N = {
     acc_label:"Accuracy", acc_poor:"(approximate)",
     trash_title:"Trash", trash_empty:"Trash is empty.", trash_moved:"Moved to trash", trash_undo:"Undo", trash_restore:"Restore", trash_days_left:"days left", trash_delete_confirm:"Delete permanently? This cannot be undone.",
     save_saved:"Saved", save_saving:"Saving…", save_local_only:"Saved on this device only – sign in to save to the cloud",
-    ed_title:"Edit photo", ed_cancel:"Cancel", ed_save:"Save", ed_reset:"Reset", ed_brightness:"Brightness", ed_balance:"Light balance", ed_saturation:"Saturation", ed_hue:"Hue", ed_temp:"Temperature", ed_save_fail:"Could not save the image.", ed_load_fail:"Could not load the image for editing.", ed_contrast:"Contrast", va_title:"Adjust video", bg_title:"Choose background", bg_auto:"Auto (match theme)", bg_none:"No background" },
-  de:{ tagline:"Eingangstür", start:"Start", edit_trip:"Tour bearbeiten", pick:"Wähle eine Münze",
-    swipe:"Wische seitwärts oder nutze die Pfeile. Die vordere Münze öffnet sich.",
+    ed_title:"Edit photo", ed_cancel:"Cancel", ed_save:"Save", ed_reset:"Reset", ed_brightness:"Brightness", ed_balance:"Light balance", ed_saturation:"Saturation", ed_hue:"Hue", ed_temp:"Temperature", ed_save_fail:"Could not save the image.", ed_load_fail:"Could not load the image for editing.", ed_contrast:"Contrast", va_title:"Adjust video", blog_jump:"📔 Jump to Trip blog", blog_saved:"Saved to the trip log at {time} under {folder}.", bg_title:"Choose background", bg_auto:"Auto (match theme)", bg_none:"No background" },
+  de:{ tagline:"Eingangstür", start:"Start", edit_trip:"Tour bearbeiten", pick:"Wähle einen Schritt",
+    swipe:"Wische seitwärts oder nutze die Pfeile. Der vordere Schritt öffnet sich.",
     test_media:"📷 Kamera und Mikrofon testen", back:"Zurück zu den Münzen", add_folder:"Eigenen Ordner hinzufügen",
     ask:"Fragen", ai_hint:"Die KI begleitet dich — frag nach Wetter, Route, Sicherheit oder Ausrüstung.",
     ai_placeholder:"Frag die KI etwas zur Tour…", open:"Öffnen", auth_demo:"Lokale Demo — nicht angemeldet",
@@ -879,9 +884,9 @@ const I18N = {
     acc_label:"Genauigkeit", acc_poor:"(ungefähr)",
     trash_title:"Papierkorb", trash_empty:"Der Papierkorb ist leer.", trash_moved:"In den Papierkorb verschoben", trash_undo:"Rückgängig", trash_restore:"Wiederherstellen", trash_days_left:"Tage übrig", trash_delete_confirm:"Endgültig löschen? Dies kann nicht rückgängig gemacht werden.",
     save_saved:"Gespeichert", save_saving:"Speichern…", save_local_only:"Nur auf diesem Gerät gespeichert – zum Cloud-Speichern anmelden",
-    ed_title:"Foto bearbeiten", ed_cancel:"Abbrechen", ed_save:"Speichern", ed_reset:"Zurücksetzen", ed_brightness:"Helligkeit", ed_balance:"Lichtbalance", ed_saturation:"Sättigung", ed_hue:"Farbton", ed_temp:"Farbtemp.", ed_save_fail:"Bild konnte nicht gespeichert werden.", ed_load_fail:"Bild konnte nicht zum Bearbeiten geladen werden.", ed_contrast:"Kontrast", va_title:"Video anpassen", bg_title:"Hintergrund wählen", bg_auto:"Auto (Thema folgen)", bg_none:"Kein Hintergrund" },
-  fr:{ tagline:"Porte d'entrée", start:"Départ", edit_trip:"Modifier", pick:"Choisis une pièce",
-    swipe:"Glissez sur le côté ou utilisez les flèches. La pièce devant s'ouvre.",
+    ed_title:"Foto bearbeiten", ed_cancel:"Abbrechen", ed_save:"Speichern", ed_reset:"Zurücksetzen", ed_brightness:"Helligkeit", ed_balance:"Lichtbalance", ed_saturation:"Sättigung", ed_hue:"Farbton", ed_temp:"Farbtemp.", ed_save_fail:"Bild konnte nicht gespeichert werden.", ed_load_fail:"Bild konnte nicht zum Bearbeiten geladen werden.", ed_contrast:"Kontrast", va_title:"Video anpassen", blog_jump:"📔 Zum Tourblog", blog_saved:"Um {time} zum Tourtagebuch unter {folder} hinzugefügt.", bg_title:"Hintergrund wählen", bg_auto:"Auto (Thema folgen)", bg_none:"Kein Hintergrund" },
+  fr:{ tagline:"Porte d'entrée", start:"Départ", edit_trip:"Modifier", pick:"Choisissez une étape",
+    swipe:"Glissez sur le côté ou utilisez les flèches. L'étape devant s'ouvre.",
     test_media:"📷 Tester caméra et micro", back:"Retour aux pièces", add_folder:"Ajouter un dossier",
     ask:"Demander", ai_hint:"L'IA vous accompagne — météo, itinéraire, sécurité ou équipement.",
     ai_placeholder:"Posez une question à l'IA…", open:"Ouvrir", auth_demo:"Démo locale — non connecté",
@@ -896,9 +901,9 @@ const I18N = {
     acc_label:"Précision", acc_poor:"(approximatif)",
     trash_title:"Corbeille", trash_empty:"La corbeille est vide.", trash_moved:"Déplacé vers la corbeille", trash_undo:"Annuler", trash_restore:"Restaurer", trash_days_left:"jours restants", trash_delete_confirm:"Supprimer définitivement ? Action irréversible.",
     save_saved:"Enregistré", save_saving:"Enregistrement…", save_local_only:"Enregistré sur cet appareil uniquement – connectez-vous pour la sauvegarde cloud",
-    ed_title:"Modifier la photo", ed_cancel:"Annuler", ed_save:"Enregistrer", ed_reset:"Réinitialiser", ed_brightness:"Luminosité", ed_balance:"Balance lumière", ed_saturation:"Saturation", ed_hue:"Teinte", ed_temp:"Température", ed_save_fail:"Impossible d'enregistrer l'image.", ed_load_fail:"Impossible de charger l'image à modifier.", ed_contrast:"Contraste", va_title:"Ajuster la vidéo", bg_title:"Choisir l'arrière-plan", bg_auto:"Auto (suivre le thème)", bg_none:"Aucun arrière-plan" },
-  es:{ tagline:"Puerta de entrada", start:"Inicio", edit_trip:"Editar viaje", pick:"Elige una moneda",
-    swipe:"Desliza o usa las flechas. Se abre la moneda del frente.",
+    ed_title:"Modifier la photo", ed_cancel:"Annuler", ed_save:"Enregistrer", ed_reset:"Réinitialiser", ed_brightness:"Luminosité", ed_balance:"Balance lumière", ed_saturation:"Saturation", ed_hue:"Teinte", ed_temp:"Température", ed_save_fail:"Impossible d'enregistrer l'image.", ed_load_fail:"Impossible de charger l'image à modifier.", ed_contrast:"Contraste", va_title:"Ajuster la vidéo", blog_jump:"📔 Aller au journal", blog_saved:"Ajouté au journal de sortie à {time} sous {folder}.", bg_title:"Choisir l'arrière-plan", bg_auto:"Auto (suivre le thème)", bg_none:"Aucun arrière-plan" },
+  es:{ tagline:"Puerta de entrada", start:"Inicio", edit_trip:"Editar viaje", pick:"Elige un paso",
+    swipe:"Desliza o usa las flechas. Se abre el paso del frente.",
     test_media:"📷 Probar cámara y micrófono", back:"Volver a las monedas", add_folder:"Añadir carpeta",
     ask:"Preguntar", ai_hint:"La IA te acompaña — pregunta por el clima, la ruta, la seguridad o el equipo.",
     ai_placeholder:"Pregúntale algo a la IA…", open:"Abrir", auth_demo:"Demo local — sin sesión",
@@ -913,9 +918,9 @@ const I18N = {
     acc_label:"Precisión", acc_poor:"(aproximado)",
     trash_title:"Papelera", trash_empty:"La papelera está vacía.", trash_moved:"Movido a la papelera", trash_undo:"Deshacer", trash_restore:"Restaurar", trash_days_left:"días restantes", trash_delete_confirm:"¿Eliminar permanentemente? No se puede deshacer.",
     save_saved:"Guardado", save_saving:"Guardando…", save_local_only:"Guardado solo en este dispositivo: inicia sesión para guardar en la nube",
-    ed_title:"Editar foto", ed_cancel:"Cancelar", ed_save:"Guardar", ed_reset:"Restablecer", ed_brightness:"Brillo", ed_balance:"Balance de luz", ed_saturation:"Saturación", ed_hue:"Tono", ed_temp:"Temperatura", ed_save_fail:"No se pudo guardar la imagen.", ed_load_fail:"No se pudo cargar la imagen para editar.", ed_contrast:"Contraste", va_title:"Ajustar vídeo", bg_title:"Elegir fondo", bg_auto:"Auto (según tema)", bg_none:"Sin fondo" },
-  it:{ tagline:"Porta d'ingresso", start:"Partenza", edit_trip:"Modifica", pick:"Scegli una moneta",
-    swipe:"Scorri o usa le frecce. Si apre la moneta davanti.",
+    ed_title:"Editar foto", ed_cancel:"Cancelar", ed_save:"Guardar", ed_reset:"Restablecer", ed_brightness:"Brillo", ed_balance:"Balance de luz", ed_saturation:"Saturación", ed_hue:"Tono", ed_temp:"Temperatura", ed_save_fail:"No se pudo guardar la imagen.", ed_load_fail:"No se pudo cargar la imagen para editar.", ed_contrast:"Contraste", va_title:"Ajustar vídeo", blog_jump:"📔 Ir al diario", blog_saved:"Guardado en el diario de la ruta a las {time} en {folder}.", bg_title:"Elegir fondo", bg_auto:"Auto (según tema)", bg_none:"Sin fondo" },
+  it:{ tagline:"Porta d'ingresso", start:"Partenza", edit_trip:"Modifica", pick:"Scegli un passo",
+    swipe:"Scorri o usa le frecce. Si apre il passo davanti.",
     test_media:"📷 Prova fotocamera e microfono", back:"Torna alle monete", add_folder:"Aggiungi cartella",
     ask:"Chiedi", ai_hint:"L'IA è con te — chiedi di meteo, percorso, sicurezza o attrezzatura.",
     ai_placeholder:"Chiedi qualcosa all'IA…", open:"Apri", auth_demo:"Demo locale — non connesso",
@@ -930,9 +935,9 @@ const I18N = {
     acc_label:"Precisione", acc_poor:"(approssimativo)",
     trash_title:"Cestino", trash_empty:"Il cestino è vuoto.", trash_moved:"Spostato nel cestino", trash_undo:"Annulla", trash_restore:"Ripristina", trash_days_left:"giorni rimasti", trash_delete_confirm:"Eliminare definitivamente? Non annullabile.",
     save_saved:"Salvato", save_saving:"Salvataggio…", save_local_only:"Salvato solo su questo dispositivo – accedi per salvare nel cloud",
-    ed_title:"Modifica foto", ed_cancel:"Annulla", ed_save:"Salva", ed_reset:"Ripristina", ed_brightness:"Luminosità", ed_balance:"Bilanc. luce", ed_saturation:"Saturazione", ed_hue:"Tonalità", ed_temp:"Temperatura", ed_save_fail:"Impossibile salvare l'immagine.", ed_load_fail:"Impossibile caricare l'immagine da modificare.", ed_contrast:"Contrasto", va_title:"Regola video", bg_title:"Scegli sfondo", bg_auto:"Auto (segui tema)", bg_none:"Nessuno sfondo" },
-  ru:{ tagline:"Входная дверь", start:"Старт", edit_trip:"Изменить", pick:"Выберите монету",
-    swipe:"Проведите в сторону или используйте стрелки. Открывается передняя монета.",
+    ed_title:"Modifica foto", ed_cancel:"Annulla", ed_save:"Salva", ed_reset:"Ripristina", ed_brightness:"Luminosità", ed_balance:"Bilanc. luce", ed_saturation:"Saturazione", ed_hue:"Tonalità", ed_temp:"Temperatura", ed_save_fail:"Impossibile salvare l'immagine.", ed_load_fail:"Impossibile caricare l'immagine da modificare.", ed_contrast:"Contrasto", va_title:"Regola video", blog_jump:"📔 Vai al diario", blog_saved:"Salvato nel diario della gita alle {time} in {folder}.", bg_title:"Scegli sfondo", bg_auto:"Auto (segui tema)", bg_none:"Nessuno sfondo" },
+  ru:{ tagline:"Входная дверь", start:"Старт", edit_trip:"Изменить", pick:"Выберите этап",
+    swipe:"Проведите в сторону или используйте стрелки. Откроется передний этап.",
     test_media:"📷 Проверить камеру и микрофон", back:"Назад к монетам", add_folder:"Добавить папку",
     ask:"Спросить", ai_hint:"ИИ с вами всю поездку — спросите о погоде, маршруте, безопасности или снаряжении.",
     ai_placeholder:"Спросите ИИ о поездке…", open:"Открыть", auth_demo:"Локальная демо — вход не выполнен",
@@ -947,9 +952,9 @@ const I18N = {
     acc_label:"Точность", acc_poor:"(приблизительно)",
     trash_title:"Корзина", trash_empty:"Корзина пуста.", trash_moved:"Перемещено в корзину", trash_undo:"Отменить", trash_restore:"Восстановить", trash_days_left:"дн. осталось", trash_delete_confirm:"Удалить навсегда? Это нельзя отменить.",
     save_saved:"Сохранено", save_saving:"Сохранение…", save_local_only:"Сохранено только на этом устройстве — войдите для облака",
-    ed_title:"Редактировать фото", ed_cancel:"Отмена", ed_save:"Сохранить", ed_reset:"Сброс", ed_brightness:"Яркость", ed_balance:"Баланс света", ed_saturation:"Насыщенность", ed_hue:"Оттенок", ed_temp:"Температура", ed_save_fail:"Не удалось сохранить изображение.", ed_load_fail:"Не удалось загрузить изображение для редактирования.", ed_contrast:"Контраст", va_title:"Настроить видео", bg_title:"Выберите фон", bg_auto:"Авто (по теме)", bg_none:"Без фона" },
-  ja:{ tagline:"入口", start:"出発地", edit_trip:"編集", pick:"コインを選ぶ",
-    swipe:"横にスワイプするか矢印を使ってください。手前のコインが開きます。",
+    ed_title:"Редактировать фото", ed_cancel:"Отмена", ed_save:"Сохранить", ed_reset:"Сброс", ed_brightness:"Яркость", ed_balance:"Баланс света", ed_saturation:"Насыщенность", ed_hue:"Оттенок", ed_temp:"Температура", ed_save_fail:"Не удалось сохранить изображение.", ed_load_fail:"Не удалось загрузить изображение для редактирования.", ed_contrast:"Контраст", va_title:"Настроить видео", blog_jump:"📔 К журналу похода", blog_saved:"Добавлено в журнал похода в {time}, раздел {folder}.", bg_title:"Выберите фон", bg_auto:"Авто (по теме)", bg_none:"Без фона" },
+  ja:{ tagline:"入口", start:"出発地", edit_trip:"編集", pick:"ステップを選ぶ",
+    swipe:"横にスワイプするか矢印を使ってください。手前のステップが開きます。",
     test_media:"📷 カメラとマイクをテスト", back:"コイン一覧へ戻る", add_folder:"フォルダを追加",
     ask:"質問", ai_hint:"AIが旅に同行します — 天気、ルート、安全、装備について聞いてください。",
     ai_placeholder:"AIに何でも聞いてください…", open:"開く", auth_demo:"ローカルデモ — 未ログイン",
@@ -964,9 +969,9 @@ const I18N = {
     acc_label:"精度", acc_poor:"(おおよそ)",
     trash_title:"ゴミ箱", trash_empty:"ゴミ箱は空です。", trash_moved:"ゴミ箱に移動しました", trash_undo:"元に戻す", trash_restore:"復元", trash_days_left:"日残り", trash_delete_confirm:"完全に削除しますか？元に戻せません。",
     save_saved:"保存しました", save_saving:"保存中…", save_local_only:"この端末にのみ保存 – クラウド保存にはログイン",
-    ed_title:"写真を編集", ed_cancel:"キャンセル", ed_save:"保存", ed_reset:"リセット", ed_brightness:"明るさ", ed_balance:"明暗バランス", ed_saturation:"彩度", ed_hue:"色相", ed_temp:"色温度", ed_save_fail:"画像を保存できませんでした。", ed_load_fail:"編集用の画像を読み込めませんでした。", ed_contrast:"コントラスト", va_title:"動画を調整", bg_title:"背景を選択", bg_auto:"自動（テーマに合わせる）", bg_none:"背景なし" },
-  zh:{ tagline:"入口", start:"起点", edit_trip:"编辑", pick:"选择一枚硬币",
-    swipe:"左右滑动或使用箭头。前方的硬币会打开。",
+    ed_title:"写真を編集", ed_cancel:"キャンセル", ed_save:"保存", ed_reset:"リセット", ed_brightness:"明るさ", ed_balance:"明暗バランス", ed_saturation:"彩度", ed_hue:"色相", ed_temp:"色温度", ed_save_fail:"画像を保存できませんでした。", ed_load_fail:"編集用の画像を読み込めませんでした。", ed_contrast:"コントラスト", va_title:"動画を調整", blog_jump:"📔 山行ブログへ", blog_saved:"{time} に「{folder}」へ記録しました。", bg_title:"背景を選択", bg_auto:"自動（テーマに合わせる）", bg_none:"背景なし" },
+  zh:{ tagline:"入口", start:"起点", edit_trip:"编辑", pick:"选择步骤",
+    swipe:"左右滑动或使用箭头。前方的步骤会打开。",
     test_media:"📷 测试摄像头和麦克风", back:"返回硬币", add_folder:"添加文件夹",
     ask:"提问", ai_hint:"AI全程陪伴 — 询问天气、路线、安全或装备。",
     ai_placeholder:"向AI提问…", open:"打开", auth_demo:"本地演示 — 未登录",
@@ -981,9 +986,9 @@ const I18N = {
     acc_label:"精度", acc_poor:"(大致)",
     trash_title:"回收站", trash_empty:"回收站是空的。", trash_moved:"已移至回收站", trash_undo:"撤销", trash_restore:"恢复", trash_days_left:"天后删除", trash_delete_confirm:"永久删除？此操作无法撤销。",
     save_saved:"已保存", save_saving:"保存中…", save_local_only:"仅保存在本设备 – 登录以保存到云端",
-    ed_title:"编辑照片", ed_cancel:"取消", ed_save:"保存", ed_reset:"重置", ed_brightness:"亮度", ed_balance:"光线平衡", ed_saturation:"饱和度", ed_hue:"色调", ed_temp:"色温", ed_save_fail:"无法保存图片。", ed_load_fail:"无法加载要编辑的图片。", ed_contrast:"对比度", va_title:"调整视频", bg_title:"选择背景", bg_auto:"自动（跟随主题）", bg_none:"无背景" },
-  pl:{ tagline:"Drzwi wejściowe", start:"Start", edit_trip:"Edytuj", pick:"Wybierz monetę",
-    swipe:"Przesuń w bok lub użyj strzałek. Otworzy się przednia moneta.",
+    ed_title:"编辑照片", ed_cancel:"取消", ed_save:"保存", ed_reset:"重置", ed_brightness:"亮度", ed_balance:"光线平衡", ed_saturation:"饱和度", ed_hue:"色调", ed_temp:"色温", ed_save_fail:"无法保存图片。", ed_load_fail:"无法加载要编辑的图片。", ed_contrast:"对比度", va_title:"调整视频", blog_jump:"📔 前往行程日志", blog_saved:"已于 {time} 保存到行程日志的「{folder}」。", bg_title:"选择背景", bg_auto:"自动（跟随主题）", bg_none:"无背景" },
+  pl:{ tagline:"Drzwi wejściowe", start:"Start", edit_trip:"Edytuj", pick:"Wybierz krok",
+    swipe:"Przesuń w bok lub użyj strzałek. Otworzy się przedni krok.",
     test_media:"📷 Test kamery i mikrofonu", back:"Powrót do monet", add_folder:"Dodaj folder",
     ask:"Zapytaj", ai_hint:"AI towarzyszy ci przez całą wyprawę — pytaj o pogodę, trasę, bezpieczeństwo lub sprzęt.",
     ai_placeholder:"Zapytaj AI o cokolwiek…", open:"Otwórz", auth_demo:"Lokalne demo — niezalogowany",
@@ -998,7 +1003,7 @@ const I18N = {
     acc_label:"Dokładność", acc_poor:"(przybliżone)",
     trash_title:"Kosz", trash_empty:"Kosz jest pusty.", trash_moved:"Przeniesiono do kosza", trash_undo:"Cofnij", trash_restore:"Przywróć", trash_days_left:"dni do usunięcia", trash_delete_confirm:"Usunąć trwale? Nie można cofnąć.",
     save_saved:"Zapisano", save_saving:"Zapisywanie…", save_local_only:"Zapisano tylko na tym urządzeniu – zaloguj się, aby zapisać w chmurze",
-    ed_title:"Edytuj zdjęcie", ed_cancel:"Anuluj", ed_save:"Zapisz", ed_reset:"Resetuj", ed_brightness:"Jasność", ed_balance:"Balans światła", ed_saturation:"Nasycenie", ed_hue:"Odcień", ed_temp:"Temperatura", ed_save_fail:"Nie udało się zapisać obrazu.", ed_load_fail:"Nie udało się wczytać obrazu do edycji.", ed_contrast:"Kontrast", va_title:"Dostosuj wideo", bg_title:"Wybierz tło", bg_auto:"Auto (zgodnie z motywem)", bg_none:"Bez tła" }
+    ed_title:"Edytuj zdjęcie", ed_cancel:"Anuluj", ed_save:"Zapisz", ed_reset:"Resetuj", ed_brightness:"Jasność", ed_balance:"Balans światła", ed_saturation:"Nasycenie", ed_hue:"Odcień", ed_temp:"Temperatura", ed_save_fail:"Nie udało się zapisać obrazu.", ed_load_fail:"Nie udało się wczytać obrazu do edycji.", ed_contrast:"Kontrast", va_title:"Dostosuj wideo", blog_jump:"📔 Do dziennika", blog_saved:"Zapisano w dzienniku wyprawy o {time} w {folder}.", bg_title:"Wybierz tło", bg_auto:"Auto (zgodnie z motywem)", bg_none:"Bez tła" }
 };
 function t(key){ return (I18N[LANG]&&I18N[LANG][key]) || I18N.en[key] || I18N.no[key] || key; }
 function tr(o){ return o ? (o[LANG]||o.en||o.no||'') : ''; }
@@ -1016,14 +1021,36 @@ const L = ()=>tr(APP_CONFIG.name);
 function freshFolders(){
   const o={}; APP_CONFIG.coins.forEach(c=> o[c.id]=c.folders.map(f=>JSON.parse(JSON.stringify(f)))); return o;
 }
+/* Sørg for at aktive tur har alle mapper fra config (nye mapper arves av gamle turer) */
+function ensureFolders(){
+  if(!folderState) return; let changed=false;
+  APP_CONFIG.coins.forEach(c=>{
+    if(!folderState[c.id]){ folderState[c.id]=c.folders.map(f=>JSON.parse(JSON.stringify(f))); changed=true; return; }
+    c.folders.forEach(def=>{
+      const has=folderState[c.id].some(f=> f.name&&def.name&&f.name.no===def.name.no);
+      if(!has){ const clone=JSON.parse(JSON.stringify(def)); if(def._blog) folderState[c.id].unshift(clone); else folderState[c.id].push(clone); changed=true; }
+    });
+  });
+  if(changed && typeof saveState==='function'){ try{ saveState(); }catch(e){} }
+}
+/* Snarvei rett til Turblogg (Minner 1) — for foredragsholder */
+function goToBlog(){
+  const ci=APP_CONFIG.coins.findIndex(c=>c.id==='skattkammer'); if(ci<0) return;
+  current=ci; openCoin();
+  const arr=folderState['skattkammer']||[];
+  let fi=arr.findIndex(f=>f._blog===true);
+  if(fi<0) fi=arr.findIndex(f=>f.name&&f.name.no==='Turblogg');
+  if(fi>=0) openFolder(fi);
+}
 let TRIPS=[], activeTripId=null, tripStates={}, tripColors={};
 let folderState={}, coinColor={};
+let aiHistory=[];
 function setActiveTrip(id){
   const tp=TRIPS.find(t=>t.id===id); if(!tp) return;
   activeTripId=id;
   if(!tripStates[id]) tripStates[id]=freshFolders();
   if(!tripColors[id]) tripColors[id]={};
-  folderState=tripStates[id]; coinColor=tripColors[id];
+  folderState=tripStates[id]; coinColor=tripColors[id]; aiHistory=[]; ensureFolders();
   document.getElementById('tripName').textContent=tp.name;
   document.getElementById('tripMeta').textContent=tp.varighet||tp.start||'';
   openFolderIdx=null; openPeakIdx=null;
@@ -1770,10 +1797,16 @@ async function askAI(){
   // be om posisjon kun ved vær-/stedsspørsmål (slipper unødig tillatelses-spørsmål)
   const wantGeo=/vær|weather|temperatur|vind|regn|snø|kald|varm|\bher\b|here|forhold|sol|skyet|grader|wind|rain|cold|warm/i.test(q);
   const geo = wantGeo ? await new Promise(res=>ensureGeo(res)) : null;
-  let sys='Du er en kunnskapsrik og hjelpsom turassistent i appen «'+L()+'». '+
+  const blogTargets=[]; let blogList='';
+  APP_CONFIG.coins.forEach(c=>{ (folderState[c.id]||[]).forEach((f,fi)=>{
+    if(f.type==='peaks'||f.type==='links') return;
+    const n=blogTargets.length+1, label=tr(c.name)+' › '+tr(f.name);
+    blogTargets.push({n,coinId:c.id,folderIdx:fi,label}); blogList+=n+') '+label+'\n';
+  }); });
+  let sys='Du er EasySatBox-assistenten i appen «'+L()+'» — en vennlig følgesvenn, samtalepartner og turblogg-sekretær. '+
           'Aktiv tur: «'+(tp?tp.name:'')+'»'+(tp&&tp.varighet?(' ('+tp.varighet+')'):'')+'. '+
-          'Hjelp gjerne med ALT rundt turen: vær, rute, sikkerhet, utstyr, pakking, overnatting, '+
-          'transport, og hvor man får kjøpt mat/proviant eller finner butikker, bensin, apotek og spisesteder i nærheten. '+
+          'Du hjelper med ALT brukeren spør om: vær, rute, sikkerhet, utstyr, pakking, overnatting, transport, proviant og lokale butikker — '+
+          'og gjerne en uformell prat underveis. Avvis ALDRI et spørsmål med at du «bare er en turassistent»; svar hjelpsomt så langt du kan. '+
           'Svar konkret og kort, på språket: '+LANG+'. '+
           'Du har to verktøy: get_weather (sanntids vær fra MET/Yr) og find_places (finn ekte butikker/tjenester '+
           'i nærheten via OpenStreetMap). BRUK dem når det er relevant — oppgi lat/lon hvis du kjenner stedet, ellers stedsnavn. '+
@@ -1784,7 +1817,19 @@ async function askAI(){
           'Appen har også en egen «🗺️ Kart»-knapp øverst som viser et innebygd kart — du kan henvise brukeren dit '+
           '(«trykk 🗺️ Kart og søk på stedet»). Si ALDRI at du «ikke kan vise kart»; du kan både gi kartlenke og peke på Kart-knappen. '+
           'VIKTIG om format: svar i REN, lesbar tekst. IKKE bruk markdown-tabeller, IKKE bruk tegnene | eller #. '+
-          'Bruk gjerne korte linjer; en enkel liste kan starte hver linje med «- ». Hold svaret kort.';
+          'Bruk gjerne korte linjer; en enkel liste kan starte hver linje med «- ». Hold svaret kort. '+
+          '\n\n── TURBLOGG-SEKRETÆR ──\n'+
+          'Brukeren kan diktere korte logg-innlegg underveis (f.eks. «vi er på parkeringsplassen, sola skinner, vi starter nå» eller «vi er på hytta og spiser vafler»). '+
+          'Slik: 1) FORESLÅ FØRST hvilken mappe innlegget passer i og spør kort om bekreftelse. '+
+          'For vanlige turlogg-innlegg (hvor dere er, hvordan det går, opplevelser underveis) foreslå «Minner 1 › Turblogg». '+
+          'Bare hvis innlegget klart hører til et bestemt tema (f.eks. rent værvarsel, innkjøpsliste, en skade), foreslå den temamappa i stedet. Velg ETT nummer fra lista under. '+
+          'F.eks. «Dette passer i Minner 1 › Turblogg. Skal jeg legge det der?». '+
+          '2) Brukeren svarer «ja» eller foreslår en annen mappe. '+
+          '3) FØRST når brukeren har bekreftet, avslutt svaret med NØYAKTIG denne linjen på egen linje: [[LAGRE:n]]loggteksten her[[/LAGRE]] '+
+          '— der n er mappenummeret og teksten er selve innlegget (IKKE skriv klokkeslett; appen legger det på automatisk). '+
+          'Skriv aldri [[LAGRE]]-linjen før brukeren har bekreftet mappe. Ikke nevn eller forklar markøren; appen fjerner den og leser bekreftelsen høyt. '+
+          'Ber brukeren om å ta bilde/video: forklar vennlig at de kan bruke 📷-knappen (kamera via smartbriller kommer). '+
+          '\nTilgjengelige mapper for turloggen (nummer › mappe):\n'+blogList;
   if(geo) sys+=' Brukerens nåværende posisjon: lat '+geo.lat.toFixed(4)+', lon '+geo.lon.toFixed(4)+' — bruk denne når brukeren mener «her».';
   const tools=[
     {
@@ -1806,21 +1851,49 @@ async function askAI(){
       }}
     }
   ];
+  aiHistory.push({role:'user',content:q});
+  if(aiHistory.length>10) aiHistory=aiHistory.slice(-10);
   try{
     const r=await fetch(APP_CONFIG.aiProxyUrl,{
       method:'POST', headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({ max_tokens:700, system:sys, tools, messages:[{role:'user',content:q}] })
+      body:JSON.stringify({ max_tokens:700, system:sys, tools, messages:aiHistory })
     });
     if(!r.ok) throw new Error('proxy '+r.status);
     const data=await r.json();
     const txt=(data.content||[]).filter(b=>b.type==='text').map(b=>b.text).join('\n') || t('ai_empty');
-    const clean=cleanAI(txt);
-    out.innerHTML=aiHtml(clean);
-    maybeSpeak(clean);
+    // Turblogg: fang opp lagre-markør(er) fra AI-en
+    const saveRe=/\[\[LAGRE:(\d+)\]\]([\s\S]*?)\[\[\/LAGRE\]\]/g;
+    let sm, savedLabels=[];
+    while((sm=saveRe.exec(txt))){
+      const tgt=blogTargets.find(x=>x.n===parseInt(sm[1],10)), body=(sm[2]||'').trim();
+      if(tgt&&body){ appendBlogEntry(tgt,body); savedLabels.push(tgt.label); }
+    }
+    const displayTxt=txt.replace(saveRe,'').trim();
+    aiHistory.push({role:'assistant',content: displayTxt || '(lagret i turloggen)'});
+    const clean=cleanAI(displayTxt);
+    if(savedLabels.length){
+      const time=new Date().toLocaleTimeString(LANG,{hour:'2-digit',minute:'2-digit'});
+      const conf=t('blog_saved').replace('{time}',time).replace('{folder}',savedLabels.join(', '));
+      out.innerHTML=(clean?aiHtml(clean):'')+'<div class="blog-ok">✅ '+escapeHtml(conf)+'</div>';
+      maybeSpeak((clean?clean+'. ':'')+conf);
+    }else{
+      out.innerHTML=aiHtml(clean);
+      maybeSpeak(clean);
+    }
   }catch(err){
     out.textContent = t('ai_error') + '\n('+err.message+')';
   }
   inp.value='';
+}
+function appendBlogEntry(tgt, body){
+  const arr=folderState[tgt.coinId]; if(!arr||!arr[tgt.folderIdx]) return;
+  const f=arr[tgt.folderIdx];
+  const stamp=new Date().toLocaleString(LANG,{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
+  const line='🕒 '+stamp+' — '+body;
+  f.note=(f.note&&String(f.note).trim())?(String(f.note).trim()+'\n'+line):line;
+  saveState();
+  if(typeof syncTripContent==='function'&&activeTripId){ try{ syncTripContent(); }catch(e){} }
+  if(openFolderIdx!==null && APP_CONFIG.coins[current] && APP_CONFIG.coins[current].id===tgt.coinId && openFolderIdx===tgt.folderIdx){ try{ renderFolderView(); }catch(e){} }
 }
 document.getElementById('aiInput').addEventListener('keydown',e=>{if(e.key==='Enter')askAI();});
 if(!(window.SpeechRecognition||window.webkitSpeechRecognition)){ const mb=document.getElementById('micBtn'); if(mb) mb.style.display='none'; }
